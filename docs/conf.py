@@ -17,12 +17,12 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-import mdakit_membcurv
+import membrane_curvature
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'MDAkit MembCurv'
+project = 'Membrane Curvature'
 copyright = ("2021, MDAnalysis. Project structure based on the "
              "Computational Molecular Science Python Cookiecutter version 1.5")
 author = 'MDAnalysis'
@@ -117,7 +117,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'mdakit_membcurvdoc'
+htmlhelp_basename = 'membrane_curvaturedoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -144,8 +144,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'mdakit_membcurv.tex', 'MDAkit MembCurv Documentation',
-     'mdakit_membcurv', 'manual'),
+    (master_doc, 'membrane_curvature.tex', 'Membrane Curvature Documentation',
+     'membrane_curvature', 'manual'),
 ]
 
 
@@ -154,7 +154,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'mdakit_membcurv', 'MDAkit MembCurv Documentation',
+    (master_doc, 'membrane_curvature', 'Membrane Curvature Documentation',
      [author], 1)
 ]
 
@@ -165,8 +165,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'mdakit_membcurv', 'MDAkit MembCurv Documentation',
-     author, 'mdakit_membcurv', 'MDAkit for Membrane Curvature',
+    (master_doc, 'membrane_curvature', 'Membrane Curvature Documentation',
+     author, 'membrane_curvature', 'Membrane Curvature',
      'Miscellaneous'),
 ]
 
