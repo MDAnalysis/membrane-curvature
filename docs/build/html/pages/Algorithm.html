@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1. Algorithm &#8212; Membrane Curvature  documentation</title>
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2. Visualization" href="Visualization.html" />
+    <link rel="prev" title="Welcome to Membrane Curvature’s documentation!" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="algorithm">
+<h1><span class="section-number">1. </span>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h1>
+<p>Overall, this algorithm calculates mean and gaussian curvature from surfaces
+formed by a group of reference. By default, the group of reference to derive
+surfaces are lipid headgroups.</p>
+<p>First, the coordinates of each element of the group of references are
+calculated and then mapped to a grid of $m x n$ dimensions. To define the
+dimensions of the grid, we divide the length of the simulation box along
+the $x$ and $y$ axis over the unit cell width (default value 2 nm).</p>
+<p>Once the dimensions of the grid are defined, for every atom in the group of
+reference, the mapping function assigns an indexed cell in the grid. i.e.
+(x,y)↦[i,j]. For each indexed element in the grid, the respective $z$
+coordinate is stored in a separate array. This operation is performed for
+every frame in the trajectory. After iterating over every frame of the
+trajectory, the mean value of the $z$ coordinate are computed.</p>
+<p>This analysis returns a 2-dimensional array which will be used to calculate
+mean and gaussian curvature.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Membrane Curvature</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Visualization.html">2. Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Usage.html">3. Usage</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to Membrane Curvature’s documentation!</a></li>
+      <li>Next: <a href="Visualization.html" title="next chapter"><span class="section-number">2. </span>Visualization</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Estefania Barreto-Ojeda.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/pages/Algorithm.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
