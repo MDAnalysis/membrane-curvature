@@ -5,7 +5,7 @@ import mdtraj as md
 import numpy as np
 import argparse
 import pickle
-import textwrap 
+import textwrap
 import time
 import math
 import os
@@ -27,9 +27,9 @@ class Grid:
         Box dimensions in x.
     max_width : <int>
         Max width of the grid.
-    unit_cell_width(): <int>    
+    unit_cell_width(): <int>
         Width of unit cell in grid.
-       
+
 
     Methods
     -------
@@ -41,7 +41,7 @@ class Grid:
     def __init__(self, box_width, max_width, unit_cell_width):
         self.box_width = box_width
         self.max_width = max_width
-        self.unit_cell_width = unit_cell_width 
+        self.unit_cell_width = unit_cell_width
         self.n_cells = math.ceil( max_width / unit_cell_width *10 )
 
 
@@ -57,7 +57,7 @@ class define_leaflets:
     int_inner : str:str
         Index interval of the inner leaflet.
     surname : str:str
-        Index interval of the outer leaflet.    
+        Index interval of the outer leaflet.
 
     Methods
     -------
@@ -90,7 +90,7 @@ class membrane_index:
     lipid_types : <list>
         Index interval of the inner leaflet.
     head_index : <>
-        Index interval of the outer leaflet.    
+        Index interval of the outer leaflet.
 
     Methods
     -------
@@ -106,7 +106,7 @@ class membrane_index:
         self.lipid_types = lipid_types
         self.head_index = head_index
         self.top = top
-    
+
     # #@classmethod
     def list_head_beads(self):
         return def_po4_beads(self.lipid_types, self.leaflets, self.head_index, self.top)
@@ -118,7 +118,7 @@ def input_options():
 
 
     #usage = (" [options] < input > output")
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, 
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description=textwrap.dedent('''\
         Trial version KHURV.py | To calculate Gaussian (K) and mean (H) curvature from MD simulations
         '''))
@@ -139,18 +139,18 @@ def input_options():
         "-sk", type=int, default=10, metavar="<n>",  help="Skip frames. Default: ")
     parser.add_argument(
         "-out", type=str, metavar="<OUTPUT DIR>", default='output/', help='Output file directory. Default: %(default)s')
-    
+
     return parser
 
 def parse_range(astr):
     """
     Split range provided by user
     """
-    
+
     rangeG = set()
     x = [int(i) for i in astr.split(':')]
     rangeG.update(range(x[0], x[1]+1 ) )
-    
+
     return list(rangeG)
 
 def def_range_leaflets(nn, ind):
@@ -167,18 +167,17 @@ def def_all_beads(lipid_types, leaflets, head_list, topology):
     """
     Select reference elements to derive membrane surface.
 
-    
+
     Parameters
     ----------
     lipid_types : list.
         List of lipid types in simulation box.
     leaflets : str. Default ["lower", "upper"]
-        Leaflets of bilayer. 
+        Leaflets of bilayer.
     head_list : list
-        List of indexes by leaflet. Provided by user in -ii and -io.  
+        List of indexes by leaflet. Provided by user in -ii and -io.
     topology: obj
         Topology from grofile.
-
     Returns
     -------
     [ element_1, ..., element_n] : list
@@ -191,13 +190,13 @@ def def_all_beads(lipid_types, leaflets, head_list, topology):
     print('==== Lipid types in membrane ==== ')
     for lt in lipid_types:
         print('====>', lt)
-        dic_all_beads['upper'][lt] = np.concatenate (( topology.select(  
+        dic_all_beads['upper'][lt] = np.concatenate (( topology.select(
             'resname ' + lt + ' and index ' + str(head_list[0]) + ' to ' + str(head_list[1]) + ' and name PO4'),                                                       topology.select(
             'resname ' + lt + ' and index ' + str(head_list[0]) + ' to ' + str(head_list[1]) + ' and name GM1') )).astype(int).tolist()
-        dic_all_beads['lower'][lt] = np.concatenate (( topology.select(  
+        dic_all_beads['lower'][lt] = np.concatenate (( topology.select(
             'resname ' + lt + ' and index ' + str(head_list[1]+1) + ' to ' + str(head_list[2]) + ' and name PO4'),
                                                         topology.select(
-            'resname ' + lt + ' and index ' + str(head_list[1]+1) + ' to ' + str(head_list[2]) + ' and name GM1') )).astype(int).tolist()        
+            'resname ' + lt + ' and index ' + str(head_list[1]+1) + ' to ' + str(head_list[2]) + ' and name GM1') )).astype(int).tolist()
 
         print("upper", len(dic_all_beads['upper'][lt]))
         print("lower", len(dic_all_beads['lower'][lt]))
@@ -209,15 +208,15 @@ def xy2cell(coords, n_cells, max_width, bead, grid):
 
     """
     Maps coordinates to indexed unit grid of size `max_width`.
-    
+
     (x,y) |---> [i,j]
 
-    
+
     Parameters
     ----------
     coords : tuple.
         (x,y) coordinates of `bead`.
-    n_cells : int. 
+    n_cells : int.
         number of cells in the grid of size `max_width`.
     max_width : int.
         Maximum width of simulation box. Determines size of grid.
@@ -232,9 +231,9 @@ def xy2cell(coords, n_cells, max_width, bead, grid):
 
     """
 
-    grid[ 
-        math.floor( (abs(coords[0]) /max_width*n_cells)) ,  
-        math.floor( (abs(coords[1]) /max_width*n_cells))  
+    grid[
+        math.floor( (abs(coords[0]) /max_width*n_cells)) ,
+        math.floor( (abs(coords[1]) /max_width*n_cells))
         ].append(bead)
 
     return grid
@@ -245,7 +244,7 @@ def dict2pickle( name, dict_ ):
 
     Parameters
     ----------
-    name : str, 
+    name : str,
         name of pickle file.
     dict_ : dict like {index -> value}
         dictionary to export.
@@ -257,9 +256,9 @@ def dict2pickle( name, dict_ ):
     """
 
     with open( name+".pickle", 'wb' ) as pk:
-        pickle.dump( dict_, pk, protocol=pickle.HIGHEST_PROTOCOL)   
+        pickle.dump( dict_, pk, protocol=pickle.HIGHEST_PROTOCOL)
 
-def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref, 
+def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
               box_size, max_width, prefix):
     """
     Runs core_fast_leaflet for each leaflet
@@ -270,10 +269,10 @@ def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
         MD trajectory to analyze.
     jump: int. Default 1.
         Skip <jump> number of frames in calculation.
-    n_cells : int. 
+    n_cells : int.
         number of cells in the grid of size `max_width`.
     leaflets : str. Default ["lower", "upper"]
-        Leaflets of bilayer. 
+        Leaflets of bilayer.
     lipid_types : list.
         List of lipid types in simulation box.
     lipid_Ref : list
@@ -281,24 +280,23 @@ def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
     box_size : float
         Size of box (x dimension).
     max_width : int.
-        Maximum width of simulation box. 
+        Maximum width of simulation box.
     prefix : str. Default `None`
         Name of pickle
-
     Returns
     -------
 
     Returns a dictionary with name of leaflet as keys. The resulting values
-    are nested dictionaries with tuples of [i,j] as keys, where 
-    0<i<`max_width`, and 0<j<`max_width`. Each key [i,j] has a list of 
-    `len=(n_frames)` containing the extracted z_coordinate a given [i,j] 
+    are nested dictionaries with tuples of [i,j] as keys, where
+    0<i<`max_width`, and 0<j<`max_width`. Each key [i,j] has a list of
+    `len=(n_frames)` containing the extracted z_coordinate a given [i,j]
     cell in each frame.
 
     """
     z_ref = { key1:np.zeros([n_cells, n_cells])  for key1 in leaflets}
 
     for leaflet in leaflets:
-        core_fast_leaflet(z_ref[leaflet], leaflet, traj, jump, n_cells, 
+        core_fast_leaflet(z_ref[leaflet], leaflet, traj, jump, n_cells,
                           lipid_types, lipid_ref, box_size, max_width)
 
     dict2pickle(prefix, z_ref)
@@ -306,14 +304,14 @@ def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
     return z_ref
 
 
-def core_fast_leaflet(z_Ref, leaflet, traj, jump, n_cells, lipid_types, 
+def core_fast_leaflet(z_Ref, leaflet, traj, jump, n_cells, lipid_types,
                       lipid_ref, box_size, max_width):
     """
     Runs core_fast_leaflet for each leaflet
 
     Parameters
     ----------
-    z_Ref : dict. 
+    z_Ref : dict.
         Dictionary to store values in every iteration over frames.
     leaflet : str. {"lower", "upper"}
         Leaflets of bilayer.
@@ -321,49 +319,48 @@ def core_fast_leaflet(z_Ref, leaflet, traj, jump, n_cells, lipid_types,
         MD trajectory to analyze.
     jump: int. Default 1.
         Skip <jump> number of frames in calculation.
-    n_cells : int. 
+    n_cells : int.
         number of cells in the grid of size `max_width`.
     lipid_types : list.
         List of lipid types in simulation box.
     lipid_ref : list
-        List of reference selection for atoms that define the surface 
-        of the membrane. 
+        List of reference selection for atoms that define the surface
+        of the membrane.
     box_size : float
         Size of box (x dimension).
     max_width : int.
-        Maximum width of simulation box. 
-
+        Maximum width of simulation box.
 
     Returns
     -------
 
     Returns a dictionary with tuples of [i,j] as keys, where 0<i<`max_width`,
-    and 0<j<`max_width`. The resulting values for each key are a list of 
+    and 0<j<`max_width`. The resulting values for each key are a list of
     `len=(n_frames)` containing the extracted z_coordinate a given [i,j] cell
     in each frame.
 
     """
 
     grid_count = np.zeros([n_cells, n_cells])
-    
-    
-    for frame in range(0,traj.n_frames, jump): 
+
+
+    for frame in range(0,traj.n_frames, jump):
         grid_1 = np.zeros([n_cells, n_cells])
         grid_2 = np.zeros([n_cells, n_cells])
 
         factor = np.float32(n_cells/max_width)
-       
-        for lipid_type in lipid_types:               
+
+        for lipid_type in lipid_types:
 
             for bead in lipid_ref[leaflet][lipid_type]:
 
 
                 x,y,z = traj.xyz[frame, bead, :]
 
-                
+
                 l = int(abs(x) * factor)
                 m = int(abs(y) * factor)
-                
+
 
                 try:
                     grid_1[ l, m ] += z
@@ -376,7 +373,7 @@ def core_fast_leaflet(z_Ref, leaflet, traj, jump, n_cells, lipid_types,
             if grid_2[i,j] > 0:
                 z_Ref[i,j] += grid_1[i, j] / grid_2[i, j]
                 grid_count[i, j] += 1
-            
+
 
     for i,j in it.product( range(n_cells), range(n_cells) ):
         if grid_count[i,j] > 0:
@@ -390,7 +387,7 @@ def gaussian_curvature(Z):
     """
     Calculate gaussian curvature from Z cloud points.
 
-    
+
     Parameters
     ----------
     Z : Numpy array, cloud of points.
@@ -413,10 +410,10 @@ def gaussian_curvature(Z):
 
 def mean_curvature(Z):
 
-    """ 
+    """
     Calculates mean curvature from Z cloud points.
 
-    
+
     Parameters
     ----------
     Z : Numpy array, cloud of points.
@@ -440,16 +437,16 @@ def mean_curvature(Z):
 
 
 def curvature(dict_reference, leaflets, n_cells):
-    """ 
+    """
     Calculates mean curvature from Z cloud points.
 
-    
+
     Parameters
     ----------
     dict_reference : dict { [index]:[z_coords]}.
         Dictionary with indexes [i,j] as keys and z_coordinates as values.
     leaflets : str. Default ["lower", "upper"]
-        Leaflets of bilayer. 
+        Leaflets of bilayer.
     n_cells : int. default 20.
         Number of cells in grid.
 
@@ -457,22 +454,22 @@ def curvature(dict_reference, leaflets, n_cells):
     Returns
     -------
     K, H : 2d-array, 2d-array
-        Returns 2-dimensional array objects for mean 
+        Returns 2-dimensional array objects for mean
         and gaussian curvature, respectively.
 
     """
-    
-    H, K = [ {key2:[] for key2 in leaflets} for i in range(2) ]    
+
+    H, K = [ {key2:[] for key2 in leaflets} for i in range(2) ]
 
     reference_avg = {key2:
                     {key3:[] for key3 in np.ndindex( n_cells, n_cells )}
                     for key2 in leaflets}
 
-    for leaflet in leaflets:    
+    for leaflet in leaflets:
         reference_avg[leaflet] = np.rot90(np.fliplr( dict_reference[leaflet]))
-        
+
         K[leaflet]= gaussian_curvature( reference_avg[leaflet] )
-        H[leaflet] = mean_curvature( reference_avg[leaflet] )    
+        H[leaflet] = mean_curvature( reference_avg[leaflet] )
 
     else:
         print('No interpolation performed. Plot may display empty values.')
@@ -481,7 +478,7 @@ def curvature(dict_reference, leaflets, n_cells):
 def timer(current_time, start_time):
 
 
-    elapsed_time = current_time - start_time                
+    elapsed_time = current_time - start_time
     m, s = divmod(elapsed_time, 60)
     h, m = divmod(m, 60)
     print('Elapsed time:', elapsed_time )
