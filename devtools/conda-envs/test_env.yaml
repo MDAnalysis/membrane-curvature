@@ -1,13 +1,16 @@
 name: test
 channels:
-
   - conda-forge
-
   - defaults
 dependencies:
-    # Base depends
   - python
   - pip
+  - math
+  - numpy
+  - MDAnalysis
+  - pickle
+  - itertools
+  - sphinx
 
     # Testing
   - pytest
