@@ -85,12 +85,12 @@ def Z_cloud(ref_beads):
     for atom in ref_beads:
         x, y, z = atom.position / 10
 
-        l = int(abs(x) * factor)
-        m = int(abs(y) * factor)
+        cell_l = int(abs(x) * factor)
+        cell_m = int(abs(y) * factor)
 
         try:
-            grid_1[l, m] += z
-            grid_2[l, m] += 1
+            grid_1[cell_l, cell_m] += z
+            grid_2[cell_l, cell_m] += 1
 
         except BaseException:
             pass
