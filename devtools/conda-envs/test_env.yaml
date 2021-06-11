@@ -8,8 +8,6 @@ dependencies:
   - math
   - numpy
   - MDAnalysis
-  - pickle
-  - itertools
   - sphinx
 
     # Testing
