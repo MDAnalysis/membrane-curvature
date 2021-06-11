@@ -8,6 +8,7 @@ dependencies:
   - math
   - numpy
   - MDAnalysis
+  - mdtraj # temporary; remove after refactoring
   - sphinx
 
     # Testing
