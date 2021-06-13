@@ -34,8 +34,8 @@ coordinate are calculated. These mean values of `z` are the ones used to derive 
 surface.
 
 With the defined surface, then values of mean (`H`) and Gaussian (`K`) curvature
-are calculated. This analysis returns a 2-dimensional array with the values of mean
-mean and gaussian curvature. 
+are calculated. This analysis returns a 2-dimensional array of `m x n` with the values of mean
+mean and Gaussian curvature. The length of this array is `m x n`.
 
 More information on how to visualize the results of the MDAnalysis Membrane 
 Curvature toolkit can be found in the Visualization_ page .
