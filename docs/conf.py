@@ -22,10 +22,10 @@ import mdakit_membcurv
 
 # -- Project information -----------------------------------------------------
 
-project = 'MDAkit MembCurv'
-copyright = ("2021, MDAnalysis. Project structure based on the "
+project = 'MDAkit_membcurv'
+copyright = ("2021, Estefania Barreto-Ojeda. Project structure based on the "
              "Computational Molecular Science Python Cookiecutter version 1.5")
-author = 'MDAnalysis'
+author = 'Estefania Barreto-Ojeda'
 
 # The short X.Y version
 version = ''

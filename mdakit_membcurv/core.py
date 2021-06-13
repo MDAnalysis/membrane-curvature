@@ -5,7 +5,7 @@ MDAkit for Membrane Curvature
 Handles the primary functions
 """
 
-from mods import *
+from .lib.mods import *
 import sys
 import os
 import time
@@ -101,7 +101,7 @@ def main():
     n_cells = math.ceil(max_width / unit_width * 10)
 
     # 7. Assign lipids in upper and lower leaflet
-    lipid_po4_beads = def_all_beads(lipid_types, leaflets,
+    lipid_ref_beads = def_all_beads(lipid_types, leaflets,
                                     head_index, topology)
 
     # 8. Load trajectory and grofile using mdtraj
@@ -109,7 +109,7 @@ def main():
 
     # 9. Save pickles zpo4
     dict_z_coords = core_fast(traj, jump, n_cells, leaflets, lipid_types,
-                              lipid_po4_beads, box_size, max_width, name_)
+                              lipid_ref_beads, box_size, max_width, name_)
 
     # 10. Calculate curvature
     K, H = curvature(dict_z_coords, leaflets, n_cells)
