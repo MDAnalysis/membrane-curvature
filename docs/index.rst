@@ -6,10 +6,10 @@
 Welcome to MDAkit MembCurv's documentation!
 =========================================================
 
-MDAnalysis membrane curvature analysis module calculates gaussian and mean 
+The MDAnalysis membrane curvature analysis module calculates the Gaussian and mean 
 curvature of lipid bilayers from molecular dynamics simulations. 
 
-This module returns a 2-dimensional Numpy array, allowing to visualize values
+This module returns a 2-dimensional Numpy array, allowing you to visualize values
 of membrane curvature in 2D maps.
 
 Currently docs are under construction. Use this docs as a reference but at 
