@@ -1,11 +1,14 @@
 name: docs
 channels:
+  - conda-forge
+  - defaults
 dependencies:
     # Base depends
   - python
   - pip
-
-
+  - numpy
+  - MDAnalysis
+  - mdtraj # temporary; remove after refactoring
 
     # Pip-only installs
   #- pip:
