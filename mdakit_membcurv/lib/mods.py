@@ -242,7 +242,7 @@ def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
 
     for leaflet in leaflets:
         core_fast_leaflet(z_ref[leaflet], leaflet, traj, jump, n_cells,
-                          lipid_types, lipid_ref, box_size, max_width)
+                          lipid_types, lipid_ref, max_width)
 
     dict2pickle(prefix, z_ref)
 
@@ -250,7 +250,7 @@ def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
 
 
 def core_fast_leaflet(z_Ref, leaflet, traj, jump, n_cells, lipid_types,
-                      lipid_ref, box_size, max_width):
+                      lipid_ref, max_width):
     """
     Runs core_fast_leaflet for each leaflet
 
