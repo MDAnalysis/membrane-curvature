@@ -19,5 +19,5 @@ from pkg_resources import resource_filename
 GRO_ = resource_filename(__name__, '../data/test_curvature_abca1.gro')
 GRO_PO4 = resource_filename(__name__, '../data/test_curvature_po4_only.gro')
 XTC_ = resource_filename(__name__, '../data/test_curvature_abca1.xtc')
-
+XTC_PO4 = resource_filename(__name__, '../data/test_curvature_po4_only.xtc')
 del resource_filename
