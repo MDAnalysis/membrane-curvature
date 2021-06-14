@@ -111,37 +111,6 @@ class membrane_index:
         return def_po4_beads(self.lipid_types, self.leaflets, self.head_index, self.top)
 
 
-def input_options():
-    """
-    Command line arguments as input_options
-    """
-
-    #usage = (" [options] < input > output")
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description=textwrap.dedent('''\
-        Trial version KHURV.py | To calculate Gaussian (K) and mean (H) curvature from MD simulations
-        '''))
-
-    parser.add_argument(
-        "-f", metavar="<GRO INPUT FILE>", help="Input gro file.")
-    parser.add_argument(
-        "-x", metavar="<XTC INPUT>", help='Input trajectory.')
-    parser.add_argument(
-        "-io", type=str, metavar='<INDEX OUTER LEAFLET begin:end>', help='Index range outer leaflet.')
-    parser.add_argument(
-        "-ii", type=str, metavar='<INDEX INNER LEAFLET begin:end>', help='Index range inner leaflet.')
-    parser.add_argument(
-        "-uw", type=int, default=5, metavar='UNIT CELL WIDTH', help="Unit cell width in nm. Default: %(default)s .")
-    parser.add_argument("-name", type=str, metavar='<PREFIX NAME>', default='system',
-                        help="System name. Prefix used in OUTPUT K_G AND K_H files.")
-    parser.add_argument(
-        "-sk", type=int, default=10, metavar="<n>", help="Skip frames. Default: ")
-    parser.add_argument("-out", type=str, metavar="<OUTPUT DIR>", default='output/',
-                        help='Output file directory. Default: %(default)s')
-
-    return parser
-
-
 def parse_range(astr):
     """
     Split range provided by user
@@ -211,40 +180,6 @@ def def_all_beads(lipid_types, leaflets, head_list, topology):
         print("lower", len(dic_all_beads['lower'][lt]))
 
     return dic_all_beads
-
-
-def xy2cell(coords, n_cells, max_width, bead, grid):
-    """
-    Maps coordinates to indexed unit grid of size `max_width`.
-
-    (x,y) |---> [i,j]
-
-
-    Parameters
-    ----------
-    coords : tuple.
-        (x,y) coordinates of `bead`.
-    n_cells : int.
-        number of cells in the grid of size `max_width`.
-    max_width : int.
-        Maximum width of simulation box. Determines size of grid.
-    bead : int.
-        Element in reference group.
-
-
-    Returns
-    -------
-    { grid[i,j] } : dict
-        Dictionary with [i,j] tuples.
-
-    """
-
-    grid[
-        math.floor((abs(coords[0]) / max_width * n_cells)),
-        math.floor((abs(coords[1]) / max_width * n_cells))
-    ].append(bead)
-
-    return grid
 
 
 def dict2pickle(name, dict_):
@@ -439,52 +374,3 @@ def mean_curvature(Z):
     H = -H / (2 * (Zx**2 + Zy**2 + 1)**(1.5))
 
     return H
-
-
-def curvature(dict_reference, leaflets, n_cells):
-    """
-    Calculates mean curvature from Z cloud points.
-
-
-    Parameters
-    ----------
-    dict_reference : dict { [index]:[z_coords]}.
-        Dictionary with indexes [i,j] as keys and z_coordinates as values.
-    leaflets : str. Default ["lower", "upper"]
-        Leaflets of bilayer.
-    n_cells : int. default 20.
-        Number of cells in grid.
-
-
-    Returns
-    -------
-    K, H : 2d-array, 2d-array
-        Returns 2-dimensional array objects for mean
-        and gaussian curvature, respectively.
-
-    """
-
-    H, K = [{key2: [] for key2 in leaflets} for i in range(2)]
-
-    reference_avg = {key2:
-                     {key3: [] for key3 in np.ndindex(n_cells, n_cells)}
-                     for key2 in leaflets}
-
-    for leaflet in leaflets:
-        reference_avg[leaflet] = np.rot90(np.fliplr(dict_reference[leaflet]))
-
-        K[leaflet] = gaussian_curvature(reference_avg[leaflet])
-        H[leaflet] = mean_curvature(reference_avg[leaflet])
-
-    else:
-        print('No interpolation performed. Plot may display empty values.')
-        return H, K
-
-
-def timer(current_time, start_time):
-
-    elapsed_time = current_time - start_time
-    m, s = divmod(elapsed_time, 60)
-    h, m = divmod(m, 60)
-    print('Elapsed time:', elapsed_time)
-    print("%d:%02d:%02d" % (h, m, s))
