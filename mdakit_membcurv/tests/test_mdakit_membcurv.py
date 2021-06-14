@@ -9,12 +9,13 @@ import sys
 import math
 import os
 import mdtraj as md  # This will be gone after refactoring
+import itertools as it
 from ..lib.mods import *
 
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 import MDAnalysis as mda
-from mdakit_membcurv.tests.datafiles import GRO_, XTC_, GRO_PO4
+from mdakit_membcurv.tests.datafiles import GRO_, XTC_, GRO_PO4, XTC_PO4
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
@@ -58,8 +59,28 @@ MEMBRANE_CURVATURE_DATA = {
                                     [-0.0033638, 0.009781, 0.06724205, 0.00795326, 0.00034145,
                                      0.02682387, 0.10108879, -0.01423631, -0.01802192, -0.00922448],
                                     [-0.00313899, -0.00418259, 0.03487913, -0.04456535, -0.00768992,
-                                     -0.00642677, 0.0254065, -0.01830984, -0.00904487, -0.01182518]])
+                                     -0.00642677, 0.0254065, -0.01830984, -0.00904487, -0.01182518]]),
 
+    'z_avg_coords': np.array([[15.52998744, 15.68577027, 15.54460264, 15.42630775, 15.41610875,
+                               15.5227999, 15.40030259, 15.47866627, 15.5402739, 15.58982381],
+                              [15.7210999, 15.66186774, 15.66852082, 15.5650629, 15.59180416,
+                               15.52540419, 15.43453586, 15.31625871, 15.53287837, 15.72669662],
+                              [15.65202988, 15.87587967, 15.80443607, 15.2156001, 15.9012679,
+                               15.61628637, 15.54388155, 15.51714352, 15.56670715, 15.67794791],
+                              [15.79848438, 15.86021965, 15.91864504, 15.69624091, 16.07622673,
+                               15.55569959, 15.33016631, 15.51812384, 15.57359306, 15.74745874],
+                              [15.99946331, 15.80777305, 15.93547516, 16.06895507, 16.49331617,
+                               16.47925099, 15.74151387, 15.63836954, 15.72500532, 15.91917461],
+                              [16.00306618, 15.44807954, 14.91708903, 15.62196315, 15.63327226,
+                               16.56862831, 16.11996038, 15.89331185, 15.83679604, 15.98079948],
+                              [15.76326987, 15.64245421, 15.52017543, 15.47039083, 14.88002689,
+                               15.53698847, 15.80894958, 15.80674416, 15.7546208, 15.88995425],
+                              [15.70029967, 15.61600719, 15.53771198, 15.47668145, 15.19293903,
+                               15.41956353, 15.66099601, 15.71207747, 15.80128901, 15.71542822],
+                              [15.68171964, 15.63995413, 15.53009812, 15.21636634, 15.27028742,
+                               15.38000841, 15.51385563, 15.64464232, 15.79420718, 15.77794963],
+                              [11.9375362, 15.67473274, 15.56693593, 15.28816211, 15.26380259,
+                               15.34311786, 15.50101777, 15.5245863, 13.5766693, 15.69553947]])
 }
 
 
@@ -79,7 +100,7 @@ def ref_beads():
 @pytest.fixture()
 def Z_cloud(ref_beads):
     n_cells, max_width = 10, 19
-    grid_count, grid_1, grid_2, z_ref = [np.zeros([n_cells, n_cells]) for i in range(4)]
+    grid_1, grid_2, z_ref = [np.zeros([n_cells, n_cells]) for i in range(3)]
     factor = np.float32(n_cells / max_width)
 
     for atom in ref_beads:
@@ -88,51 +109,36 @@ def Z_cloud(ref_beads):
         cell_l = int(abs(x) * factor)
         cell_m = int(abs(y) * factor)
 
-        try:
-            grid_1[cell_l, cell_m] += z
-            grid_2[cell_l, cell_m] += 1
-
-        except BaseException:
-            pass
+        grid_1[cell_l, cell_m] += z
+        grid_2[cell_l, cell_m] += 1
 
     for i, j in it.product(range(n_cells), range(n_cells)):
         if grid_2[i, j] > 0:
             z_ref[i, j] += grid_1[i, j] / grid_2[i, j]
-            grid_count[i, j] += 1
-
-    for i, j in it.product(range(n_cells), range(n_cells)):
-        if grid_count[i, j] > 0:
-            z_ref[i, j] /= grid_count[i, j]
+        else:
+            z_ref[i, j] = np.nan
 
     return z_ref
 
 
 @pytest.fixture()
-def mdtraj():
-    u = mda.Universe(GRO_, XTC_)
-    return u
+def mdtraj_po4():
+    # trajectory PO4 beads only imported using mdtraj, gone after refactoring
+    mdtraj = md.load(XTC_PO4, top=GRO_PO4)
+    return mdtraj
 
 
 @pytest.fixture()
-def leaflets():
-    return ['lower', 'upper']
-
-
-@pytest.fixture()
-def lipid_types():
-    return ['POPC', 'POPE']
+def md_ref_beads():
+    # reference beads using mdtraj, gone after refactoring. Select upper leaflet
+    topology = md.load(GRO_PO4).topology
+    md_ref_beads = {'upper': {'POPC': topology.select('resname POPC and index 1 to 457').astype(int).tolist()}}
+    return md_ref_beads
 
 
 def test_mdakit_membcurv_imported():
     """Sample test, will always pass so long as import statement worked"""
     assert "mdakit_membcurv" in sys.modules
-
-
-def test_output_folder():  # line 76, gone after refactoring
-    tmp_dir = 'tmp_output/'
-    os.makedirs(os.path.dirname(tmp_dir), exist_ok=True)
-    assert os.path.exists(tmp_dir)
-    os.rmdir(tmp_dir)
 
 
 def test_md_topology():  # line 92, gone after refactoring
@@ -143,11 +149,6 @@ def test_md_topology():  # line 92, gone after refactoring
 def test_box_size(universe):  # line 99
     box_size = universe.dimensions[0]
     assert_almost_equal(box_size, 184.31013, decimal=5)
-
-
-def test_max_width(universe):  # line 100
-    max_width = universe.dimensions[0] * 0.1
-    assert max_width == 18.431013488769533
 
 
 def test_n_cells(universe):  # line 101
@@ -182,3 +183,29 @@ def test_mean_curvature(Z_cloud):  # line 417 of mods
     H_test = mean_curvature(Z_cloud)
     for h, h_test in zip(MEMBRANE_CURVATURE_DATA['mean_curvature'], H_test):
         assert_almost_equal(h, h_test)
+
+
+def test_core_fast_leaflet(md_ref_beads, mdtraj_po4):
+    jump = 1
+    n_cells = 10
+    max_width = 19
+    z_calc = np.zeros([n_cells, n_cells])
+    core_fast_leaflet(z_calc, "upper", mdtraj_po4, jump, n_cells, ["POPC"], md_ref_beads, max_width)
+    for z, z_test in zip(MEMBRANE_CURVATURE_DATA['z_avg_coords'], z_calc):
+        assert_almost_equal(z, z_test)
+
+
+def test_curvature(md_ref_beads, mdtraj_po4):
+    jump = 1
+    n_cells = 10
+    max_width = 19
+    z_test = np.zeros([n_cells, n_cells])
+    core_fast_leaflet(z_test, "upper", mdtraj_po4, jump, n_cells, ["POPC"], md_ref_beads, max_width)
+    z_ref = {'upper': z_test}
+    curvature(z_ref, ['upper'], n_cells)
+
+    for h, h_test in zip(MEMBRANE_CURVATURE_DATA['mean_curvature'], H_test):
+        assert_almost_equal(h, h_test)
+
+    for k, k_test in zip(MEMBRANE_CURVATURE_DATA['mean_curvature'], K_test):
+        assert_almost_equal(k, k_test)
