@@ -1,15 +1,8 @@
-#from collections import OrderedDict
-#from itertools import permutations
 import itertools as it
 import mdtraj as md
 import numpy as np
-import argparse
 import pickle
-import textwrap
-import time
 import math
-import os
-import re
 
 
 class Grid:
@@ -374,3 +367,38 @@ def mean_curvature(Z):
     H = -H / (2 * (Zx**2 + Zy**2 + 1)**(1.5))
 
     return H
+
+
+def curvature(dict_reference, leaflets, n_cells):
+    """
+    Calculates mean curvature from Z cloud points.
+    Parameters
+    ----------
+    dict_reference : dict { [index]:[z_coords]}.
+        Dictionary with indexes [i,j] as keys and z_coordinates as values.
+    leaflets : str. Default ["lower", "upper"]
+        Leaflets of bilayer.
+    n_cells : int. default 20.
+        Number of cells in grid.
+    Returns
+    -------
+    K, H : 2d-array, 2d-array
+        Returns 2-dimensional array objects for mean
+        and gaussian curvature, respectively.
+    """
+
+    H, K = [{key2: [] for key2 in leaflets} for i in range(2)]
+
+    reference_avg = {key2:
+                     {key3: [] for key3 in np.ndindex(n_cells, n_cells)}
+                     for key2 in leaflets}
+
+    for leaflet in leaflets:
+        reference_avg[leaflet] = np.rot90(np.fliplr(dict_reference[leaflet]))
+
+        K[leaflet] = gaussian_curvature(reference_avg[leaflet])
+        H[leaflet] = mean_curvature(reference_avg[leaflet])
+
+    else:
+        print('No interpolation performed. Plot may display empty values.')
+        return H, K
