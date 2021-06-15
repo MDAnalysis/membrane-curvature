@@ -227,12 +227,6 @@ def test_dict_to_pickle():  # line 117-118
     dict2pickle(name, dict_)
     unpickled = pickle.load(open(name + '.pickle', 'rb'))
     assert dict_ == unpickled
-    os.remove(name + '.pickle')
-
-
-def test_md_traj():  # line 108, gone after refactoring
-    traj = md.load(XTC_MEMBRANE_PROTEIN, top=GRO_MEMBRANE_PROTEIN)
-    assert traj.n_frames == 11
 
 
 def test_gaussian_curvature(Z_cloud):  # line 391 of mods
