@@ -5,7 +5,6 @@ Unit and regression test for the mdakit_membcurv package.
 # Import package, test suite, and other packages as needed
 import pickle
 
-from numpy.testing._private.utils import assert_array_almost_equal
 import pytest
 import sys
 import math
@@ -269,7 +268,7 @@ def test_curvature(md_ref_beads, mdtraj_po4):
     H_test, K_test = curvature(z_ref, [lf], n_cells)
 
     for h, h_test in zip(MEMBRANE_CURVATURE_DATA['mean_from_z_avg'][lf], H_test[lf]):
-        assert_array_almost_equal(h, h_test)
+        assert_almost_equal(h, h_test)
 
     for k, k_test in zip(MEMBRANE_CURVATURE_DATA['gaussian_from_z_avg'][lf], K_test[lf]):
-        assert_array_almost_equal(k, k_test)
+        assert_almost_equal(k, k_test)
