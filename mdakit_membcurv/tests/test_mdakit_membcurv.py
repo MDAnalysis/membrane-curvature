@@ -177,7 +177,7 @@ def Z_cloud(ref_beads):
         # extract positions in nm.
         x, y, z = atom.position / 10
 
-        # map (x,y) to [i,j] 
+        # map (x,y) to [i,j]
         cell_l = int(abs(x) * factor)
         cell_m = int(abs(y) * factor)
 
@@ -190,7 +190,7 @@ def Z_cloud(ref_beads):
         # if the element [i,j] is not empty
         if grid_2[i, j] > 0:
             # then calculate the average of z:
-            # grid_1 has the sum of all the z coordinates. 
+            # grid_1 has the sum of all the z coordinates.
             # grid_2 counted how many beads were in that grid.
             z_ref[i, j] += grid_1[i, j] / grid_2[i, j]
         else:
