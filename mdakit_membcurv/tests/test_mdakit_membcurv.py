@@ -12,10 +12,9 @@ import math
 import os
 import mdtraj as md  # This will be gone after refactoring
 import itertools as it
-from ..lib.mods import *
-
+from ..lib.mods import core_fast_leaflet, curvature, mean_curvature, gaussian_curvature, dict2pickle
 import numpy as np
-from numpy.testing import assert_equal, assert_almost_equal
+from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
 from mdakit_membcurv.tests.datafiles import GRO_, XTC_, GRO_PO4, XTC_PO4
 
