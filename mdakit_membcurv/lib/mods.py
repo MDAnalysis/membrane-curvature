@@ -1,5 +1,4 @@
 import itertools as it
-import mdtraj as md
 import numpy as np
 import pickle
 import math
