@@ -16,7 +16,7 @@ from ..lib.mods import core_fast_leaflet, curvature, mean_curvature, gaussian_cu
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
-from mdakit_membcurv.tests.datafiles import GRO_, XTC_, GRO_PO4, XTC_PO4
+from mdakit_membcurv.tests.datafiles import GRO_MEMBRANE_PROTEIN, XTC_MEMBRANE_PROTEIN, GRO_PO4, XTC_PO4
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
@@ -149,7 +149,7 @@ MEMBRANE_CURVATURE_DATA = {
 
 @pytest.fixture()
 def universe():
-    u = mda.Universe(GRO_, XTC_)
+    u = mda.Universe(GRO_MEMBRANE_PROTEIN, XTC_MEMBRANE_PROTEIN)
     return u
 
 
@@ -205,7 +205,7 @@ def test_mdakit_membcurv_imported():
 
 
 def test_md_topology():  # line 92, gone after refactoring
-    top = md.load(GRO_).topology
+    top = md.load(GRO_MEMBRANE_PROTEIN).topology
     assert top.n_atoms == 18891
 
 
@@ -232,7 +232,7 @@ def test_dict_to_pickle():  # line 117-118
 
 
 def test_md_traj():  # line 108, gone after refactoring
-    traj = md.load(XTC_, top=GRO_)
+    traj = md.load(XTC_MEMBRANE_PROTEIN, top=GRO_MEMBRANE_PROTEIN)
     assert traj.n_frames == 11
 
 
