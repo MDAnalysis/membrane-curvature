@@ -207,6 +207,12 @@ def mdtraj_po4():
     return mdtraj
 
 
+@pytest.fixture(scope="session")
+def output(tmpdir_factory):
+    tmp = tmpdir_factory.mktemp("output")
+    return tmp
+
+
 @pytest.fixture()
 def md_ref_beads():
     # reference beads using mdtraj, gone after refactoring. Select upper leaflet
@@ -238,12 +244,13 @@ def test_n_cells(universe):  # line 101
     assert n_cells == 10.
 
 
-def test_dict_to_pickle():  # line 117-118
+def test_dict_to_pickle(output):  # line 117-118
     name = 'test_pickle_output'
     dict_ = {'A': 1, 'B': 2, 'C': 3}
-    dict2pickle(name, dict_)
-    unpickled = pickle.load(open(name + '.pickle', 'rb'))
-    assert dict_ == unpickled
+    with output.as_cwd():
+        dict2pickle(name, dict_)
+        unpickled = pickle.load(open(name + '.pickle', 'rb'))
+        assert dict_ == unpickled
 
 
 def test_gaussian_curvature(Z_cloud):  # line 391 of mods
