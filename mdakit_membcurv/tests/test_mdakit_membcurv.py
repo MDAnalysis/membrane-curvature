@@ -162,22 +162,39 @@ def ref_beads():
 @pytest.fixture()
 def Z_cloud(ref_beads):
     n_cells, max_width = 10, 19
+
+    # set grid_1. z coordinates for [i,j] cells.
+    # set grid_2. Count number of beads populating each [i,j] cell.
+    # set z_ref. Final values of average z per [i,j] cell.
     grid_1, grid_2, z_ref = [np.zeros([n_cells, n_cells]) for i in range(3)]
+
+    # factor used to map (x,y) to [i,j]
     factor = np.float32(n_cells / max_width)
 
+    # iterate over the bead of reference
     for atom in ref_beads:
+
+        # extract positions in nm.
         x, y, z = atom.position / 10
 
+        # map (x,y) to [i,j] 
         cell_l = int(abs(x) * factor)
         cell_m = int(abs(y) * factor)
 
+        # sum value of z coordinate
         grid_1[cell_l, cell_m] += z
         grid_2[cell_l, cell_m] += 1
 
+    # To calculate average, iterate over each cell in the grid:
     for i, j in it.product(range(n_cells), range(n_cells)):
+        # if the element [i,j] is not empty
         if grid_2[i, j] > 0:
+            # then calculate the average of z:
+            # grid_1 has the sum of all the z coordinates. 
+            # grid_2 counted how many beads were in that grid.
             z_ref[i, j] += grid_1[i, j] / grid_2[i, j]
         else:
+            # if there are not beads in that cell, store a nan.
             z_ref[i, j] = np.nan
 
     return z_ref
