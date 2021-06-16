@@ -5,11 +5,10 @@ MDAkit for Membrane Curvature
 Handles the primary functions
 """
 
-from .lib.mods import *
+from .lib.mods import dict2pickle, core_fast, curvature
 import sys
 import os
 import time
-import argparse
 import mdtraj as md
 import MDAnalysis as mda
 import math
