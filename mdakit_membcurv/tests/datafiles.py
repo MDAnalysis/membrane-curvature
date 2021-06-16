@@ -4,14 +4,14 @@
 Location of datafiles for Membrane Curvature unit tests
 =======================================================
 
-MD simulations files stored in ``data`` sub-directory.
+MD simulations files stored in `data` sub-directory.
 
     from mdakit_membcurv.datafiles import *
 """
 
 __all__ = [
-    "GRO_",  # Gromacs file of POPC POPE CHOL membrane
-    "XTC_"  # Gromacs trajectory of 10 frames.
+    "GRO_MEMBRANE_PROTEIN",  # Gromacs file of POPC POPE CHOL membrane
+    "XTC_MEMBRANE_PROTEIN"  # Gromacs trajectory of 10 frames.
 ]
 
 from pkg_resources import resource_filename
