@@ -142,7 +142,28 @@ MEMBRANE_CURVATURE_DATA = {
                                                [-1.94220106e-02, -2.13212988e-04, 1.05435416e-03,
                                                 1.30710748e-03, -3.49076390e-03, -1.28226749e-02,
                                                 -1.41168166e-02, -1.08870941e-02, -1.21323346e+00,
-                                                -1.55778010e-01]])}
+                                                -1.55778010e-01]])},
+
+    'z_ref': np.array([[15.96339989, 16.36299992, 16.57025003, 16.30183315, 16.14233398,
+                        15.94885731, 15.99250078, 16.17940025, 16.08424997, 15.93374944],
+                       [15.9995718, 16.48649979, 16.59700012, 16.3276666, 16.26959991,
+                        15.77983316, 15.67449999, 15.59950042, 16.05650028, 16.11733341],
+                       [15.9301672, 16.04720001, 16.24383338, 16.38975, 16.05666653,
+                        15.71950006, 15.7414999, 15.65285724, 15.71783352, 15.91666635],
+                       [15.87350019, 16.0994997, 16.45200014, 16.38366667, 15.91100025,
+                        15.44099998, 15.55220013, 15.74933386, 15.7957499, 15.93225002],
+                       [15.89100003, 16.01559982, 16.45950031, 16.68450022, 16.34674978,
+                        16.27950001, 15.97475028, 16.0142498, 16.07933331, 15.96724939],
+                       [15.81012511, 15.84583362, 16.09700036, 15.98525, 15.49299908,
+                        16.36499977, 16.20639992, 15.8682003, 15.82559967, 15.87400055],
+                       [15.73475003, 15.67866707, 15.85220013, 15.60228566, 15.12299967,
+                        15.70033328, 15.87920036, 15.80550003, 15.60928576, 15.8010006],
+                       [15.79039974, 15.91499996, 15.97549987, 15.80860004, 15.73637486,
+                        15.51133362, 15.80240021, 15.78233337, 15.65516663, 15.72000027],
+                       [15.8411665, 16.13249969, 16.48759995, 16.25674987, 15.78233369,
+                        15.71450011, 15.33062541, 15.99500027, 15.83737516, 15.74500052],
+                       [15.82900023, 16.06166649, 16.2973334, 16.43733342, 16.12957178,
+                        16.09366608, 15.95349979, 16.22599983, 16.17750025, 16.00225067]])
 }
 
 
@@ -153,64 +174,10 @@ def universe():
 
 
 @pytest.fixture()
-def ref_beads():
-    u = mda.Universe(GRO_PO4)
-    ref_beads = u.atoms[0:455]
-    return ref_beads
-
-
-@pytest.fixture()
-def Z_cloud(ref_beads):
-    n_cells, max_width = 10, 19
-
-    # set grid_1. z coordinates for [i,j] cells.
-    # set grid_2. Count number of beads populating each [i,j] cell.
-    # set z_ref. Final values of average z per [i,j] cell.
-    grid_1, grid_2, z_ref = [np.zeros([n_cells, n_cells]) for i in range(3)]
-
-    # factor used to map (x,y) to [i,j]
-    factor = np.float32(n_cells / max_width)
-
-    # iterate over the bead of reference
-    for atom in ref_beads:
-
-        # extract positions in nm.
-        x, y, z = atom.position / 10
-
-        # map (x,y) to [i,j]
-        cell_l = int(abs(x) * factor)
-        cell_m = int(abs(y) * factor)
-
-        # sum value of z coordinate
-        grid_1[cell_l, cell_m] += z
-        grid_2[cell_l, cell_m] += 1
-
-    # To calculate average, iterate over each cell in the grid:
-    for i, j in it.product(range(n_cells), range(n_cells)):
-        # if the element [i,j] is not empty
-        if grid_2[i, j] > 0:
-            # then calculate the average of z:
-            # grid_1 has the sum of all the z coordinates.
-            # grid_2 counted how many beads were in that grid.
-            z_ref[i, j] += grid_1[i, j] / grid_2[i, j]
-        else:
-            # if there are not beads in that cell, store a nan.
-            z_ref[i, j] = np.nan
-
-    return z_ref
-
-
-@pytest.fixture()
 def mdtraj_po4():
     # trajectory PO4 beads only imported using mdtraj, gone after refactoring
     mdtraj = md.load(XTC_PO4, top=GRO_PO4)
     return mdtraj
-
-
-@pytest.fixture(scope="session")
-def output(tmpdir_factory):
-    tmp = tmpdir_factory.mktemp("output")
-    return tmp
 
 
 @pytest.fixture()
@@ -226,41 +193,23 @@ def test_mdakit_membcurv_imported():
     assert "mdakit_membcurv" in sys.modules
 
 
-def test_md_topology():  # line 92, gone after refactoring
-    top = md.load(GRO_MEMBRANE_PROTEIN).topology
-    assert top.n_atoms == 18891
-
-
-def test_box_size(universe):  # line 99
-    box_size = universe.dimensions[0]
-    assert_almost_equal(box_size, 184.31013, decimal=5)
-
-
-def test_n_cells(universe):  # line 101
-    unit_width = 20
-    max_width = universe.dimensions[0] * 0.1
-    n_cells = math.ceil(max_width / unit_width * 10)
-    print(n_cells)
-    assert n_cells == 10.
-
-
-def test_dict_to_pickle(output):  # line 117-118
+def test_dict_to_pickle(tmpdir):
     name = 'test_pickle_output'
     dict_ = {'A': 1, 'B': 2, 'C': 3}
-    with output.as_cwd():
+    with tmpdir.as_cwd():
         dict2pickle(name, dict_)
         unpickled = pickle.load(open(name + '.pickle', 'rb'))
         assert dict_ == unpickled
 
 
-def test_gaussian_curvature(Z_cloud):  # line 391 of mods
-    K_test = gaussian_curvature(Z_cloud)
+def test_gaussian_curvature():
+    K_test = gaussian_curvature(MEMBRANE_CURVATURE_DATA['z_ref'])
     for k, k_test in zip(MEMBRANE_CURVATURE_DATA['gaussian_curvature'], K_test):
         assert_almost_equal(k, k_test)
 
 
-def test_mean_curvature(Z_cloud):  # line 417 of mods
-    H_test = mean_curvature(Z_cloud)
+def test_mean_curvature(): 
+    H_test = mean_curvature(MEMBRANE_CURVATURE_DATA['z_ref'])
     for h, h_test in zip(MEMBRANE_CURVATURE_DATA['mean_curvature'], H_test):
         assert_almost_equal(h, h_test)
 
