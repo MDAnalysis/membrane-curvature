@@ -7,11 +7,9 @@ import pickle
 
 import pytest
 import sys
-import math
-import os
 import mdtraj as md  # This will be gone after refactoring
 import itertools as it
-from ..lib.mods import core_fast_leaflet, curvature, mean_curvature, gaussian_curvature, dict2pickle
+from ..lib.mods import core_fast_leaflet, curvature, mean_curvature, gaussian_curvature, dict2pickle, core_fast
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
@@ -188,27 +186,13 @@ def md_ref_beads():
     return md_ref_beads
 
 
-def test_membrane_curvature_imported():
-    """Sample test, will always pass so long as import statement worked"""
-    assert "membrane_curvature" in sys.modules
-
-
-def test_dict_to_pickle(tmpdir):
-    name = 'test_pickle_output'
-    dict_ = {'A': 1, 'B': 2, 'C': 3}
-    with tmpdir.as_cwd():
-        dict2pickle(name, dict_)
-        unpickled = pickle.load(open(name + '.pickle', 'rb'))
-        assert dict_ == unpickled
-
-
 def test_gaussian_curvature():
     K_test = gaussian_curvature(MEMBRANE_CURVATURE_DATA['z_ref'])
     for k, k_test in zip(MEMBRANE_CURVATURE_DATA['gaussian_curvature'], K_test):
         assert_almost_equal(k, k_test)
 
 
-def test_mean_curvature(): 
+def test_mean_curvature():
     H_test = mean_curvature(MEMBRANE_CURVATURE_DATA['z_ref'])
     for h, h_test in zip(MEMBRANE_CURVATURE_DATA['mean_curvature'], H_test):
         assert_almost_equal(h, h_test)
@@ -222,6 +206,17 @@ def test_core_fast_leaflet(md_ref_beads, mdtraj_po4):
     core_fast_leaflet(z_calc, "upper", mdtraj_po4, jump, n_cells, ["POPC"], md_ref_beads, max_width)
     for z, z_test in zip(MEMBRANE_CURVATURE_DATA['z_avg_coords'], z_calc):
         assert_almost_equal(z, z_test)
+
+
+def test_core_fast(md_ref_beads, mdtraj_po4):
+    jump = 1
+    n_cells = 10
+    max_width = 19
+    z_calc = np.zeros([n_cells, n_cells])
+    core_fast_leaflet(z_calc, "upper", mdtraj_po4, jump, n_cells, ["POPC"], md_ref_beads, max_width)
+    core_fast(mdtraj_po4, jump, n_cells, ["upper"], ["POPC"], md_ref_beads, max_width, 'test')
+    for z, z_test in zip(MEMBRANE_CURVATURE_DATA['z_avg_coords'], z_calc):
+       assert_almost_equal(z, z_test)
 
 
 def test_curvature(md_ref_beads, mdtraj_po4):
@@ -239,3 +234,6 @@ def test_curvature(md_ref_beads, mdtraj_po4):
 
     for k, k_test in zip(MEMBRANE_CURVATURE_DATA['gaussian_from_z_avg'][lf], K_test[lf]):
         assert_almost_equal(k, k_test)
+
+
+
