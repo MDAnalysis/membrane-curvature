@@ -22,35 +22,6 @@ def main():
 
     start_time = time.time()
 
-    # 1. Parse input files
-    parser = input_options()
-
-    args = parser.parse_args()
-    grofile, trjfile = args.f, args.x
-    unit_width, jump = args.uw, args.sk
-    output = args.out
-
-    try:
-        name_user = str(args.name)
-        print("Prefix assigned by user. Set as {}".format(name_user))
-
-    except NameError:
-        name_user = 'system'
-        print("Prefix not assigned by user. Set as {}".format(name_user))
-
-    # Define index leaflets
-    ii, jj = parse_range(args.io), parse_range(args.ii)
-    iil, iiu = def_range_leaflets(args.io, 1)
-    jjl, jju = def_range_leaflets(args.ii, 2)
-
-    # 2 --- Set OUTPUT files
-    # 2.1 Create output folder
-    os.makedirs(os.path.dirname('output/'), exist_ok=True)
-
-    # 2.2 -- Pickle files (head group height)
-    prefix = name_user
-    name_ = output + prefix
-
     # 3. Define leaflets and lipid type
     leaflets = ['lower', 'upper']
 
