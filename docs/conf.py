@@ -13,11 +13,10 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 # Incase the project was not installed
+import membrane_curvature
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-
-import membrane_curvature
 
 
 # -- Project information -----------------------------------------------------
