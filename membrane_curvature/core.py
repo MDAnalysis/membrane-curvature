@@ -5,7 +5,7 @@ MDAkit for Membrane Curvature
 Handles the primary functions
 """
 
-from .lib.mods import dict2pickle, core_fast, curvature
+from .lib.mods import dict2pickle, core_fast, curvature, def_all_beads
 import sys
 import os
 import time
@@ -17,6 +17,7 @@ __author__ = "Estefania Barreto-Ojeda"
 version = 0.1
 
 sys.path.append('lib/')
+
 
 def main():
 
