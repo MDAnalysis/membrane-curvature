@@ -66,7 +66,7 @@ jobs:
       shell: bash -l {0}
 
       run: |
-        pytest -v --cov=mdakit_membcurv --cov-report=xml --color=yes mdakit_membcurv/tests/
+        pytest -v --cov=membrane_curvature --cov-report=xml --color=yes membrane_curvature/tests/
 
     - name: CodeCov
       uses: codecov/codecov-action@v1

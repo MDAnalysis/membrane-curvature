@@ -1,5 +1,5 @@
 """
-MDAkit MembCurv
+
 MDAkit for Membrane Curvature
 """
 

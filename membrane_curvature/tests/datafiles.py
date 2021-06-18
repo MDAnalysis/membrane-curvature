@@ -6,7 +6,7 @@ Location of datafiles for Membrane Curvature unit tests
 
 MD simulations files stored in `data` sub-directory.
 
-    from mdakit_membcurv.datafiles import *
+    from membrane_curvature.datafiles import *
 """
 
 __all__ = [
