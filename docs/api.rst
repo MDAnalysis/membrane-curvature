@@ -7,4 +7,4 @@ API Documentation
 .. toctree::
 
 
-   mdakit_membcurv.canvas
+   membrane_curvature.canvas

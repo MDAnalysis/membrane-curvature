@@ -1,5 +1,5 @@
 """
-Unit and regression test for the mdakit_membcurv package.
+Unit and regression test for the membrane_curvature package.
 """
 
 # Import package, test suite, and other packages as needed
@@ -15,7 +15,7 @@ from ..lib.mods import core_fast_leaflet, curvature, mean_curvature, gaussian_cu
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
-from mdakit_membcurv.tests.datafiles import GRO_MEMBRANE_PROTEIN, XTC_MEMBRANE_PROTEIN, GRO_PO4, XTC_PO4
+from membrane_curvature.tests.datafiles import GRO_MEMBRANE_PROTEIN, XTC_MEMBRANE_PROTEIN, GRO_PO4, XTC_PO4
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
@@ -188,9 +188,9 @@ def md_ref_beads():
     return md_ref_beads
 
 
-def test_mdakit_membcurv_imported():
+def test_membrane_curvature_imported():
     """Sample test, will always pass so long as import statement worked"""
-    assert "mdakit_membcurv" in sys.modules
+    assert "membrane_curvature" in sys.modules
 
 
 def test_dict_to_pickle(tmpdir):

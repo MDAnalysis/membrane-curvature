@@ -1,9 +1,9 @@
-.. mdakit_membcurv documentation master file, created by
+.. membrane_curvature documentation master file, created by
    sphinx-quickstart on Thu Mar 15 13:55:56 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MDAkit MembCurv's documentation!
+Welcome to Membrane Curvature's documentation!
 =========================================================
 
 The MDAnalysis membrane curvature analysis module calculates the Gaussian and mean 

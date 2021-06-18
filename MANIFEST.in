@@ -3,5 +3,5 @@ include MANIFEST.in
 include CODE_OF_CONDUCT.md
 include versioneer.py
 
-graft mdakit_membcurv
+graft membrane_curvature
 global-exclude *.py[cod] __pycache__ *.so

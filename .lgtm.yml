@@ -9,4 +9,4 @@ path_classifiers:
     - versioneer.py  # Set Versioneer.py to an external "library" (3rd party code)
     - devtools/*
   generated:
-    - mdakit_membcurv/_version.py
+    - membrane_curvature/_version.py

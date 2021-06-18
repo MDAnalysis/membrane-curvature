@@ -1,5 +1,5 @@
 """
-MDAkit MembCurv
+
 MDAkit for Membrane Curvature
 """
 import sys
@@ -21,8 +21,8 @@ except:
 
 setup(
     # Self-descriptive entries which should always be present
-    name='mdakit_membcurv',
-    author='MDAnalysis',
+    name='membrane_curvature',
+    author='Estefania Barreto-Ojeda',
     author_email='estefania.b.ojeda@gmail.com',
     description=short_description[0],
     long_description=long_description,

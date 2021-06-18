@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-SPHINXPROJ    = mdakit_membcurv
+SPHINXPROJ    = membrane_curvature
 SOURCEDIR     = .
 BUILDDIR      = _build
 
