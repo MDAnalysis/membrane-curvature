@@ -4,27 +4,6 @@ import pickle
 import math
 
 
-def parse_range(astr):
-    """
-    Split range provided by user
-    """
-
-    rangeG = set()
-    x = [int(i) for i in astr.split(':')]
-    rangeG.update(range(x[0], x[1] + 1))
-
-    return list(rangeG)
-
-
-def def_range_leaflets(nn, ind):
-    """
-    Define range of index residues
-    """
-    mm = parse_range(nn)
-
-    return min(mm), max(mm)
-
-
 def def_all_beads(lipid_types, leaflets, head_list, topology):
     """
     Select reference elements to derive membrane surface.
