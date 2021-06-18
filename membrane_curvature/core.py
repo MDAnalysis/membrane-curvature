@@ -18,33 +18,6 @@ version = 0.1
 
 sys.path.append('lib/')
 
-
-class Grid():
-    # instance variables
-    def __init__(self, box_width, max_width, unit_cell_width, skip):
-        self.box_width = box_width
-        self.max_width = max_width
-        self.unit_cell_width = unit_cell_width
-        self.skip = skip
-        self.n_cells = math.ceil(max_width / unit_cell_width * 10)
-
-
-class head_indexes:
-    # class variables
-    leaflets = ['lower', 'upper']
-
-    # instance variables
-    def __init__(self, lipid_types, head_index, top):
-        self.lipid_types = lipid_types
-        self.head_index = head_index
-        self.top = top
-
-    # @classmethod
-    def list_head_beads(self):
-        lfs = self.leaflets
-        return def_all_beads(self.lipid_types, lfs, self.head_index, self.top)
-
-
 def main():
 
     start_time = time.time()
