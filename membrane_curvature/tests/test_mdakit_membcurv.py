@@ -373,3 +373,13 @@ def test_def_all_beads_big_gro():
             assert int(bead) == int(bead_t)
 
 
+@pytest.mark.xfail(reason='Non sequential indexes in leaflets. After enhancement of atom selection for leaflets, this test should pass.')
+def test_non_linear_indexes():
+    lipid_types = ['POPC', 'POPE']
+    lfs = ["upper", "lower"]
+    head_list = [0, 4, 11]
+    topology = md.load(GRO_PO4_INVERTED_ID).topology
+    beads_test = def_all_beads(lipid_types, lfs, head_list, topology)
+    for lt, lf in zip(lipid_types, lfs):
+        for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['small'][lf][lt], beads_test[lf][lt]):
+            assert int(bead) == int(bead_t)
