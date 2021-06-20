@@ -30,23 +30,8 @@ def def_all_beads(lipid_types, leaflets, head_list, topology):
     print('==== Lipid types in membrane ==== ')
     for lt in lipid_types:
         print('====>', lt)
-        dic_all_beads['upper'][lt] = np.concatenate((topology.select('resname ' +
-                                                                     lt +
-                                                                     ' and index ' +
-                                                                     str(head_list[0]) +
-                                                                     ' to ' +
-                                                                     str(head_list[1]) +
-                                                                     ' and name PO4'), topology.select('resname ' +
-                                                                                                       lt +
-                                                                                                       ' and index ' +
-                                                                                                       str(head_list[0]) +
-                                                                                                       ' to ' +
-                                                                                                       str(head_list[1]) +
-                                                                                                       ' and name GM1'))).astype(int).tolist()
-        dic_all_beads['lower'][lt] = np.concatenate((topology.select(
-            'resname ' + lt + ' and index ' + str(head_list[1] + 1) + ' to ' + str(head_list[2]) + ' and name PO4'),
-            topology.select(
-            'resname ' + lt + ' and index ' + str(head_list[1] + 1) + ' to ' + str(head_list[2]) + ' and name GM1'))).astype(int).tolist()
+        dic_all_beads['upper'][lt] = topology.select('resname ' + lt + ' and index ' + str(head_list[0]) + ' to ' + str(head_list[1]) + ' and name PO4').astype(int).tolist()
+        dic_all_beads['lower'][lt] = topology.select('resname ' + lt + ' and index ' + str(head_list[1] + 1) + ' to ' + str(head_list[2]) + ' and name PO4').astype(int).tolist()
 
         print("upper", len(dic_all_beads['upper'][lt]))
         print("lower", len(dic_all_beads['lower'][lt]))
