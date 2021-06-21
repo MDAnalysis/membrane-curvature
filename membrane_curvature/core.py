@@ -6,8 +6,6 @@ Handles the primary functions
 """
 
 from .lib.mods import dict2pickle, core_fast, curvature, def_all_beads
-import sys
-import os
 import time
 import mdtraj as md
 import MDAnalysis as mda
@@ -15,8 +13,6 @@ import math
 from pathlib import Path
 __author__ = "Estefania Barreto-Ojeda"
 version = 0.1
-
-sys.path.append('lib/')
 
 
 def main():
