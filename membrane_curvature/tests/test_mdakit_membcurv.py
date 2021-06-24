@@ -261,25 +261,25 @@ MEMBRANE_CURVATURE_DATA = {
 }
 
 
-@ pytest.fixture()
+@pytest.fixture()
 def universe():
     u = mda.Universe(GRO_MEMBRANE_PROTEIN, XTC_MEMBRANE_PROTEIN)
     return u
 
 
-@ pytest.fixture()
+@pytest.fixture()
 def leaflets():
     return ["lower", "upper"]
 
 
-@ pytest.fixture()
+@pytest.fixture()
 def topol():
     top = {'small': md.load(GRO_PO4_SMALL).topology,
            'all': md.load(GRO_PO4).topology}
     return top
 
 
-@ pytest.fixture()
+@pytest.fixture()
 def trajs():
     # trajectory PO4 beads only imported using mdtraj, gone after refactoring
     trajectory_sizes = {'small': md.load(XTC_PO4_SMALL, top=GRO_PO4_SMALL),
@@ -287,7 +287,7 @@ def trajs():
     return trajectory_sizes
 
 
-@ pytest.fixture()
+@pytest.fixture()
 def md_ref_beads():
     # reference beads using mdtraj, gone after refactoring. Select upper leaflet
     topology = md.load(GRO_PO4).topology
@@ -354,7 +354,7 @@ def test_def_all_beads_small_gro(leaflets):
     beads_test = def_all_beads(lipid_types, leaflets, head_list, topology)
     for lt, lf in zip(lipid_types, leaflets):
         for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['beads']['small'][lf][lt], beads_test[lf][lt]):
-            assert int(bead) == int(bead_t)
+            assert bead == bead_t
 
 
 @pytest.mark.parametrize('reference_beads, jump, n_cells, max_width, name', [(
