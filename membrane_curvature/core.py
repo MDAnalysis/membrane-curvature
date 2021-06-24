@@ -15,7 +15,6 @@ __author__ = "Estefania Barreto-Ojeda"
 version = 0.1
 
 
-
 def main():
 
     start_time = time.time()

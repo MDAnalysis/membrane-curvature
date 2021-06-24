@@ -13,18 +13,18 @@ from membrane_curvature.tests.datafiles import (GRO_PO4_SMALL, XTC_PO4_SMALL)
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
-    'z_avg':{
-        'small': np.array([[10., 11., 12.], [15., 20, 25], [15., 40, 50]]) },
+    'z_avg': {
+        'small': np.array([[10., 11., 12.], [15., 20, 25], [15., 40, 50]])},
 
     'gaussian_curvature': {
         'small': np.array([[-2.19478738e-02, -2.32254318e-03, -5.47176909e-04],
                            [-1.38453218e-01, -1.21945074e-03, -1.35208221e-04],
                            [-9.72884280e-04, -3.94840040e-04, -1.32808172e-04]])},
-    
+
     'mean_curvature': {
         'small': np.array([[0.16037507, 0.04033506, 0.02057139],
                            [0.99647932, 0.14502529, 0.04590719],
-                           [0.05019947, 0.26763173, 0.16841648]]) },
+                           [0.05019947, 0.26763173, 0.16841648]])},
 
     'grid': {'small':
              {'upper': np.array([[15., 15., np.nan], [15., np.nan, np.nan], [15., np.nan, np.nan]]),
@@ -35,6 +35,7 @@ MEMBRANE_CURVATURE_DATA = {
                'lower': {'POPC': [4, 5, 6, 7, 8]}}}
 
 }
+
 
 def test_gaussian_curvature():
     K_test = gaussian_curvature(MEMBRANE_CURVATURE_DATA['z_avg']['small'])
@@ -58,6 +59,7 @@ def test_core_fast_leaflets():
         print(z, z_test)
         assert_almost_equal(z, z_test)
 
+
 @pytest.mark.parametrize('dummy_coordinates, test_mapper, n_cells, max_width', [(
     # dummy coordinates (x,y)
     ((0, 0), (1, 0), (2, 0),
@@ -71,6 +73,7 @@ def test_grid_map_small_9grid(dummy_coordinates, test_mapper, n_cells, max_width
     factor = np.float32(n_cells / max_width)
     for dummy_coord in dummy_coordinates:
         assert test_mapper(dummy_coord) == grid_map(dummy_coord, factor)
+
 
 @pytest.mark.parametrize('dummy_coordinates, test_mapper, n_cells, max_width', [(
     # dummy coordinates (x,y)
@@ -87,4 +90,3 @@ def test_grid_map_25grid(dummy_coordinates, test_mapper, n_cells, max_width):
     factor = np.float32(n_cells / max_width)
     for dummy_coord in dummy_coordinates:
         assert test_mapper(dummy_coord) == grid_map(dummy_coord, factor)
-

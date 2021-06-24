@@ -1,6 +1,7 @@
 import itertools as it
 import numpy as np
 
+
 def grid_map(coords, factor):
     """ Maps coordinates to grid.
 
@@ -63,7 +64,7 @@ def core_fast_leaflet(universe, z_Ref, n_cells, selection, max_width):
         for bead in selection:
             x, y, z = bead.position/10
 
-            index_l, index_m = grid_map( (x, y), factor)
+            index_l, index_m = grid_map((x, y), factor)
 
             try:
                 grid_1[index_l, index_m] += z
