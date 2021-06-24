@@ -8,12 +8,12 @@ import pytest
 import sys
 import mdtraj as md  # This will be gone after refactoring
 import itertools as it
-from ..lib.mods import core_fast_leaflet, curvature, def_all_beads, mean_curvature, gaussian_curvature, dict2pickle
+from ..lib.mods import core_fast_leaflet, curvature, def_all_beads, mean_curvature, gaussian_curvature, core_fast, dict2pickle
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
 from membrane_curvature.tests.datafiles import (GRO_MEMBRANE_PROTEIN, XTC_MEMBRANE_PROTEIN, GRO_PO4, XTC_PO4,
-                                                GRO_PO4_SMALL, GRO_PO4_MED, GRO_PO4_BIG, GRO_PO4_INVERTED_ID)
+                                                GRO_PO4_SMALL, XTC_PO4_SMALL, GRO_PO4_INVERTED_ID)
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
@@ -250,17 +250,14 @@ MEMBRANE_CURVATURE_DATA = {
                16800, 16812, 16824, 16836, 16848, 16860, 16872, 16884, 16896, 16908, 16920,
                16932, 16944, 16956, 16968, 16980, 16992, 17004, 17016, 17028, 17040]}},
 
-    'small': {'lower': {'POPC': [5, 6, 7], 'POPE': [8, 9]}, 'upper': {'POPC': [0, 1, 4], 'POPE': [2, 3]}},
+    'grid': {'small':
+             {'upper': np.array([[15., 15., np.nan], [15., np.nan, np.nan], [15., np.nan, np.nan]]),
+              'lower': np.array([[np.nan, np.nan, 12.], [np.nan, 12., 12.], [np.nan, 12., 12.]])}},
 
-    'med': {'lower': {'POPC': [12, 13, 14, 15, 16],
-                      'POPE': [17, 18, 19, 20, 21, 22, 23, 24]},
-            'upper': {'POPC': [0, 1, 2, 3, 4, 5, 6, 7, 11],
-                      'POPE': [8, 9, 10]}},
+    'beads': {'small':
+              {'upper': {'POPC': [0, 1, 2, 3]},
+               'lower': {'POPC': [4, 5, 6, 7, 8]}}}
 
-    'big': {'lower': {'POPC': [25, 26, 27, 28, 29, 30, 31, 32, 33, 34],
-                      'POPE': [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]},
-            'upper': {'POPC': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 23, 24],
-                      'POPE': [15, 16, 17, 18, 19, 20, 21, 22]}}
 }
 
 
@@ -271,10 +268,23 @@ def universe():
 
 
 @ pytest.fixture()
-def mdtraj_po4():
+def leaflets():
+    return ["lower", "upper"]
+
+
+@ pytest.fixture()
+def topol():
+    top = {'small': md.load(GRO_PO4_SMALL).topology,
+           'all': md.load(GRO_PO4).topology}
+    return top
+
+
+@ pytest.fixture()
+def trajs():
     # trajectory PO4 beads only imported using mdtraj, gone after refactoring
-    mdtraj = md.load(XTC_PO4, top=GRO_PO4)
-    return mdtraj
+    trajectory_sizes = {'small': md.load(XTC_PO4_SMALL, top=GRO_PO4_SMALL),
+                        'all': md.load(XTC_PO4, top=GRO_PO4)}
+    return trajectory_sizes
 
 
 @ pytest.fixture()
@@ -283,20 +293,6 @@ def md_ref_beads():
     topology = md.load(GRO_PO4).topology
     md_ref_beads = {'upper': {'POPC': topology.select('resname POPC and index 1 to 457').astype(int).tolist()}}
     return md_ref_beads
-
-
-def test_membrane_curvature_imported():
-    """Sample test, will always pass so long as import statement worked"""
-    assert "membrane_curvature" in sys.modules
-
-
-def test_dict_to_pickle(tmpdir):
-    name = 'test_pickle_output'
-    dict_ = {'A': 1, 'B': 2, 'C': 3}
-    with tmpdir.as_cwd():
-        dict2pickle(name, dict_)
-        unpickled = pickle.load(open(name + '.pickle', 'rb'))
-        assert dict_ == unpickled
 
 
 def test_gaussian_curvature():
@@ -311,23 +307,25 @@ def test_mean_curvature():
         assert_almost_equal(h, h_test)
 
 
-def test_core_fast_leaflet(md_ref_beads, mdtraj_po4):
+def test_core_fast_leaflet_all(md_ref_beads, trajs):
     jump = 1
     n_cells = 10
     max_width = 19
+    traj = trajs['all']
     z_calc = np.zeros([n_cells, n_cells])
-    core_fast_leaflet(z_calc, "upper", mdtraj_po4, jump, n_cells, ["POPC"], md_ref_beads, max_width)
+    core_fast_leaflet(z_calc, "upper", traj, jump, n_cells, ["POPC"], md_ref_beads, max_width)
     for z, z_test in zip(MEMBRANE_CURVATURE_DATA['z_avg_coords'], z_calc):
         assert_almost_equal(z, z_test)
 
 
-def test_curvature(md_ref_beads, mdtraj_po4):
+def test_curvature_all(md_ref_beads, trajs):
     jump = 1
     n_cells = 10
     max_width = 19
+    traj = trajs["all"]
     z_test = np.zeros([n_cells, n_cells])
     lf = 'upper'
-    core_fast_leaflet(z_test, lf, mdtraj_po4, jump, n_cells, ["POPC"], md_ref_beads, max_width)
+    core_fast_leaflet(z_test, lf, traj, jump, n_cells, ["POPC"], md_ref_beads, max_width)
     z_ref = {lf: z_test}
     H_test, K_test = curvature(z_ref, [lf], n_cells)
 
@@ -349,37 +347,40 @@ def test_def_all_beads_membrane_protein():
             assert int(bead) == int(bead_t)
 
 
-def test_def_all_beads_small_gro():
-    lipid_types = ['POPC', 'POPE']
-    lfs = ["upper", "lower"]
-    head_list = [0, 4, 11]
+def test_def_all_beads_small_gro(leaflets):
+    lipid_types = ['POPC']
+    head_list = [0, 3, 10]
     topology = md.load(GRO_PO4_SMALL).topology
-    beads_test = def_all_beads(lipid_types, lfs, head_list, topology)
-    for lt, lf in zip(lipid_types, lfs):
-        for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['small'][lf][lt], beads_test[lf][lt]):
+    beads_test = def_all_beads(lipid_types, leaflets, head_list, topology)
+    for lt, lf in zip(lipid_types, leaflets):
+        for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['beads']['small'][lf][lt], beads_test[lf][lt]):
             assert int(bead) == int(bead_t)
 
 
-def test_def_all_beads_med_gro():
-    lipid_types = ['POPC', 'POPE']
-    lfs = ["upper", "lower"]
-    head_list = [0, 11, 25]
-    topology = md.load(GRO_PO4_MED).topology
-    beads_test = def_all_beads(lipid_types, lfs, head_list, topology)
-    for lt, lf in zip(lipid_types, lfs):
-        for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['med'][lf][lt], beads_test[lf][lt]):
-            assert int(bead) == int(bead_t)
+@pytest.mark.parametrize('reference_beads, jump, n_cells, max_width, name', [(
+    {'lower': {'POPC': [4, 5, 6, 7, 8]},
+     'upper': {'POPC': [0, 1, 2, 3]}},
+    1, 3, 3, "small"),
+])
+def test_core_fast_leaflet_small(reference_beads, trajs, jump, n_cells, max_width, name):
+    traj = trajs[name]
+    z_calc = np.zeros([n_cells, n_cells])
+    core_fast_leaflet(z_calc, "upper", traj, jump, n_cells, ["POPC"], reference_beads, max_width)
+    for z, z_test in zip(MEMBRANE_CURVATURE_DATA['grid']["small"]["upper"], z_calc):
+        assert_almost_equal(z, z_test)
 
 
-def test_def_all_beads_big_gro():
-    lipid_types = ['POPC', 'POPE']
-    lfs = ["upper", "lower"]
-    head_list = [0, 24, 50]
-    topology = md.load(GRO_PO4_BIG).topology
-    beads_test = def_all_beads(lipid_types, lfs, head_list, topology)
-    for lt, lf in zip(lipid_types, lfs):
-        for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['big'][lf][lt], beads_test[lf][lt]):
-            assert int(bead) == int(bead_t)
+@pytest.mark.parametrize('reference_beads, jump, n_cells, max_width, name', [(
+    {'lower': {'POPC': [4, 5, 6, 7, 8]},
+     'upper': {'POPC': [0, 1, 2, 3]}},
+    1, 3, 3, "small"),
+])
+def test_cfs(leaflets, reference_beads, trajs, jump, n_cells, max_width, name):
+    traj = trajs[name]
+    dic = core_fast(traj, jump, n_cells, leaflets, ["POPC"], reference_beads, max_width, 'test')
+    for lf in leaflets:
+        for d, d_test in zip(MEMBRANE_CURVATURE_DATA['grid'][name][lf], dic[lf]):
+            assert_almost_equal(d, d_test)
 
 
 @pytest.mark.xfail(reason='Non sequential indexes in leaflets. Gone after enhancement of atom selection.')
@@ -391,4 +392,4 @@ def test_non_linear_indexes():
     beads_test = def_all_beads(lipid_types, lfs, head_list, topology)
     for lt, lf in zip(lipid_types, lfs):
         for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['small'][lf][lt], beads_test[lf][lt]):
-            assert int(bead) == int(bead_t)
+            assert bead == bead_t

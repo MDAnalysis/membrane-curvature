@@ -63,8 +63,7 @@ def dict2pickle(name, dict_):
         pickle.dump(dict_, pk, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
-              box_size, max_width, prefix):
+def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref, max_width, prefix):
     """
     Runs core_fast_leaflet for each leaflet
 
