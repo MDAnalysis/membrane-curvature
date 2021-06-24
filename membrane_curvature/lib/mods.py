@@ -1,57 +1,6 @@
 import itertools as it
 import numpy as np
 import pickle
-import math
-
-
-def def_all_beads(lipid_types, leaflets, head_list, topology):
-    """
-    Select reference elements to derive membrane surface.
-
-
-    Parameters
-    ----------
-    lipid_types : list.
-        List of lipid types in simulation box.
-    leaflets : str. Default ["lower", "upper"]
-        Leaflets of bilayer.
-    head_list : list
-        List of indexes by leaflet. Provided by user in -ii and -io.
-    topology: obj
-        Topology from grofile.
-    Returns
-    -------
-    [ element_1, ..., element_n] : list
-        List with elements used as a reference to derive membrane surface.
-
-    """
-
-    dic_all_beads = {lf: {lt: [] for lt in lipid_types} for lf in leaflets}
-    print('==== Lipid types in membrane ==== ')
-    for lt in lipid_types:
-        print('====>', lt)
-        dic_all_beads['upper'][lt] = np.concatenate((topology.select('resname ' +
-                                                                     lt +
-                                                                     ' and index ' +
-                                                                     str(head_list[0]) +
-                                                                     ' to ' +
-                                                                     str(head_list[1]) +
-                                                                     ' and name PO4'), topology.select('resname ' +
-                                                                                                       lt +
-                                                                                                       ' and index ' +
-                                                                                                       str(head_list[0]) +
-                                                                                                       ' to ' +
-                                                                                                       str(head_list[1]) +
-                                                                                                       ' and name GM1'))).astype(int).tolist()
-        dic_all_beads['lower'][lt] = np.concatenate((topology.select(
-            'resname ' + lt + ' and index ' + str(head_list[1] + 1) + ' to ' + str(head_list[2]) + ' and name PO4'),
-            topology.select(
-            'resname ' + lt + ' and index ' + str(head_list[1] + 1) + ' to ' + str(head_list[2]) + ' and name GM1'))).astype(int).tolist()
-
-        print("upper", len(dic_all_beads['upper'][lt]))
-        print("lower", len(dic_all_beads['lower'][lt]))
-
-    return dic_all_beads
 
 
 def dict2pickle(name, dict_):
@@ -121,30 +70,21 @@ def core_fast(traj, jump, n_cells, leaflets, lipid_types, lipid_ref,
     return z_ref
 
 
-def core_fast_leaflet(z_Ref, leaflet, traj, jump, n_cells, lipid_types,
-                      lipid_ref, max_width):
+def core_fast_leaflet(universe, z_Ref, n_cells, selection, max_width):
     """
-    Runs core_fast_leaflet for each leaflet
+    Runs core_fast_leaflet for selected surface
 
     Parameters
     ----------
+    universe: MDA Universe
+        Provides coordinates and trajectory of the coordinates.
     z_Ref : dict.
         Dictionary to store values in every iteration over frames.
-    leaflet : str. {"lower", "upper"}
-        Leaflets of bilayer.
-    traj: trajectory.
-        MD trajectory to analyze.
-    jump: int. Default 1.
-        Skip <jump> number of frames in calculation.
     n_cells : int.
         number of cells in the grid of size `max_width`.
-    lipid_types : list.
-        List of lipid types in simulation box.
-    lipid_ref : list
-        List of reference selection for atoms that define the surface
+    selection : AtomGroup
+        AtomGroup of reference selection to define the surface
         of the membrane.
-    box_size : float
-        Size of box (x dimension).
     max_width : int.
         Maximum width of simulation box.
 
@@ -160,33 +100,34 @@ def core_fast_leaflet(z_Ref, leaflet, traj, jump, n_cells, lipid_types,
 
     grid_count = np.zeros([n_cells, n_cells])
 
-    for frame in range(0, traj.n_frames, jump):
+    for ts in universe.trajectory:
+        
         grid_1 = np.zeros([n_cells, n_cells])
         grid_2 = np.zeros([n_cells, n_cells])
-
+        
         factor = np.float32(n_cells / max_width)
 
-        for lipid_type in lipid_types:
+        
+        for bead in selection:
+            x, y, z = bead.position/10
+            print( x, y, z )
 
-            for bead in lipid_ref[leaflet][lipid_type]:
+            l = int(abs(x) * factor)
+            m = int(abs(y) * factor)
 
-                x, y, z = traj.xyz[frame, bead, :]
+            try:
+                grid_1[l, m] += z
+                grid_2[l, m] += 1
 
-                l = int(abs(x) * factor)
-                m = int(abs(y) * factor)
-
-                try:
-                    grid_1[l, m] += z
-                    grid_2[l, m] += 1
-
-                except BaseException:
-                    pass
-
+            except BaseException:
+                pass
+            
         for i, j in it.product(range(n_cells), range(n_cells)):
             if grid_2[i, j] > 0:
                 z_Ref[i, j] += grid_1[i, j] / grid_2[i, j]
                 grid_count[i, j] += 1
-
+            
+        
     for i, j in it.product(range(n_cells), range(n_cells)):
         if grid_count[i, j] > 0:
             z_Ref[i, j] /= grid_count[i, j]
