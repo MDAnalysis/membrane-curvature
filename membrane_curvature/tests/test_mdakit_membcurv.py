@@ -344,7 +344,7 @@ def test_def_all_beads_membrane_protein():
     beads_test = def_all_beads(lipid_types, lfs, head_list, topology)
     for lt, lf in zip(lipid_types, lfs):
         for bead, bead_t in zip(MEMBRANE_CURVATURE_DATA['membrane_protein'][lf][lt], beads_test[lf][lt]):
-            assert int(bead) == int(bead_t)
+            assert bead == bead_t
 
 
 def test_def_all_beads_small_gro(leaflets):
