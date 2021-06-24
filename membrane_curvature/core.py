@@ -5,8 +5,8 @@ MDAkit for Membrane Curvature
 Handles the primary functions
 """
 
-from .lib.mods import dict2pickle, curvature, core_fast_leaflet
-import sys
+from numpy.core.fromnumeric import mean
+from .lib.mods import curvature, core_fast_leaflet, gaussian_curvature, mean_curvature
 import time
 import MDAnalysis as mda
 import math
@@ -14,7 +14,6 @@ from pathlib import Path
 __author__ = "Estefania Barreto-Ojeda"
 version = 0.1
 
-sys.path.append('lib/')
 
 
 def main():
@@ -23,7 +22,6 @@ def main():
 
     # 1. Define leaflets and lipid type # Gone in next steps
     leaflets = ['lower', 'upper']
-
 
     # 2. Populate universe with coordinates and trajectory
     u = mda.Universe(grofile, trjfile)
@@ -39,13 +37,11 @@ def main():
 
     # 5. Save pickles zpo4
     z_Ref = np.zeros([n_cells, n_cells])
-    dict_z_coords = core_fast_leaflet(u, z_Ref, n_cells, selection, max_width)
+    z_coords = core_fast_leaflet(u, z_Ref, n_cells, selection, max_width)
 
     # 6. Calculate curvature
-    K, H = curvature(dict_z_coords, leaflets, n_cells)
-
-    dict2pickle(name_ + '_H', H)
-    dict2pickle(name_ + '_K', K)
+    K = gaussian_curvature(z_coords)
+    H = mean_curvature(z_coords)
 
     timer(time.time(), start_time)
 
