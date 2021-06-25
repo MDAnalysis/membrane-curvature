@@ -3,18 +3,18 @@ import numpy as np
 
 
 def grid_map(coords, factor):
-    """ Maps coordinates to grid.
+    """ Maps (x,y) coordinates to unit cell in grid.
 
     Parameters
     ----------
-    x: float
-        Value of x coordinate
-    y: float
-        Value of y coordinate
+    (x, y):  tuple
+        Value of (x, y) coordinates
+    factor:  float
+        Mappign factor to assign grid.
 
         Returns
         -------
-        Return a tuple [l,m] with l,m as int.
+        Returns l, m  with l,m as int.
 
     """
 
@@ -52,35 +52,35 @@ def core_fast_leaflet(universe, z_Ref, n_cells, selection, max_width):
 
     """
 
-    grid_count = np.zeros([n_cells, n_cells])
+    grid_count_frames = np.zeros([n_cells, n_cells])
 
     for ts in universe.trajectory:
 
-        grid_1 = np.zeros([n_cells, n_cells])
-        grid_2 = np.zeros([n_cells, n_cells])
+        grid_z_coordinates = np.zeros([n_cells, n_cells])
+        grid_norm_unit = np.zeros([n_cells, n_cells])
 
         factor = np.float32(n_cells / max_width)
 
         for bead in selection:
             x, y, z = bead.position/10
 
-            index_l, index_m = grid_map((x, y), factor)
+            l, m = grid_map((x, y), factor)
 
             try:
-                grid_1[index_l, index_m] += z
-                grid_2[index_l, index_m] += 1
+                grid_z_coordinates[l, m] += z
+                grid_norm_unit[l, m] += 1
 
             except ValueError:
                 print("Atom outside grid boundaries. Skipping atom {}".format(bead))
 
         for i, j in it.product(range(n_cells), range(n_cells)):
-            if grid_2[i, j] > 0:
-                z_Ref[i, j] += grid_1[i, j] / grid_2[i, j]
-                grid_count[i, j] += 1
+            if grid_norm_unit[i, j] > 0:
+                z_Ref[i, j] += grid_z_coordinates[i, j] / grid_norm_unit[i, j]
+                grid_count_frames[i, j] += 1
 
     for i, j in it.product(range(n_cells), range(n_cells)):
-        if grid_count[i, j] > 0:
-            z_Ref[i, j] /= grid_count[i, j]
+        if grid_count_frames[i, j] > 0:
+            z_Ref[i, j] /= grid_count_frames[i, j]
 
         else:
             z_Ref[i, j] = np.nan
@@ -137,38 +137,3 @@ def mean_curvature(Z):
     H = -H / (2 * (Zx**2 + Zy**2 + 1)**(1.5))
 
     return H
-
-
-def curvature(dict_reference, leaflets, n_cells):
-    """
-    Calculates mean curvature from Z cloud points.
-    Parameters
-    ----------
-    dict_reference : dict { [index]:[z_coords]}.
-        Dictionary with indexes [i,j] as keys and z_coordinates as values.
-    leaflets : str. Default ["lower", "upper"]
-        Leaflets of bilayer.
-    n_cells : int. default 20.
-        Number of cells in grid.
-    Returns
-    -------
-    K, H : 2d-array, 2d-array
-        Returns 2-dimensional array objects for mean
-        and gaussian curvature, respectively.
-    """
-
-    H, K = [{key2: [] for key2 in leaflets} for i in range(2)]
-
-    reference_avg = {key2:
-                     {key3: [] for key3 in np.ndindex(n_cells, n_cells)}
-                     for key2 in leaflets}
-
-    for leaflet in leaflets:
-        reference_avg[leaflet] = np.rot90(np.fliplr(dict_reference[leaflet]))
-
-        K[leaflet] = gaussian_curvature(reference_avg[leaflet])
-        H[leaflet] = mean_curvature(reference_avg[leaflet])
-
-    else:
-        print('No interpolation performed. Plot may display empty values.')
-        return H, K
