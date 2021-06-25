@@ -5,9 +5,8 @@ MDAkit for Membrane Curvature
 Handles the primary functions
 """
 
-from .lib.mods import dict2pickle, core_fast, curvature, def_all_beads
+from .lib.mods import core_fast_leaflet, gaussian_curvature, mean_curvature
 import time
-import mdtraj as md
 import MDAnalysis as mda
 import math
 from pathlib import Path
@@ -19,43 +18,25 @@ def main():
 
     start_time = time.time()
 
-    # 3. Define leaflets and lipid type
-    leaflets = ['lower', 'upper']
+    # 1. Populate universe with coordinates and trajectory
+    u = mda.Universe(topology, trajectory)
 
-    #lipid_types = [ ]
-    lipid_types = ['POPC', 'POPE']
-
-    # 4. head indexes
-    head_index = [iil, jjl, jju]
-
-    # 5. Assign topology
-    topology = md.load(grofile).topology
-
-    # 6. Populate universe with coordinates and trajectory
-    u = mda.Universe(grofile, trjfile)
-
-    # 6.1 Set grid: Extract box dimension from MD sim,
+    # 2 Set grid: Extract box dimension from MD sim,
     # set grid max width, set number of unit cells
     box_size = u.dimensions[0]
     max_width = box_size * 0.1
     n_cells = math.ceil(max_width / unit_width * 10)
 
-    # 7. Assign lipids in upper and lower leaflet
-    lipid_ref_beads = def_all_beads(lipid_types, leaflets,
-                                    head_index, topology)
+    # 3. Assign lipids in upper and lower leaflet
+    selection = u.select_atoms(atoms_upper, atoms_lower)
 
-    # 8. Load trajectory and grofile using mdtraj
-    traj = md.load(trjfile, top=grofile)
+    # 4. Save pickles zpo4
+    z_Ref = np.zeros([n_cells, n_cells])
+    z_coords = core_fast_leaflet(u, z_Ref, n_cells, selection, max_width)
 
-    # 9. Save pickles zpo4
-    dict_z_coords = core_fast(traj, jump, n_cells, leaflets, lipid_types,
-                              lipid_ref_beads, box_size, max_width, name_)
-
-    # 10. Calculate curvature
-    K, H = curvature(dict_z_coords, leaflets, n_cells)
-
-    dict2pickle(name_ + '_H', H)
-    dict2pickle(name_ + '_K', K)
+    # 5. Calculate curvature
+    K = gaussian_curvature(z_coords)
+    H = mean_curvature(z_coords)
 
     timer(time.time(), start_time)
 
