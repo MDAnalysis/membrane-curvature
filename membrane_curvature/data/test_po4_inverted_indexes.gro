@@ -1,0 +1,13 @@
+Test file 10 lipids in grid with indexes inverted. Correct form is: Index 1 belongs to lower leaflet and index 10 belong to upper leaflet.
+10
+ 3000POPE   PO4    1   0.639   1.402  12.078
+ 2054POPC   PO4    2   0.704   2.229  15.981
+ 2298POPE   PO4    3   0.956   1.559  16.059
+ 2337POPE   PO4    4   0.707   0.736  15.711
+ 2622POPC   PO4    5   1.451   0.382  11.752
+ 2702POPC   PO4    6   0.081   0.610  11.835
+ 2708POPC   PO4    7   0.678   2.233  11.825
+ 2713POPC   PO4    8   0.988   0.554  11.838
+ 2999POPE   PO4    9   1.371   1.989  12.027
+ 1923POPC   PO4   10   1.361   0.630  16.101
+  2.60167  2.60167  32.07157   
