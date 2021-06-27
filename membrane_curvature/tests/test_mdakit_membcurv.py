@@ -155,33 +155,43 @@ def test_core_fast_leaflets():
         assert_almost_equal(z, z_test)
 
 
-@pytest.mark.parametrize('dummy_coordinates, test_mapper, n_cells, max_width', [(
-    # dummy coordinates (x,y)
+@pytest.mark.parametrize('dummy_systems', [(
+    # dummy coordinates (x,y) in grid of 3x3
     ((0, 0), (1, 0), (2, 0),
      (0, 1), (1, 1), (2, 1),
      (0, 2), (1, 2), (2, 2)),
-    # should map to
-    lambda xy: (xy[0], xy[1]),
-    3, 3),
-])
-def test_grid_map_small_9grid(dummy_coordinates, test_mapper, n_cells, max_width):
-    factor = np.float32(n_cells / max_width)
-    for dummy_coord in dummy_coordinates:
-        assert test_mapper(dummy_coord) == grid_map(dummy_coord, factor)
-
-
-@pytest.mark.parametrize('dummy_coordinates, test_mapper, n_cells, max_width', [(
-    # dummy coordinates (x,y)
+    # dummy coordinates (x,y) in grid of 5x5
     ((0, 0), (1, 0), (2, 0), (3, 0), (4, 0),
      (0, 1), (1, 1), (2, 1), (3, 1), (4, 1),
      (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
      (0, 3), (1, 3), (2, 3), (3, 3), (4, 3),
-     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)),
+     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)))])
+def test_grid_map_grids(dummy_systems):
+    # map to grid of 3 unit cells
+    for grid in dummy_systems:
+        factor = np.float32(np.sqrt(len(grid)) / np.sqrt(len(grid)))
+        for dummy_coord in grid:
+            assert grid_map(dummy_coord, factor) == dummy_coord
+    # map to grid of 6 unit cells
+    for grid in dummy_systems:
+        factor = np.float32(np.sqrt(len(grid))*2 / np.sqrt(len(grid)))
+        for dummy_coord in grid:
+            assert grid_map(dummy_coord, factor) == (dummy_coord[0]*2, dummy_coord[1]*2)
+
+
+@pytest.mark.parametrize('dummy_coordinates, test_mapper, n_cells, max_width', [(
+    # dummy coordinates (x,y)
+    ((0, 0), (-1, 0), (2, 0),
+     (0, 1), (-1, 1), (2, 1),
+     (0, 2), (-1, 2), (2, 2)),
     # should map to
-    lambda xy: (xy[0], xy[1]),
-    5, 5),
+    ((0, 0), (2, 0), (2, 0),
+     (0, 1), (2, 1), (2, 1),
+     (0, 2), (2, 2), (2, 2)),
+    3, 3),
 ])
-def test_grid_map_25grid(dummy_coordinates, test_mapper, n_cells, max_width):
+@pytest.mark.xfail(reason='Incorrect mapping of negative coordinates')
+def test_grid_map_9grid_negative(dummy_coordinates, test_mapper, n_cells, max_width):
     factor = np.float32(n_cells / max_width)
     for dummy_coord in dummy_coordinates:
         assert test_mapper(dummy_coord) == grid_map(dummy_coord, factor)
