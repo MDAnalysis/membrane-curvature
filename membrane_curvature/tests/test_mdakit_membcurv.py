@@ -275,7 +275,7 @@ def test_avg_unit_cell_identity_other_values(n_cells, grid_z_coords):
 @pytest.mark.parametrize('n_cells, grid_z_coords, grid_norm, grid_avg', [(
     # number of cells
     3,
-    # z coordinate in grid
+    # sum of z coordinate in grid
     np.array([[10., 10., 10.],
               [10., 10., 10.],
               [10., 10., 10.]]),

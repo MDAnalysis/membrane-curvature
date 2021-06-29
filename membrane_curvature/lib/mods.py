@@ -87,7 +87,7 @@ def avg_unit_cell(z_ref, n_cells, grid_z_coordinates, grid_norm_unit):
         if grid_norm_unit[i, j] > 0:
             z_ref[i, j] += grid_z_coordinates[i, j] / grid_norm_unit[i, j]
         else:
-            z_ref[i, j] += np.nan
+            z_ref[i, j] = np.nan
 
     return z_ref
 
