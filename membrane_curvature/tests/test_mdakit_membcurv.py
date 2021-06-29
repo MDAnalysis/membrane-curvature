@@ -155,28 +155,26 @@ def test_core_fast_leaflets():
         assert_almost_equal(z, z_test)
 
 
-@pytest.mark.parametrize('dummy_systems', [(
+@pytest.mark.parametrize('grid', [(
     # dummy coordinates (x,y) in grid of 3x3
-    ((0, 0), (1, 0), (2, 0),
-     (0, 1), (1, 1), (2, 1),
-     (0, 2), (1, 2), (2, 2)),
-    # dummy coordinates (x,y) in grid of 5x5
+    (0, 0), (1, 0), (2, 0),
+    (0, 1), (1, 1), (2, 1),
+    (0, 2), (1, 2), (2, 2)),
+# dummy coordinates (x,y) in grid of 5x5
     ((0, 0), (1, 0), (2, 0), (3, 0), (4, 0),
      (0, 1), (1, 1), (2, 1), (3, 1), (4, 1),
      (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
      (0, 3), (1, 3), (2, 3), (3, 3), (4, 3),
-     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)))])
-def test_grid_map_grids(dummy_systems):
+     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4))])
+def test_grid_map_grids(grid):
     # map to grid of 3 unit cells
-    for grid in dummy_systems:
-        factor = np.float32(np.sqrt(len(grid)) / np.sqrt(len(grid)))
-        for dummy_coord in grid:
-            assert grid_map(dummy_coord, factor) == dummy_coord
+    factor_1 = 1
+    for dummy_coord in grid:
+        assert grid_map(dummy_coord, factor_1) == dummy_coord
     # map to grid of 6 unit cells
-    for grid in dummy_systems:
-        factor = np.float32(np.sqrt(len(grid))*2 / np.sqrt(len(grid)))
-        for dummy_coord in grid:
-            assert grid_map(dummy_coord, factor) == (dummy_coord[0]*2, dummy_coord[1]*2)
+    factor_2 = 2
+    for dummy_coord in grid:
+        assert grid_map(dummy_coord, factor_2) == (dummy_coord[0]*2, dummy_coord[1]*2)
 
 
 @pytest.mark.parametrize('dummy_coordinates, test_mapper, n_cells, max_width', [(
