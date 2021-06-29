@@ -2,19 +2,33 @@ import itertools as it
 import numpy as np
 
 
+def get_positions(index):
+    """ 
+    Get positions of bead by index 
+
+    Parameters
+    ----------
+    index: Indexed assigned to bead in AtomGroup
+
+    """
+    x, y, z = index
+    return x, y, z
+
+
 def grid_map(coords, factor):
-    """ Maps (x,y) coordinates to unit cell in grid.
+    """ 
+    Maps (x,y) coordinates to unit cell in grid.
 
     Parameters
     ----------
     (x, y):  tuple
         Value of (x, y) coordinates
     factor:  float
-        Mappign factor to assign grid.
+        Mapping factor to assign grid.
 
-        Returns
-        -------
-        Returns l, m  with l,m as int.
+    Returns
+    -------
+    Returns l, m  with l,m as int.
 
     """
 
@@ -24,66 +38,58 @@ def grid_map(coords, factor):
     return index_grid_l, index_grid_m
 
 
-def core_fast_leaflet(universe, z_Ref, n_cells, selection, max_width):
+def derive_surface(n_cells, selection, max_width):
     """
-    Runs core_fast_leaflet for selected surface
+    Derive surface from distribution of z coordinates in grid.
 
     Parameters
     ----------
-    universe: MDA Universe
-        Provides coordinates and trajectory of the coordinates.
-    z_Ref : dict.
-        Dictionary to store values in every iteration over frames.
     n_cells : int.
         number of cells in the grid of size `max_width`.
     selection : AtomGroup
-        AtomGroup of reference selection to define the surface
+        AtomGroup of reference selected to define the surface
         of the membrane.
     max_width : int.
         Maximum width of simulation box.
 
     Returns
     -------
-
-    Returns a dictionary with tuples of [i,j] as keys, where 0<i<`max_width`,
-    and 0<j<`max_width`. The resulting values for each key are a list of
-    `len=(n_frames)` containing the extracted z_coordinate a given [i,j] cell
-    in each frame.
+    Returns set of z coordinates in grid.
 
     """
+    z_ref = np.zeros([n_cells, n_cells])
+    grid_z_coordinates = np.zeros([n_cells, n_cells])
+    grid_norm_unit = np.zeros([n_cells, n_cells])
 
-    grid_count_frames = np.zeros([n_cells, n_cells])
+    factor = np.float32(n_cells / max_width)
 
-    for ts in universe.trajectory:
+    for bead in selection:
 
-        grid_z_coordinates = np.zeros([n_cells, n_cells])
-        grid_norm_unit = np.zeros([n_cells, n_cells])
+        x, y, z = get_positions(bead)
 
-        factor = np.float32(n_cells / max_width)
+        l, m = grid_map((x, y), factor)
 
-        for bead in selection:
-            x, y, z = bead.position/10
+        try:
+            grid_z_coordinates[l, m] += z
+            grid_norm_unit[l, m] += 1
 
-            l, m = grid_map((x, y), factor)
+        except ValueError:
+            print("Atom outside grid boundaries. Skipping atom {}".format(bead))
 
-            try:
-                grid_z_coordinates[l, m] += z
-                grid_norm_unit[l, m] += 1
+    surface = avg_unit_cell(z_ref, n_cells, grid_z_coordinates, grid_norm_unit)
 
-            except ValueError:
-                print("Atom outside grid boundaries. Skipping atom {}".format(bead))
+    return surface
 
-        for i, j in it.product(range(n_cells), range(n_cells)):
-            if grid_norm_unit[i, j] > 0:
-                z_Ref[i, j] += grid_z_coordinates[i, j] / grid_norm_unit[i, j]
-                grid_count_frames[i, j] += 1
+
+def avg_unit_cell(z_ref, n_cells, grid_z_coordinates, grid_norm_unit):
 
     for i, j in it.product(range(n_cells), range(n_cells)):
-        if grid_count_frames[i, j] > 0:
-            z_Ref[i, j] /= grid_count_frames[i, j]
-
+        if grid_norm_unit[i, j] > 0:
+            z_ref[i, j] += grid_z_coordinates[i, j] / grid_norm_unit[i, j]
         else:
-            z_Ref[i, j] = np.nan
+            z_ref[i, j] += np.nan
+
+    return z_ref
 
 
 def gaussian_curvature(Z):

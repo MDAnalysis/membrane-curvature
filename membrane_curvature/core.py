@@ -5,7 +5,7 @@ MDAkit for Membrane Curvature
 Handles the primary functions
 """
 
-from .lib.mods import core_fast_leaflet, gaussian_curvature, mean_curvature
+from .lib.mods import derive_surface, gaussian_curvature, mean_curvature
 import time
 import MDAnalysis as mda
 import math
@@ -32,7 +32,7 @@ def main():
 
     # 4. Save pickles zpo4
     z_Ref = np.zeros([n_cells, n_cells])
-    z_coords = core_fast_leaflet(u, z_Ref, n_cells, selection, max_width)
+    z_coords = derive_surface(n_cells, selection, max_width)
 
     # 5. Calculate curvature
     K = gaussian_curvature(z_coords)

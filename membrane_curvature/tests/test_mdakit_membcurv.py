@@ -4,7 +4,7 @@ Unit and regression test for the membrane_curvature package.
 
 # Import package, test suite, and other packages as needed
 import pytest
-from ..lib.mods import core_fast_leaflet, mean_curvature, gaussian_curvature, grid_map
+from ..lib.mods import mean_curvature, gaussian_curvature, grid_map, get_positions, avg_unit_cell, derive_surface
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
@@ -185,3 +185,111 @@ def test_grid_map_grids(dummy_coord, factor):
 @pytest.mark.xfail(reason='Incorrect mapping of negative coordinates')
 def test_grid_map_9grid_negative(dummy_coords, expected):
     assert grid_map(dummy_coords, 1) == expected
+@pytest.mark.parametrize('dummy_systems', [(
+    # dummy coordinates (x,y) in grid of 3x3
+    ((0, 0), (1, 0), (2, 0),
+     (0, 1), (1, 1), (2, 1),
+     (0, 2), (1, 2), (2, 2)),
+    # dummy coordinates (x,y) in grid of 5x5
+    ((0, 0), (1, 0), (2, 0), (3, 0), (4, 0),
+     (0, 1), (1, 1), (2, 1), (3, 1), (4, 1),
+     (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
+     (0, 3), (1, 3), (2, 3), (3, 3), (4, 3),
+     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)))])
+def test_grid_map_grids(dummy_systems):
+    # map to grid of 3 unit cells
+    for grid in dummy_systems:
+        factor = np.float32(np.sqrt(len(grid)) / np.sqrt(len(grid)))
+        for dummy_coord in grid:
+            assert grid_map(dummy_coord, factor) == dummy_coord
+    # map to grid of 6 unit cells
+    for grid in dummy_systems:
+        factor = np.float32(np.sqrt(len(grid))*2 / np.sqrt(len(grid)))
+        for dummy_coord in grid:
+            assert grid_map(dummy_coord, factor) == (dummy_coord[0]*2, dummy_coord[1]*2)
+
+
+@pytest.mark.parametrize('dummy_coordinates, test_mapper, n_cells, max_width', [(
+    # dummy coordinates (x,y)
+    ((0, 0), (-1, 0), (2, 0),
+     (0, 1), (-1, 1), (2, 1),
+     (0, 2), (-1, 2), (2, 2)),
+    # should map to
+    ((0, 0), (2, 0), (2, 0),
+     (0, 1), (2, 1), (2, 1),
+     (0, 2), (2, 2), (2, 2)),
+    3, 3),
+])
+@pytest.mark.xfail(reason='Incorrect mapping of negative coordinates')
+def test_grid_map_9grid_negative(dummy_coordinates, test_mapper, n_cells, max_width):
+    factor = np.float32(n_cells / max_width)
+    for dummy_coord in dummy_coordinates:
+        assert test_mapper(dummy_coord) == grid_map(dummy_coord, factor)
+
+
+@pytest.mark.parametrize('dummy_coordinates', [(
+    # dummy coordinates (x, y, z)
+    ((0, 0, 10), (1, 0, 10), (2, 0, 10),
+     (0, 1, 10), (1, 1, 10), (2, 1, 10),
+     (0, 2, 10), (1, 2, 10), (2, 2, 10)))])
+def test_get_positions(dummy_coordinates):
+    for index, dummy_coord in enumerate(dummy_coordinates):
+        assert dummy_coordinates[index] == get_positions(dummy_coord)
+
+
+@pytest.mark.parametrize('n_cells, grid_z_coords, unit', [(
+    # number of cells
+    3,
+    # z position in grid
+    np.array([[10., 10., 10.],
+              [10., 10., 10.],
+              [10., 10., 10.]]),
+    # number of beads per grid
+    [[1., 1., 1.],
+     [1., 1., 1.],
+     [1., 1., 1.]])])
+def test_derive_avg_unit_cell(n_cells, grid_z_coords, unit):
+    z_ref = np.zeros([n_cells, n_cells])
+    unit = np.ones([n_cells, n_cells])
+    unit_cell = avg_unit_cell(z_ref, n_cells, grid_z_coords, unit)
+    for z_position, cell in zip(unit_cell, range(n_cells)):
+        assert z_position[cell] == 10.
+
+
+@pytest.mark.parametrize('n_cells, grid_z_coords', [(
+    # number of cells
+    3,
+    # z position in grid
+    np.array([[10., 20., 30.],
+              [10., 20., 30.],
+              [10., 20., 30.]]
+             ))])
+def test_derive_avg_unit_cell_identity(n_cells, grid_z_coords):
+    z_ref = np.zeros([n_cells, n_cells])
+    unit = np.ones([n_cells, n_cells])
+    z_avg = avg_unit_cell(z_ref, n_cells, grid_z_coords, unit)
+    for cell in range(n_cells):
+        assert_almost_equal(z_avg[cell], grid_z_coords[cell])
+
+
+@pytest.mark.parametrize('n_cells, grid_z_coords, grid_norm, grid_avg', [(
+    # number of cells
+    3,
+    # z coordinate in grid
+    np.array([[10., 10., 10.],
+              [10., 10., 10.],
+              [10., 10., 10.]]),
+    # grid number of beads per unit
+    np.array([[2., 1., 1.],
+              [1., 2., 1.],
+              [1., 1., 2.]]),
+    # avg z coordinate in grid
+    np.array([[5., 10., 10.],
+              [10., 5., 10.],
+              [10., 10., 5.]]),
+)])
+def test_derive_avg_unit_cell(n_cells, grid_z_coords, grid_norm, grid_avg):
+    z_ref = np.zeros([n_cells, n_cells])
+    unit_cell = avg_unit_cell(z_ref, n_cells, grid_z_coords, grid_norm)
+    for cell in range(n_cells):
+        assert_almost_equal(unit_cell[cell], grid_avg[cell])
