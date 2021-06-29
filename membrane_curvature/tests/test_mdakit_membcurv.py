@@ -310,4 +310,4 @@ def test_avg_unit_cell_more_beads(n_cells, grid_z_coords, grid_norm, grid_avg):
 def test_derive_surface(n_cells, max_width, dummy_beads, z_avg):
     surf = derive_surface(n_cells, dummy_beads, max_width)
     for cell in range(n_cells):
-        assert_almost_equal( z_avg[cell], z_avg[cell] )
+        assert_almost_equal(z_avg[cell], z_avg[cell])

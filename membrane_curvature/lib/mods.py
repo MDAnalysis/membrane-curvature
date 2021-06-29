@@ -3,8 +3,8 @@ import numpy as np
 
 
 def get_positions(index):
-    """ 
-    Get positions of bead by index 
+    """
+    Get positions of bead by index
 
     Parameters
     ----------
@@ -16,7 +16,7 @@ def get_positions(index):
 
 
 def grid_map(coords, factor):
-    """ 
+    """
     Maps (x,y) coordinates to unit cell in grid.
 
     Parameters
