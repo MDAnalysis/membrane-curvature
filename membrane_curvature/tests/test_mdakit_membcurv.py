@@ -248,7 +248,7 @@ def test_get_positions(dummy_coordinates):
     [[1., 1., 1.],
      [1., 1., 1.],
      [1., 1., 1.]])])
-def test_derive_avg_unit_cell(n_cells, grid_z_coords, unit):
+def test_avg_unit_cell_identity(n_cells, grid_z_coords, unit):
     z_ref = np.zeros([n_cells, n_cells])
     unit = np.ones([n_cells, n_cells])
     unit_cell = avg_unit_cell(z_ref, n_cells, grid_z_coords, unit)
@@ -264,7 +264,7 @@ def test_derive_avg_unit_cell(n_cells, grid_z_coords, unit):
               [10., 20., 30.],
               [10., 20., 30.]]
              ))])
-def test_derive_avg_unit_cell_identity(n_cells, grid_z_coords):
+def test_avg_unit_cell_identity_other_values(n_cells, grid_z_coords):
     z_ref = np.zeros([n_cells, n_cells])
     unit = np.ones([n_cells, n_cells])
     z_avg = avg_unit_cell(z_ref, n_cells, grid_z_coords, unit)
@@ -288,8 +288,26 @@ def test_derive_avg_unit_cell_identity(n_cells, grid_z_coords):
               [10., 5., 10.],
               [10., 10., 5.]]),
 )])
-def test_derive_avg_unit_cell(n_cells, grid_z_coords, grid_norm, grid_avg):
+def test_avg_unit_cell_more_beads(n_cells, grid_z_coords, grid_norm, grid_avg):
     z_ref = np.zeros([n_cells, n_cells])
     unit_cell = avg_unit_cell(z_ref, n_cells, grid_z_coords, grid_norm)
     for cell in range(n_cells):
         assert_almost_equal(unit_cell[cell], grid_avg[cell])
+
+
+@pytest.mark.parametrize('n_cells, max_width, dummy_beads, z_avg', [(
+    # number of cells
+    3, 3,
+    # dummy coordinates (x, y, z)
+    ((0, 0, 10), (1, 0, 10), (2, 0, 10),
+     (0, 1, 10), (1, 1, 10), (2, 1, 10),
+     (0, 2, 10), (1, 2, 10), (2, 2, 10)),
+    # z ref of surface
+    # z coordinate in grid
+    np.array([[10., 10., 10.],
+              [10., 10., 10.],
+              [10., 10., 10.]]))])
+def test_derive_surface(n_cells, max_width, dummy_beads, z_avg):
+    surf = derive_surface(n_cells, dummy_beads, max_width)
+    for cell in range(n_cells):
+        assert_almost_equal( z_avg[cell], z_avg[cell] )
