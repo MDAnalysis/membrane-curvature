@@ -154,7 +154,6 @@ def test_core_fast_leaflets():
         print(z, z_test)
         assert_almost_equal(z, z_test)
 
-
 @pytest.mark.parametrize('factor', [1, 2])
 @pytest.mark.parametrize('dummy_coord', [
     # dummy coordinates (x,y) in grid of 3x3
@@ -167,22 +166,21 @@ def test_core_fast_leaflets():
     (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
     (0, 3), (1, 3), (2, 3), (3, 3), (4, 3),
     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)
-])
+    ])
 def test_grid_map_grids(dummy_coord, factor):
     cell = (dummy_coord[0] * factor, dummy_coord[1] * factor)
     assert grid_map(dummy_coord, factor) == cell
 
 
-@pytest.mark.parametrize('dummy_coord', [(
+@pytest.mark.parametrize('dummy_coords, expected', [
     # dummy coordinates (x,y)
     (0, 0), (-1, 0), (2, 0),
     (0, 1), (-1, 1), (2, 1),
     (0, 2), (-1, 2), (2, 2),
-    # should map to
+# should map to
     (0, 0), (2, 0), (2, 0),
     (0, 1), (2, 1), (2, 1),
-    (0, 2), (2, 2), (2, 2))])
+    (0, 2), (2, 2), (2, 2)])
 @pytest.mark.xfail(reason='Incorrect mapping of negative coordinates')
-def test_grid_map_9grid_negative(dummy_coord):
-    cell = (dummy_coord[0], dummy_coord[1])
-    assert grid_map(dummy_coord, 1) == cell
+def test_grid_map_9grid_negative(dummy_coords, expected):
+    assert grid_map(dummy_coords, 1) == expected
