@@ -154,6 +154,7 @@ def test_core_fast_leaflets():
         print(z, z_test)
         assert_almost_equal(z, z_test)
 
+
 @pytest.mark.parametrize('factor', [1, 2])
 @pytest.mark.parametrize('dummy_coord', [
     # dummy coordinates (x,y) in grid of 3x3
@@ -166,7 +167,7 @@ def test_core_fast_leaflets():
     (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
     (0, 3), (1, 3), (2, 3), (3, 3), (4, 3),
     (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)
-    ])
+])
 def test_grid_map_grids(dummy_coord, factor):
     cell = (dummy_coord[0] * factor, dummy_coord[1] * factor)
     assert grid_map(dummy_coord, factor) == cell
@@ -177,7 +178,7 @@ def test_grid_map_grids(dummy_coord, factor):
     (0, 0), (-1, 0), (2, 0),
     (0, 1), (-1, 1), (2, 1),
     (0, 2), (-1, 2), (2, 2),
-# should map to
+    # should map to
     (0, 0), (2, 0), (2, 0),
     (0, 1), (2, 1), (2, 1),
     (0, 2), (2, 2), (2, 2)])
