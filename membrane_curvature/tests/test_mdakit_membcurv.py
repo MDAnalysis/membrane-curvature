@@ -210,7 +210,7 @@ def test_avg_unit_cell_more_beads(n_cells, grid_z_coords, grid_norm, grid_avg):
 @pytest.mark.parametrize('n_cells, max_width, z_avg', [(
     # number of cells
     # max_width is 3nm/30A (from GRO_PO4_SMALL)
-    3, 30,
+    3, 30.,
     # z ref of surface
     # z coordinate in grid
     np.array(([150., 150., 120.],
@@ -222,7 +222,7 @@ def test_derive_surface(small_grofile, n_cells, max_width, z_avg):
         assert_almost_equal(cell, calc_cell)
 
 
-@pytest.mark.parametrize('n_cells, max_width', [(3, 300)])
+@pytest.mark.parametrize('n_cells, max_width', [(3, 300.)])
 @pytest.mark.parametrize('dummy_array, z_avg', [(
     # dummy coordinates [x,y,z]
     np.array([[0., 0., 150.],
@@ -247,7 +247,7 @@ def test_derive_surface_from_numpy(dummy_array, n_cells, max_width, z_avg):
         assert_almost_equal(cell, calc_cell)
 
 
-@pytest.mark.parametrize('n_cells, max_width', [(3, 300)])
+@pytest.mark.parametrize('n_cells, max_width', [(3, 300.)])
 @pytest.mark.parametrize('dummy_array, z_avg', [(
     # dummy coordinates [x,y,z]
     np.array([[0., 0., 150.],

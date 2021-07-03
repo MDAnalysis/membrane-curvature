@@ -13,20 +13,20 @@ def derive_surface(n_cells, selection, max_width):
     selection : AtomGroup
         AtomGroup of reference selection to define the surface
         of the membrane.
-    max_width : int.
-        Maximum width of simulation box.
+    max_width : float.
+        Maximum width of simulation box. (Determined by simulation box dimensions)
 
     Returns
     -------
     Returns set of z coordinates in grid.
 
     """
-    NM_TO_ANGSTROM = 10  # Factor needed temporarily until we can make this code unit-aware or unitless
+
     z_ref = np.zeros((n_cells, n_cells))
     grid_z_coordinates = np.zeros((n_cells, n_cells))
     grid_norm_unit = np.zeros([n_cells, n_cells])
 
-    # max_width *= NM_TO_ANGSTROM # scaling the max width of the box. Will remove
+    
     factor = np.float32(n_cells / max_width)
 
     cell_xy_floor = np.int32(selection.positions[:, :2] * factor)
