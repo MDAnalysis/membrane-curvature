@@ -27,7 +27,7 @@ def derive_surface(n_cells, selection, max_width):
     grid_norm_unit = np.zeros([n_cells, n_cells])
 
     
-    factor = np.float32(n_cells / max_width)
+    factor = n_cells / max_width
 
     cell_xy_floor = np.int32(selection.positions[:, :2] * factor)
     z_coordinate = selection.positions[:, 2]
