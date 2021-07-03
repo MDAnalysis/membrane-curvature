@@ -1,41 +1,5 @@
-import itertools as it
+from ast import NameConstant
 import numpy as np
-
-
-def get_positions(index):
-    """
-    Get positions of bead by index
-
-    Parameters
-    ----------
-    index: Indexed assigned to bead in AtomGroup
-
-    """
-    x, y, z = index
-    return x, y, z
-
-
-def grid_map(coords, factor):
-    """
-    Maps (x,y) coordinates to unit cell in grid.
-
-    Parameters
-    ----------
-    (x, y):  tuple
-        Value of (x, y) coordinates
-    factor:  float
-        Mapping factor to assign grid.
-
-    Returns
-    -------
-    Returns l, m  with l,m as int.
-
-    """
-
-    index_grid_l = int(abs(coords[0]) * factor)
-    index_grid_m = int(abs(coords[1]) * factor)
-
-    return index_grid_l, index_grid_m
 
 
 def derive_surface(n_cells, selection, max_width):
@@ -47,7 +11,7 @@ def derive_surface(n_cells, selection, max_width):
     n_cells : int.
         number of cells in the grid of size `max_width`.
     selection : AtomGroup
-        AtomGroup of reference selected to define the surface
+        AtomGroup of reference selection to define the surface
         of the membrane.
     max_width : int.
         Maximum width of simulation box.
@@ -57,37 +21,49 @@ def derive_surface(n_cells, selection, max_width):
     Returns set of z coordinates in grid.
 
     """
-    z_ref = np.zeros([n_cells, n_cells])
-    grid_z_coordinates = np.zeros([n_cells, n_cells])
+    NM_TO_ANGSTROM = 10  # Factor needed temporarily until we can make this code unit-aware or unitless
+    z_ref = np.zeros((n_cells, n_cells))
+    grid_z_coordinates = np.zeros((n_cells, n_cells))
     grid_norm_unit = np.zeros([n_cells, n_cells])
 
-    factor = np.float32(n_cells / max_width)
+    factor = np.float32(n_cells / max_width * NM_TO_ANGSTROM)
 
-    for bead in selection:
+    cell_xy_floor = np.int32(selection.positions[:, :2] / factor)
+    z_coordinate = selection.positions[:, 2] / factor * NM_TO_ANGSTROM
 
-        x, y, z = get_positions(bead)
-
-        l, m = grid_map((x, y), factor)
+    for (l, m), z in zip(cell_xy_floor, z_coordinate):
 
         try:
             grid_z_coordinates[l, m] += z
             grid_norm_unit[l, m] += 1
 
-        except ValueError:
-            print("Atom outside grid boundaries. Skipping atom {}".format(bead))
+        except IndexError:
+            print("Atom outside grid boundaries. Skipping atom.")
 
-    surface = avg_unit_cell(z_ref, n_cells, grid_z_coordinates, grid_norm_unit)
+    surface = avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit)
 
     return surface
 
 
-def avg_unit_cell(z_ref, n_cells, grid_z_coordinates, grid_norm_unit):
+def avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit):
+    """
+    Calculates average z coordinate in unit cell
 
-    for i, j in it.product(range(n_cells), range(n_cells)):
-        if grid_norm_unit[i, j] > 0:
-            z_ref[i, j] += grid_z_coordinates[i, j] / grid_norm_unit[i, j]
-        else:
-            z_ref[i, j] = np.nan
+    Parameters
+    ----------
+
+    z_ref: np.array
+        Empty array of (l,m) 
+    grid_z_coordinates: np.array
+        Array of size (l,m) with z coordinates stored in unit cell.
+    grid_norm_unit: np.array
+        Array of size (l,m) with number of atoms in unit cell.
+
+    """
+
+    normed = grid_norm_unit > 0
+    z_ref = grid_z_coordinates / grid_norm_unit
+    z_ref[~normed] = np.nan
 
     return z_ref
 
