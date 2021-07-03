@@ -26,10 +26,11 @@ def derive_surface(n_cells, selection, max_width):
     grid_z_coordinates = np.zeros((n_cells, n_cells))
     grid_norm_unit = np.zeros([n_cells, n_cells])
 
-    factor = np.float32(n_cells / max_width * NM_TO_ANGSTROM)
+    # max_width *= NM_TO_ANGSTROM # scaling the max width of the box. Will remove
+    factor = np.float32(n_cells / max_width)
 
-    cell_xy_floor = np.int32(selection.positions[:, :2] / factor)
-    z_coordinate = selection.positions[:, 2] / factor * NM_TO_ANGSTROM
+    cell_xy_floor = np.int32(selection.positions[:, :2] * factor)
+    z_coordinate = selection.positions[:, 2]
 
     for (l, m), z in zip(cell_xy_floor, z_coordinate):
 

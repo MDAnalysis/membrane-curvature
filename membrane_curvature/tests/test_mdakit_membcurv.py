@@ -151,19 +151,17 @@ def test_mean_curvature_all():
         assert_almost_equal(h, h_test)
 
 
-@pytest.mark.parametrize('n_cells, grid_z_coords, unit', [(
+@pytest.mark.parametrize('n_cells, grid_z_coords', [(
     # number of cells
     3,
     # z position in grid
     np.array([[10., 10., 10.],
               [10., 10., 10.],
-              [10., 10., 10.]]),
-    # number of beads per grid
-    [[1., 1., 1.],
-     [1., 1., 1.],
-     [1., 1., 1.]])])
-def test_avg_unit_cell_identity(n_cells, grid_z_coords, unit):
+              [10., 10., 10.]])
+)])
+def test_avg_unit_cell_identity(n_cells, grid_z_coords):
     z_ref = np.zeros([n_cells, n_cells])
+    # number of beads per grid
     unit = np.ones([n_cells, n_cells])
     unit_cell = avg_unit_cell(z_ref, grid_z_coords, unit)
     for z_position, cell in zip(unit_cell, range(n_cells)):
@@ -211,7 +209,8 @@ def test_avg_unit_cell_more_beads(n_cells, grid_z_coords, grid_norm, grid_avg):
 
 @pytest.mark.parametrize('n_cells, max_width, z_avg', [(
     # number of cells
-    3, 3,
+    # max_width is 3nm/30A (from GRO_PO4_SMALL)
+    3, 30,
     # z ref of surface
     # z coordinate in grid
     np.array(([150., 150., 120.],
@@ -223,18 +222,18 @@ def test_derive_surface(small_grofile, n_cells, max_width, z_avg):
         assert_almost_equal(cell, calc_cell)
 
 
-@pytest.mark.parametrize('n_cells, max_width', [(3, 3)])
+@pytest.mark.parametrize('n_cells, max_width', [(3, 300)])
 @pytest.mark.parametrize('dummy_array, z_avg', [(
     # dummy coordinates [x,y,z]
     np.array([[0., 0., 150.],
-              [10., 0., 150.],
-              [20., 0., 150.],
-              [0., 10., 150.],
-              [10., 10., 120.],
-              [20., 10., 120.],
-              [0., 20., 120.],
-              [10., 20., 120.],
-              [20., 20., 120.]]),
+              [100., 0., 150.],
+              [200., 0., 150.],
+              [0., 100., 150.],
+              [100., 100., 120.],
+              [200., 100., 120.],
+              [0., 200., 120.],
+              [100., 200., 120.],
+              [200., 200., 120.]]),
     # z_avg in grid
     np.array(([150., 150., 120.],
               [150., 120., 120.],
@@ -248,18 +247,18 @@ def test_derive_surface_from_numpy(dummy_array, n_cells, max_width, z_avg):
         assert_almost_equal(cell, calc_cell)
 
 
-@pytest.mark.parametrize('n_cells, max_width', [(3, 3)])
+@pytest.mark.parametrize('n_cells, max_width', [(3, 300)])
 @pytest.mark.parametrize('dummy_array, z_avg', [(
     # dummy coordinates [x,y,z]
     np.array([[0., 0., 150.],
               [0., 0., 150.],
-              [20., 0., 150.],
+              [200., 0., 150.],
               [0., 0., 150.],
-              [10., 10., 150.],
-              [20., 10., 150.],
-              [0., 20., 150.],
-              [10., 20., 150.],
-              [20., 20., 150.]]),
+              [100., 100., 150.],
+              [200., 100., 150.],
+              [0., 200., 150.],
+              [100., 200., 150.],
+              [200., 200., 150.]]),
     # z_avg in grid
     np.array(([150., np.nan, 150.],
               [np.nan, 150., 150.],
