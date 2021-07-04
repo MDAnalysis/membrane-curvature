@@ -1,16 +1,15 @@
-from ast import NameConstant
 import numpy as np
 
 
-def derive_surface(n_cells, selection, max_width):
+def derive_surface(n_cells, selection, max_width_x, max_width_y):
     """
-    Derive surface from distribution of z coordinates in grid.
+    Derive surface from AtomGroup positions.
 
     Parameters
     ----------
     n_cells : int.
         number of cells in the grid of size `max_width`.
-    selection : AtomGroup
+    selection : AtomGroup.
         AtomGroup of reference selection to define the surface
         of the membrane.
     max_width : float.
@@ -18,21 +17,51 @@ def derive_surface(n_cells, selection, max_width):
 
     Returns
     -------
-    Returns set of z coordinates in grid.
+    Returns set of z coordinates 
+
+    """
+    coordinates = selection.positions
+    return get_z_surface(coordinates, n_x_bins=n_cells, n_y_bins=n_cells,
+                         x_range=(0, max_width_x), y_range=(0, max_width_y))
+
+
+def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_range=(0, 100)):
+    """
+    Derive surface from distribution of z coordinates in grid.
+
+    Parameters
+    ----------
+    coordinates : tuple.
+        Numpy.ndarray with shape=(n_atoms, 3).
+    n_x_bins : int.
+        Number of bins in grid in the x dimension. 
+    n_y_bins : int.
+        Number of bins in grid in the y dimension. 
+    x_range : tuple
+        Range of indexes in grid in the x dimension with shape=(0, max_width_x).
+    y_range : tuple
+        Range of indexes in grid in the y dimension with shape=(0, max_width_y)
+
+
+    Returns
+    -------
+    Returns surface derived from z coordinates in grid of `n_x_bins` x `n_y_bins` dimensions.
 
     """
 
-    z_ref = np.zeros((n_cells, n_cells))
-    grid_z_coordinates = np.zeros((n_cells, n_cells))
-    grid_norm_unit = np.zeros([n_cells, n_cells])
+    z_ref = np.zeros((n_x_bins, n_y_bins))
+    grid_z_coordinates = np.zeros((n_x_bins, n_y_bins))
+    grid_norm_unit = np.zeros((n_x_bins, n_y_bins))
 
-    
-    factor = n_cells / max_width
+    x_factor = n_x_bins / (x_range[1] - x_range[0])
+    y_factor = n_y_bins / (y_range[1] - y_range[0])
 
-    cell_xy_floor = np.int32(selection.positions[:, :2] * factor)
-    z_coordinate = selection.positions[:, 2]
+    x_coords, y_coords, z_coords = coordinates.T
 
-    for (l, m), z in zip(cell_xy_floor, z_coordinate):
+    cell_x_floor = np.floor(x_coords * x_factor).astype(int)
+    cell_y_floor = np.floor(y_coords * y_factor).astype(int)
+
+    for l, m, z in zip(cell_x_floor, cell_y_floor, z_coords):
 
         try:
             grid_z_coordinates[l, m] += z
@@ -41,9 +70,9 @@ def derive_surface(n_cells, selection, max_width):
         except IndexError:
             print("Atom outside grid boundaries. Skipping atom.")
 
-    surface = avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit)
+    z_surface = avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit)
 
-    return surface
+    return z_surface
 
 
 def avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit):
@@ -59,6 +88,10 @@ def avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit):
         Array of size (l,m) with z coordinates stored in unit cell.
     grid_norm_unit: np.array
         Array of size (l,m) with number of atoms in unit cell.
+
+    Returns
+    -------
+    Returns nornalized set of z coordinates in grid.
 
     """
 

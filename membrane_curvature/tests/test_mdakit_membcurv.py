@@ -4,7 +4,7 @@ Unit and regression test for the membrane_curvature package.
 
 # Import package, test suite, and other packages as needed
 import pytest
-from ..lib.mods import mean_curvature, gaussian_curvature, avg_unit_cell, derive_surface
+from ..lib.mods import mean_curvature, gaussian_curvature, avg_unit_cell, derive_surface, get_z_surface
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
@@ -217,7 +217,8 @@ def test_avg_unit_cell_more_beads(n_cells, grid_z_coords, grid_norm, grid_avg):
               [150., 120., 120.],
               [150., 120., 120.])))])
 def test_derive_surface(small_grofile, n_cells, max_width, z_avg):
-    surf = derive_surface(n_cells, small_grofile, max_width)
+    max_width_x = max_width_y = max_width
+    surf = derive_surface(n_cells, small_grofile, max_width_x, max_width_y)
     for cell, calc_cell in zip(z_avg, surf):
         assert_almost_equal(cell, calc_cell)
 
@@ -242,7 +243,8 @@ def test_derive_surface(small_grofile, n_cells, max_width, z_avg):
 def test_derive_surface_from_numpy(dummy_array, n_cells, max_width, z_avg):
     u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
     selection = u.select_atoms('index 0:9')
-    surf = derive_surface(n_cells, selection, max_width)
+    max_width_x = max_width_y = max_width
+    surf = derive_surface(n_cells, selection, max_width_x, max_width_y)
     for cell, calc_cell in zip(z_avg, surf):
         assert_almost_equal(cell, calc_cell)
 
@@ -267,6 +269,34 @@ def test_derive_surface_from_numpy(dummy_array, n_cells, max_width, z_avg):
 def test_derive_surface_from_numpy_with_nans(dummy_array, n_cells, max_width, z_avg):
     u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
     selection = u.select_atoms('index 0:9')
-    surf = derive_surface(n_cells, selection, max_width)
+    max_width_x = max_width_y = max_width
+    surf = derive_surface(n_cells, selection, max_width_x, max_width_y)
     for cell, calc_cell in zip(z_avg, surf):
+        assert_almost_equal(cell, calc_cell)
+
+
+@pytest.mark.parametrize('x_bin, y_bin, x_range, y_range, z_surface', [
+
+    (3, 3, (0, 300), (0, 300), np.array(([150., np.nan, 150.],
+                                         [np.nan, 150., 150.],
+                                         [150., 150., 150.]))),
+    (3, 4, (0, 300), (0, 400), np.array([[150.,  np.nan, 150.,  np.nan],
+                                         [np.nan, 150., 150.,  np.nan],
+                                         [150., 150., 150.,  np.nan]]))
+])
+@pytest.mark.parametrize('dummy_array', [(
+    # dummy coordinates [x,y,z]
+    np.array([[0., 0., 150.],
+              [0., 0., 150.],
+              [200., 0., 150.],
+              [0., 0., 150.],
+              [100., 100., 150.],
+              [200., 100., 150.],
+              [0., 200., 150.],
+              [100., 200., 150.],
+              [200., 200., 150.]])
+)])
+def test_get_z_surface(dummy_array, z_surface, x_bin, y_bin, x_range, y_range):
+    surf = get_z_surface(dummy_array, x_bin, y_bin, x_range, y_range)
+    for cell, calc_cell in zip(z_surface, surf):
         assert_almost_equal(cell, calc_cell)
