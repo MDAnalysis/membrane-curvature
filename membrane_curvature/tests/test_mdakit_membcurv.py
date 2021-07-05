@@ -183,13 +183,11 @@ def test_derive_surface_from_numpy():
     dummy_array = np.array([[0., 0., 150.], [100., 0., 150.], [200., 0., 150.],
                             [0., 100., 150.], [100., 100., 120.], [200., 100., 120.],
                             [0., 200., 120.], [100., 200., 120.], [200., 200., 120.]])
-    n_cells, max_width = 3, 300
-    u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
-    selection = u.select_atoms('index 0:9')
-    max_width_x = max_width_y = max_width
+    x_bin = y_bin = 3
+    x_range = y_range = (0, 300)
     expected_surface = np.array(([150., 150., 120.], [150., 120., 120.], [150., 120., 120.]))
-    average_surface = derive_surface(n_cells, n_cells, selection, max_width_x, max_width_y)
-    assert_almost_equal(average_surface, expected_surface)
+    surface = get_z_surface(dummy_array, x_bin, y_bin, x_range, y_range)
+    assert_almost_equal(surface, expected_surface)
 
 
 @pytest.mark.parametrize('x_bin, y_bin, x_range, y_range, expected_surface', [

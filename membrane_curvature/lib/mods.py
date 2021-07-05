@@ -44,10 +44,9 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
     n_y_bins : int.
         Number of bins in grid in the `y` dimension. 
     x_range : tuple of (float, float)
-        Range of indexes in grid in the `x` dimension with shape=(2,).
+        Range of coordinates (min, max) in the `x` dimension with shape=(2,).
     y_range : tuple of (float, float)
-        Range of indexes in grid in the `y` dimension with shape=(2,).
-
+        Range of coordinates (min, max) in the `y` dimension with shape=(2,). 
 
     Returns
     -------
