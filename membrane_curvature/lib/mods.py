@@ -1,27 +1,33 @@
 import numpy as np
 
 
-def derive_surface(n_cells, selection, max_width_x, max_width_y):
+def derive_surface(n_cells_x, n_cells_y, selection, max_width_x, max_width_y):
     """
     Derive surface from AtomGroup positions.
 
     Parameters
     ----------
-    n_cells : int.
-        number of cells in the grid of size `max_width`.
+    n_cells_x : int.
+        number of cells in the grid of size `max_width_x`, `x` axis.
+    n_cells_y : int.
+        number of cells in the grid of size `max_width_y`, `y` axis.
     selection : AtomGroup.
         AtomGroup of reference selection to define the surface
         of the membrane.
-    max_width : float.
-        Maximum width of simulation box. (Determined by simulation box dimensions)
+    max_width_x: float.
+        Maximum width of simulation box in x axis. (Determined by simulation box dimensions)
+    max_width_y: float.
+        Maximum width of simulation box in y axis. (Determined by simulation box dimensions)
 
     Returns
     -------
-    Returns set of z coordinates 
+    z_coordinates: numpy.ndarray
+        Average z-coordinate values. Return Numpy array of floats of
+        shape `(n_cells_x, n_cells_y)`.
 
     """
     coordinates = selection.positions
-    return get_z_surface(coordinates, n_x_bins=n_cells, n_y_bins=n_cells,
+    return get_z_surface(coordinates, n_x_bins=n_cells_x, n_y_bins=n_cells_y,
                          x_range=(0, max_width_x), y_range=(0, max_width_y))
 
 
@@ -31,21 +37,23 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
     Parameters
     ----------
-    coordinates : tuple.
-        Numpy.ndarray with shape=(n_atoms, 3).
+    coordinates : numpy.ndarray 
+        Coordinates of AtomGroup. Numpy array of shape=(n_atoms, 3).
     n_x_bins : int.
-        Number of bins in grid in the x dimension. 
+        Number of bins in grid in the `x` dimension. 
     n_y_bins : int.
-        Number of bins in grid in the y dimension. 
-    x_range : tuple
-        Range of indexes in grid in the x dimension with shape=(0, max_width_x).
-    y_range : tuple
-        Range of indexes in grid in the y dimension with shape=(0, max_width_y)
+        Number of bins in grid in the `y` dimension. 
+    x_range : tuple of (float, float)
+        Range of indexes in grid in the `x` dimension with shape=(2,).
+    y_range : tuple of (float, float)
+        Range of indexes in grid in the `y` dimension with shape=(2,).
 
 
     Returns
     -------
-    Returns surface derived from z coordinates in grid of `n_x_bins` x `n_y_bins` dimensions.
+    z_surface: numpy.ndarray 
+        Surface derived from set of coordinates in grid of `x_range, y_range` dimensions.
+        Returns Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
 
     """
 
@@ -95,9 +103,8 @@ def avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit):
 
     """
 
-    normed = grid_norm_unit > 0
+    grid_norm_unit = np.where(grid_norm_unit > 0, grid_norm_unit, np.nan)
     z_ref = grid_z_coordinates / grid_norm_unit
-    z_ref[~normed] = np.nan
 
     return z_ref
 
