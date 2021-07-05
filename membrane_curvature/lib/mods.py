@@ -57,7 +57,6 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
     """
 
-    z_ref = np.zeros((n_x_bins, n_y_bins))
     grid_z_coordinates = np.zeros((n_x_bins, n_y_bins))
     grid_norm_unit = np.zeros((n_x_bins, n_y_bins))
 
@@ -78,12 +77,12 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
         except IndexError:
             print("Atom outside grid boundaries. Skipping atom.")
 
-    z_surface = avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit)
+    z_surface = normalized_grid(grid_z_coordinates, grid_norm_unit)
 
     return z_surface
 
 
-def avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit):
+def normalized_grid(grid_z_coordinates, grid_norm_unit):
     """
     Calculates average z coordinate in unit cell
 
@@ -104,9 +103,9 @@ def avg_unit_cell(z_ref, grid_z_coordinates, grid_norm_unit):
     """
 
     grid_norm_unit = np.where(grid_norm_unit > 0, grid_norm_unit, np.nan)
-    z_ref = grid_z_coordinates / grid_norm_unit
+    z_normalized = grid_z_coordinates / grid_norm_unit
 
-    return z_ref
+    return z_normalized
 
 
 def gaussian_curvature(Z):

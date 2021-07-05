@@ -3,7 +3,7 @@ Unit and regression test for the membrane_curvature package.
 """
 
 import pytest
-from ..lib.mods import mean_curvature, gaussian_curvature, avg_unit_cell, derive_surface, get_z_surface
+from ..lib.mods import mean_curvature, gaussian_curvature, normalized_grid, derive_surface, get_z_surface
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
@@ -150,28 +150,25 @@ def test_mean_curvature_all():
         assert_almost_equal(h, h_test)
 
 
-@pytest.mark.parametrize('n_cells, z_ref, grid_z_coords', [
-    (3, np.zeros((3, 3)), np.full((3, 3), 10.)),
-    (3, np.zeros((3, 3)), np.array([[10., 20., 30.], [10., 20., 30.], [10., 20., 30.]], dtype=float))
+@pytest.mark.parametrize('n_cells, grid_z_coords', [
+    (3, np.full((3, 3), 10.)),
+    (3, np.array([[10., 20., 30.], [10., 20., 30.], [10., 20., 30.]], dtype=float))
 ])
-def test_avg_unit_cell_identity_other_values(n_cells, z_ref, grid_z_coords):
+def test_normalized_grid_identity_other_values(n_cells, grid_z_coords):
     unit = np.ones([n_cells, n_cells])
-    z_avg = avg_unit_cell(z_ref, grid_z_coords, unit)
+    z_avg = normalized_grid(grid_z_coords, unit)
     assert_almost_equal(z_avg, grid_z_coords)
 
 
-def test_avg_unit_cell_more_beads():
-    # number of cells
-    n_cells = 3
+def test_normalized_grid_more_beads():
     # sum of z coordinate in grid,
     grid_z_coords = np.full((3, 3), 10.)
     # grid number of beads per unit
-    normalized_grid = np.array([[2., 1., 1.], [1., 2., 1.], [1., 1., 2.]])
+    norm_grid = np.array([[2., 1., 1.], [1., 2., 1.], [1., 1., 2.]])
     # avg z coordinate in grid
-    expected_surface = np.array([[5., 10., 10.], [10., 5., 10.], [10., 10., 5.]])
-    z_ref = np.zeros([n_cells, n_cells])
-    average_surface = avg_unit_cell(z_ref, grid_z_coords, normalized_grid)
-    assert_almost_equal(average_surface, expected_surface)
+    expected_normalized_surface = np.array([[5., 10., 10.], [10., 5., 10.], [10., 10., 5.]])
+    average_surface = normalized_grid(grid_z_coords, norm_grid)
+    assert_almost_equal(average_surface, expected_normalized_surface)
 
 
 def test_derive_surface(small_grofile):
