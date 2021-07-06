@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def gaussian_curvature(Z):
     """
     Calculate gaussian curvature from Z cloud points.
