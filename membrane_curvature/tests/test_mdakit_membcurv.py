@@ -2,9 +2,8 @@
 Unit and regression test for the membrane_curvature package.
 """
 
-# Import package, test suite, and other packages as needed
 import pytest
-from ..lib.mods import core_fast_leaflet, mean_curvature, gaussian_curvature, grid_map
+from ..lib.mods import mean_curvature, gaussian_curvature, normalized_grid, derive_surface, get_z_surface
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
@@ -120,6 +119,13 @@ MEMBRANE_CURVATURE_DATA = {
 }
 
 
+@pytest.fixture
+def small_grofile():
+    u = mda.Universe(GRO_PO4_SMALL)
+    sel = u.select_atoms('name PO4')
+    return sel
+
+
 def test_gaussian_curvature_small():
     K_test = gaussian_curvature(MEMBRANE_CURVATURE_DATA['z_ref']['small'])
     for k, k_test in zip(MEMBRANE_CURVATURE_DATA['gaussian_curvature']['small'], K_test):
@@ -144,44 +150,57 @@ def test_mean_curvature_all():
         assert_almost_equal(h, h_test)
 
 
-def test_core_fast_leaflets():
-    n_cells, max_width = 3, 3
-    z_calc = np.zeros([n_cells, n_cells])
-    u = mda.Universe(GRO_PO4_SMALL, XTC_PO4_SMALL)
-    selection = u.select_atoms('index 0:3')
-    core_fast_leaflet(u, z_calc, n_cells, selection, max_width)
-    for z, z_test in zip(MEMBRANE_CURVATURE_DATA['grid']['small']['upper'], z_calc):
-        print(z, z_test)
-        assert_almost_equal(z, z_test)
-
-
-@pytest.mark.parametrize('factor', [1, 2])
-@pytest.mark.parametrize('dummy_coord', [
-    # dummy coordinates (x,y) in grid of 3x3
-    (0, 0), (1, 0), (2, 0),
-    (0, 1), (1, 1), (2, 1),
-    (0, 2), (1, 2), (2, 2),
-    # dummy coordinates (x,y) in grid of 5x5
-    (0, 0), (1, 0), (2, 0), (3, 0), (4, 0),
-    (0, 1), (1, 1), (2, 1), (3, 1), (4, 1),
-    (0, 2), (1, 2), (2, 2), (3, 2), (4, 2),
-    (0, 3), (1, 3), (2, 3), (3, 3), (4, 3),
-    (0, 4), (1, 4), (2, 4), (3, 4), (4, 4)
+@pytest.mark.parametrize('n_cells, grid_z_coords', [
+    (3, np.full((3, 3), 10.)),
+    (3, np.array([[10., 20., 30.], [10., 20., 30.], [10., 20., 30.]], dtype=float))
 ])
-def test_grid_map_grids(dummy_coord, factor):
-    cell = (dummy_coord[0] * factor, dummy_coord[1] * factor)
-    assert grid_map(dummy_coord, factor) == cell
+def test_normalized_grid_identity_other_values(n_cells, grid_z_coords):
+    unit = np.ones([n_cells, n_cells])
+    z_avg = normalized_grid(grid_z_coords, unit)
+    assert_almost_equal(z_avg, grid_z_coords)
 
 
-@pytest.mark.parametrize('dummy_coords, expected', [
-    # dummy coordinates (x,y)
-    (0, 0), (-1, 0), (2, 0),
-    (0, 1), (-1, 1), (2, 1),
-    (0, 2), (-1, 2), (2, 2),
-    # should map to
-    (0, 0), (2, 0), (2, 0),
-    (0, 1), (2, 1), (2, 1),
-    (0, 2), (2, 2), (2, 2)])
-@pytest.mark.xfail(reason='Incorrect mapping of negative coordinates')
-def test_grid_map_9grid_negative(dummy_coords, expected):
-    assert grid_map(dummy_coords, 1) == expected
+def test_normalized_grid_more_beads():
+    # sum of z coordinate in grid,
+    grid_z_coords = np.full((3, 3), 10.)
+    # grid number of beads per unit
+    norm_grid = np.array([[2., 1., 1.], [1., 2., 1.], [1., 1., 2.]])
+    # avg z coordinate in grid
+    expected_normalized_surface = np.array([[5., 10., 10.], [10., 5., 10.], [10., 10., 5.]])
+    average_surface = normalized_grid(grid_z_coords, norm_grid)
+    assert_almost_equal(average_surface, expected_normalized_surface)
+
+
+def test_derive_surface(small_grofile):
+    n_cells, max_width = 3, 30
+    expected_surface = np.array(([150., 150., 120.], [150., 120., 120.], [150., 120., 120.]))
+    max_width_x = max_width_y = max_width
+    surface = derive_surface(n_cells, n_cells, small_grofile, max_width_x, max_width_y)
+    assert_almost_equal(surface, expected_surface)
+
+
+def test_derive_surface_from_numpy():
+    dummy_array = np.array([[0., 0., 150.], [100., 0., 150.], [200., 0., 150.],
+                            [0., 100., 150.], [100., 100., 120.], [200., 100., 120.],
+                            [0., 200., 120.], [100., 200., 120.], [200., 200., 120.]])
+    x_bin = y_bin = 3
+    x_range = y_range = (0, 300)
+    expected_surface = np.array(([150., 150., 120.], [150., 120., 120.], [150., 120., 120.]))
+    surface = get_z_surface(dummy_array, x_bin, y_bin, x_range, y_range)
+    assert_almost_equal(surface, expected_surface)
+
+
+@pytest.mark.parametrize('x_bin, y_bin, x_range, y_range, expected_surface', [
+    (3, 3, (0, 300), (0, 300), np.array(([150., np.nan, 150.],
+                                         [np.nan, 150., 150.],
+                                         [150., 150., 150.]))),
+    (3, 4, (0, 300), (0, 400), np.array([[150.,  np.nan, 150.,  np.nan],
+                                         [np.nan, 150., 150.,  np.nan],
+                                         [150., 150., 150.,  np.nan]]))
+])
+def test_get_z_surface(x_bin, y_bin, x_range, y_range, expected_surface):
+    dummy_array = np.array([[0., 0., 150.], [0., 0., 150.], [200., 0., 150.],
+                            [0., 0., 150.], [100., 100., 150.], [200., 100., 150.],
+                            [0., 200., 150.], [100., 200., 150.], [200., 200., 150.]])
+    surface = get_z_surface(dummy_array, x_bin, y_bin, x_range, y_range)
+    assert_almost_equal(surface, expected_surface)
