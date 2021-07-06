@@ -3,7 +3,8 @@ Unit and regression test for the membrane_curvature package.
 """
 
 import pytest
-from ..lib.mods import mean_curvature, gaussian_curvature, normalized_grid, derive_surface, get_z_surface
+from membrane_curvature.surface import normalized_grid, derive_surface, get_z_surface
+from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
