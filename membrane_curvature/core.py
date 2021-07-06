@@ -5,7 +5,8 @@ MDAkit for Membrane Curvature
 Handles the primary functions
 """
 
-from .lib.mods import derive_surface, gaussian_curvature, mean_curvature
+from membrane_curvature.surface import normalized_grid, derive_surface, get_z_surface
+from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 import time
 import MDAnalysis as mda
 import math
@@ -16,7 +17,7 @@ version = 0.1
 
 def main():
 
-    start_time = time.time()
+
 
     # 1. Populate universe with coordinates and trajectory
     u = mda.Universe(topology, trajectory)
@@ -37,8 +38,6 @@ def main():
     # 5. Calculate curvature
     K = gaussian_curvature(z_coords)
     H = mean_curvature(z_coords)
-
-    timer(time.time(), start_time)
 
     return
 
