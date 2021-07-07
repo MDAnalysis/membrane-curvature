@@ -1,72 +1,56 @@
 import numpy as np
 
-from membrane_curvature.lib.mods import derive_surface, mean_curvature, gaussian_curvature
-import numpy as np
+from membrane_curvature.surface import get_z_surface
+from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 
 
-def __init__(self, universe, select,
-             x_bins=100, y_bins=100,
-             x_range=None,
-             y_range=None,
-             pbc=True):
-    self.universe = universe
-    self.selection = select
-    self.pbc = pbc
-    self.y_bins = y_bins
-    self.x_bins = x_bins
-    self.x_range = x_range if x_range else (0, universe.dimensions[0])
-    self.y_range = y_range if y_range else (0, universe.dimensions[1])
-
-    # Warns if range doesn't cover entire dimensions of simulation box
-    if (x_range < universe.dimensions[0]) or (y_range < universe.dimensions[1]):
-        raise ValueError("Minimum range must be ({}, {})").format(self.universe.dimensions[0],
-                                                                  self.universe.dimenions[1])
+from MDAnalysis.analysis.base import AnalysisBase
+import MDAnalysis as mda
 
 
-def _prepare(self):
+class MembraneCurvature(AnalysisBase):
 
-    # Initialize empty np.array(cumulative, count) of results
-    cumulative = np.zeros((self.x_bins, self.y_bins))
-    count = np.zeros((self.x_bins, self.y_bins))
+    def __init__(self, universe, select='all',
+                 n_x_bins=100, n_y_bins=100,
+                 x_range=None,
+                 y_range=None,
+                 pbc=True, **kwargs):
 
-    self.results.surface = (cumulative, count)
-    self.results.mean = (cumulative, count)
-    self.results.gaussian = (cumulative, count)
+        super().__init__(universe.universe.trajectory, **kwargs)
+        self.selection = universe.select_atoms(select)
+        self.pbc = pbc
+        self.n_x_bins = n_x_bins
+        self.n_y_bins = n_y_bins
+        self.x_range = x_range if x_range else (0, universe.dimensions[0])
+        self.y_range = y_range if y_range else (0, universe.dimensions[1])
 
+        # Raise if range doesn't cover entire dimensions of simulation box
+        if (self.x_range[1] < universe.dimensions[0]) or (self.y_range[1] < universe.dimensions[1]):
+            raise ValueError("Minimum range must be ({}, {})").format(self.universe.dimensions[0],
+                                                                      self.universe.dimensions[1])
 
-def _output(self, value_per_frame, cumulative_output, counter):
-    """
-    Adds np.arrays of mean curvature, gaussian curvature and surface to results.
-    """
+    def _prepare(self):
+        # Initialize empty np.array with results
+        self.results.z_surface = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
 
-    nans_in_grid = np.isnan(value_per_frame)
+        self.results.mean = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
 
-    # Calculate cumulative per frame when no nans.
-    cumulative_output += np.where(nans_in_grid, 0, value_per_frame)
+        self.results.gaussian = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
 
-    # Count when no nans.
-    counter += np.where(nans_in_grid, 0, 1)
+    def _single_frame(self):
+        # Populate a slice with np.arrays of surface, mean, and gaussian per frame
+        self.results.z_surface[self._frame_index] = get_z_surface(self.selection.positions,
+                                                                  n_x_bins=self.n_x_bins, n_y_bins=self.n_y_bins,
+                                                                  x_range=self.x_range, y_range=self.y_range)
 
+        self.results.mean[self._frame_index] = mean_curvature(self.results.z_surface[self._frame_index])
 
-def _single_frame(self):
+        self.results.gaussian[self._frame_index] = gaussian_curvature(self.results.z_surface[self._frame_index])
 
-    surface_ = derive_surface(n_x_bins=self.n_cells_x, n_y_bins=self.n_cells_y,
-                              x_range=(0, self.max_width_x), y_range=(0, self.max_width_y))
+    def _conclude(self):
+        # Calculate mean of np.array of surface, mean, gaussian
+        self.results.average_z_surface = np.nanmean(self.results.z_surface, axis=0)
 
-    mean_ = mean_curvature(surface_)
-    gaussian_ = gaussian_curvature(surface_)
+        self.results.average_mean = np.nanmean(self.results.mean, axis=0)
 
-    # Save the results in NumPy array of shape (`n_x_bins`, `n_y_bins`).
-    self._output(surface_, self.results.surface[0], self.results.surface[1])
-    self._output(mean_, self.results.mean[0], self.results.mean[1])
-    self._output(gaussian_, self.results.gaussian[0], self.results.gaussian[1])
-
-
-def _conclude(self):
-
-    # Calculate average of np.array over trajectory normalized over counter
-    self.results.average_surface = self.results.surface[0] / self.results.surface[1]
-
-    self.results.average_mean = self.results.mean[0] / self.results.mean[1]
-
-    self.results.average_gaussian = self.results.surface[0] / self.results.surface[1]
+        self.results.average_gaussian = np.nanmean(self.results.gaussian, axis=0)
