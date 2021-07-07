@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def derive_surface(n_cells_x, n_cells_y, selection, max_width_x, max_width_y):
+def derive_surface(selection, n_cells_x, n_cells_y, max_width_x, max_width_y):
     """
     Derive surface from AtomGroup positions.
 
@@ -105,6 +105,3 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
     z_normalized = grid_z_coordinates / grid_norm_unit
 
     return z_normalized
-
-
-

@@ -176,7 +176,7 @@ def test_derive_surface(small_grofile):
     n_cells, max_width = 3, 30
     expected_surface = np.array(([150., 150., 120.], [150., 120., 120.], [150., 120., 120.]))
     max_width_x = max_width_y = max_width
-    surface = derive_surface(n_cells, n_cells, small_grofile, max_width_x, max_width_y)
+    surface = derive_surface(small_grofile, n_cells, n_cells, max_width_x, max_width_y)
     assert_almost_equal(surface, expected_surface)
 
 
