@@ -31,17 +31,25 @@ class MembraneCurvature(AnalysisBase):
 
     def _prepare(self):
         # Initialize empty np.array with results
-        self.results.z_surface = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
+        self.results.z_surface = np.full((self.n_frames,
+                                          self.n_x_bins,
+                                          self.n_y_bins), np.nan)
 
-        self.results.mean = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
+        self.results.mean = np.full((self.n_frames,
+                                     self.n_x_bins,
+                                     self.n_y_bins), np.nan)
 
-        self.results.gaussian = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
+        self.results.gaussian = np.full((self.n_frames,
+                                         self.n_x_bins,
+                                         self.n_y_bins), np.nan)
 
     def _single_frame(self):
         # Populate a slice with np.arrays of surface, mean, and gaussian per frame
         self.results.z_surface[self._frame_index] = get_z_surface(self.selection.positions,
-                                                                  n_x_bins=self.n_x_bins, n_y_bins=self.n_y_bins,
-                                                                  x_range=self.x_range, y_range=self.y_range)
+                                                                  n_x_bins=self.n_x_bins,
+                                                                  n_y_bins=self.n_y_bins,
+                                                                  x_range=self.x_range,
+                                                                  y_range=self.y_range)
 
         self.results.mean[self._frame_index] = mean_curvature(self.results.z_surface[self._frame_index])
 
