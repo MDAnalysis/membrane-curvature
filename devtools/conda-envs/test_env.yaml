@@ -7,8 +7,8 @@ dependencies:
   - pip
   - numpy
   - sphinx
-  - git+git://github.com/MDAnalysis/mdanalysis/@releases/tag/release-2.0.0-beta
-  #- git+git://github.com/MDAnalysis/mdanalysis/@64840d5df32ecb73ceadcc022dc4b71738537404
+  #- git+git://github.com/MDAnalysis/mdanalysis/@releases/tag/release-2.0.0-beta
+  - git+git://github.com/MDAnalysis/mdanalysis/@64840d5df32ecb73ceadcc022dc4b71738537404
     # Testing
   - pytest
   - pytest-cov
