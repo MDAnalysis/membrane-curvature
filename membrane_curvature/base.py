@@ -24,10 +24,14 @@ class MembraneCurvature(AnalysisBase):
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
         self.y_range = y_range if y_range else (0, universe.dimensions[1])
 
+        # Raise if selection doesn't exist
+        if (self.selection.n_residues) == 0:
+            raise ValueError("Invalid selection. Empty AtomGroup.")
+
         # Raise if range doesn't cover entire dimensions of simulation box
-        if (self.x_range[1] < universe.dimensions[0]) or (self.y_range[1] < universe.dimensions[1]):
-            raise ValueError("Minimum range must be ({}, {})").format(self.universe.dimensions[0],
-                                                                      self.universe.dimensions[1])
+        if (self.x_range[1] < universe.dimensions[0]):
+            raise ValueError("Grid range do not cover entire dimensions of "
+                             "simulation box.")
 
     def _prepare(self):
         # Initialize empty np.array with results
