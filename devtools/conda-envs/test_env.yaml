@@ -6,10 +6,9 @@ dependencies:
   - python
   - pip
   - numpy
-  - MDAnalysis==1.1.1
-  - mdtraj # temporary; remove after refactoring
   - sphinx
-
+  - git+git://github.com/MDAnalysis/mdanalysis/@releases/tag/release-2.0.0-beta
+  #- git+git://github.com/MDAnalysis/mdanalysis/@64840d5df32ecb73ceadcc022dc4b71738537404
     # Testing
   - pytest
   - pytest-cov
