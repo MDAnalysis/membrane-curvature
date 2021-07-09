@@ -6,7 +6,7 @@ dependencies:
   - python
   - pip
   - numpy
-  - MDAnalysis
+  - MDAnalysis=1.1.1
   - mdtraj # temporary; remove after refactoring
   - sphinx
 
