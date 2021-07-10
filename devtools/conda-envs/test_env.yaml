@@ -7,15 +7,12 @@ dependencies:
   - pip
   - numpy
   - sphinx
-  - MDAnalysis==2.0.0-dev0
-  #- git+git://github.com/MDAnalysis/mdanalysis/@releases/tag/release-2.0.0-beta
-  #- git+git://github.com/MDAnalysis/mdanalysis/@64840d5df32ecb73ceadcc022dc4b71738537404
-    # Testing
+     # Testing
   - pytest
   - pytest-cov
   - codecov
 
     # Pip-only installs
-  #- pip:
-  #  - codecov
+  - pip:
+    - MDAnalysis==2.0.0b0
 
