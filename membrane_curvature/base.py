@@ -1,13 +1,13 @@
 """
-MembraneCurvature 
+MembraneCurvature
 =======================================
 
 :Author: Estefania Barreto-Ojeda
-:Year: 2021 
+:Year: 2021
 :Copyright: GNU Public License v3
 
-MembraneCurvature calculates the mean and Gaussian curvature of 
-surfaces derived from a selection of reference. 
+MembraneCurvature calculates the mean and Gaussian curvature of
+surfaces derived from a selection of reference.
 """
 
 import numpy as np
@@ -29,23 +29,23 @@ class MembraneCurvature(AnalysisBase):
     ----------
     universe : Universe or AtomGroup
         An MDAnalysis Universe object.
-    select : str or iterable of str, optional. Default: 'all' 
-        The selection string of an atom selection to use as a 
-        reference to derive a surface. 
+    select : str or iterable of str, optional. Default: 'all'
+        The selection string of an atom selection to use as a
+        reference to derive a surface.
     pbc : bool, optional. Default: 'True'
         Apply periodic boundary conditions.
     n_x_bins : int, optional. Deafult: '100'
-        Number of bins in grid in the `x` dimension. 
+        Number of bins in grid in the `x` dimension.
     n_y_bins : int, optional. Default: '100'
         Number of bins in grid in the `y` dimension. 
     x_range : tuple of (float, float), optional. Deafult: (0, `universe.dimensions[0]`)
         Range of coordinates (min, max) in the `x` dimension.
     y_range : tuple of (float, float), optional. Deafult: (0, `universe.dimensions[1]`)
-        Range of coordinates (min, max) in the `y` dimension. 
+        Range of coordinates (min, max) in the `y` dimension.
 
     Attributes
     ----------
-    results.z_surface : ndarray 
+    results.z_surface : ndarray
         Surface derived from atom selection in every frame.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.mean_curvature : ndarray
