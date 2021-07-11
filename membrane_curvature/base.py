@@ -37,7 +37,7 @@ class MembraneCurvature(AnalysisBase):
     n_x_bins : int, optional. Deafult: '100'
         Number of bins in grid in the `x` dimension.
     n_y_bins : int, optional. Default: '100'
-        Number of bins in grid in the `y` dimension. 
+        Number of bins in grid in the `y` dimension.
     x_range : tuple of (float, float), optional. Deafult: (0, `universe.dimensions[0]`)
         Range of coordinates (min, max) in the `x` dimension.
     y_range : tuple of (float, float), optional. Deafult: (0, `universe.dimensions[1]`)
