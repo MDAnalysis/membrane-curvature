@@ -229,8 +229,9 @@ class TestMembraneCurvature(object):
             MembraneCurvature(universe, select='name P')
 
     def test_grid_bigger_than_simulation_box(self, universe):
-        with pytest.raises(ValueError, match=r'Grid range do not cover entire dimensions'):
+        with pytest.warns(UserWarning):
             MembraneCurvature(universe, select='name PO4', x_range=(0, 10))
+            MembraneCurvature(universe, select='name PO4', y_range=(0, 10))
 
     @pytest.mark.parametrize('x_bin, y_bin, x_range, y_range, expected_surface', [
         (3, 3, (0, 300), (0, 300), np.array(([150., np.nan, 150.],
