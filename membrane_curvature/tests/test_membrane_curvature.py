@@ -228,9 +228,18 @@ class TestMembraneCurvature(object):
         with pytest.raises(ValueError, match=r'Invalid selection'):
             MembraneCurvature(universe, select='name P')
 
-    def test_grid_bigger_than_simulation_box(self, universe):
-        with pytest.warns(UserWarning):
+    def test_grid_bigger_than_simulation_box_x_dim(self, universe):
+        regex = (r"Grid range in x does not cover entire "
+                 r"dimensions of simulation box.\n Minimum dimensions "
+                 r"must be equal to simulation box.")
+        with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(universe, select='name PO4', x_range=(0, 10))
+
+    def test_grid_bigger_than_simulation_box_y_dim(self, universe):
+        regex = (r"Grid range in y does not cover entire "
+                 r"dimensions of simulation box.\n Minimum dimensions "
+                 r"must be equal to simulation box.")
+        with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(universe, select='name PO4', y_range=(0, 10))
 
     @pytest.mark.parametrize('x_bin, y_bin, x_range, y_range, expected_surface', [
@@ -271,7 +280,7 @@ class TestMembraneCurvature(object):
     ])
     def test_analysis_get_z_surface(self, universe, x_bin, y_bin, expected_surface):
         mc = MembraneCurvature(universe,
-                               select='all',
+                               select='name PO4',
                                n_x_bins=x_bin,
                                n_y_bins=y_bin).run()
         avg_surface = mc.results.average_z_surface
@@ -282,7 +291,7 @@ class TestMembraneCurvature(object):
                                   [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
                                   [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
         mc = MembraneCurvature(universe,
-                               select='all',
+                               select='name PO4',
                                n_x_bins=3,
                                n_y_bins=3).run()
         avg_mean = mc.results.average_mean
