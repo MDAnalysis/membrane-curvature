@@ -15,12 +15,12 @@ import warnings
 from .surface import get_z_surface
 from .curvature import mean_curvature, gaussian_curvature
 
-import MDAnalysis as mda
+import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisBase
 
-import logging
+MDAnalysis.start_logging()
 
-logger = logging.getLogger("MDAnalysis.analysis.density")
+logger = logging.getLogger("MDAnalysis.MDAKit.membrane_curvature")
 
 
 class MembraneCurvature(AnalysisBase):
@@ -29,59 +29,51 @@ class MembraneCurvature(AnalysisBase):
 
     Parameters
     ----------
-    universe : Universe or AtomGroup
-        An MDAnalysis Universe object.
-    select : str or iterable of str, optional. 
-        The selection string of an atom selection to use as a
-        reference to derive a surface.
-    pbc : bool, optional
-        Apply periodic boundary conditions.
-    n_x_bins : int, optional, default: '100'
-        Number of bins in grid in the x dimension.
-    n_y_bins : int, optional, default: '100'
-        Number of bins in grid in the y dimension.
-    x_range : tuple of (float, float), optional, default: (0, `universe.dimensions[0]`)
-        Range of coordinates (min, max) in the x dimension.
-    y_range : tuple of (float, float), optional, default: (0, `universe.dimensions[1]`)
-        Range of coordinates (min, max) in the y dimension.
+    universe : Universe or AtomGroup An MDAnalysis Universe object. select : str
+        or iterable of str, optional. The selection string of an atom selection
+        to use as a reference to derive a surface. pbc : bool, optional Apply
+        periodic boundary conditions. n_x_bins : int, optional, default: '100'
+        Number of bins in grid in the x dimension. n_y_bins : int, optional,
+        default: '100' Number of bins in grid in the y dimension. x_range :
+        tuple of (float, float), optional, default: (0,
+        `universe.dimensions[0]`) Range of coordinates (min, max) in the x
+        dimension. y_range : tuple of (float, float), optional, default: (0,
+        `universe.dimensions[1]`) Range of coordinates (min, max) in the y
+        dimension.
 
     Attributes
     ----------
-    results.z_surface : ndarray
-        Surface derived from atom selection in every frame.
-        Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
-    results.mean_curvature : ndarray
-        Mean curvature associated to the surface.
-        Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
-    results.gaussian_curvature : ndarray
-        Gaussian curvature associated to the surface.
-        Arrays of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
-    results.average_z_surface : ndarray 
-        Average of the array elements in `z_surface`. 
-        Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_mean_curvature : ndarray 
-        Average of the array elements in `mean_curvature`.
-        Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_gaussian_curvature: ndarray 
-        Average of the array elements in `gaussian_curvature`.
-        Each array has shape (`n_x_bins`, `n_y_bins`)
+    results.z_surface : ndarray Surface derived from atom selection in every
+        frame. Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
+        results.mean_curvature : ndarray Mean curvature associated to the
+        surface. Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
+        results.gaussian_curvature : ndarray Gaussian curvature associated to
+        the surface. Arrays of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
+        results.average_z_surface : ndarray Average of the array elements in
+        `z_surface`. Each array has shape (`n_x_bins`, `n_y_bins`)
+        results.average_mean_curvature : ndarray Average of the array elements
+        in `mean_curvature`. Each array has shape (`n_x_bins`, `n_y_bins`)
+        results.average_gaussian_curvature: ndarray Average of the array
+        elements in `gaussian_curvature`. Each array has shape (`n_x_bins`,
+        `n_y_bins`)
 
 
     Notes
     -----
     The derived surface and calculated curvatures are available in the
-    ``.results``::atttributes. 
+     :attr:`results` attributes.
 
-    The attribute :attr:`MembraneCurvature.z_surface`
-    contains the derived surface averaged over the `n_frames` of the trajectory.
+    The attribute :attr:`MembraneCurvature.results.z_surface` contains the
+    derived surface averaged over the `n_frames` of the trajectory.
 
-    The attributes :attr:`MembraneCurvature.mean_curvature` and
-    :attr:`MembraneCurvature.gaussian_curvature` contain the computed values of
-    mean and Gaussian curvature averaged over the `n_frames` of the trajectory.
+    The attributes :attr:`MembraneCurvature.results.mean_curvature` and
+    :attr:`MembraneCurvature.results.gaussian_curvature` contain the computed
+    values of mean and Gaussian curvature averaged over the `n_frames` of the
+    trajectory.
 
     Example
     -----------
-    You can pass a universe containing your selection of reference:
+    You can pass a universe containing your selection of reference::
 
         import MDAnalysis as mda
         from MDAnalysis.analysis import MembraneCurvature
@@ -92,6 +84,27 @@ class MembraneCurvature(AnalysisBase):
         surface =  mc.results.average_z_surface
         mean_curvature =  mc.results.average_mean_curvature
         gaussian_curvature = mc.results.average_gaussian_curvature
+
+    The respective 2D plots can be obtained using the `matplotlib` package for
+    data visualization via `imshow`. We recommend using the `gaussian` interpolation. 
+
+    A simple plot using `imshow` can be obtained by
+
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        ax.imshow(mean_curvature, cmap='bwr', interpolation='gaussian', origin='lower')
+        ax.set_title('Mean Curvature')
+        plt.show()
+
+    As an alternativem you can use contour plots using `contourf`:
+
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        ax.contourf(mean_curvature, cmap='bwr, origin='lower')
+        ax.set_title('Mean Curvature')
+        plt.show()
+
+
 
     """
 
