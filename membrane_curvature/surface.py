@@ -1,19 +1,19 @@
 import numpy as np
 
 
-def derive_surface(n_cells_x, n_cells_y, selection, max_width_x, max_width_y):
+def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
     """
     Derive surface from AtomGroup positions.
 
     Parameters
     ----------
+    atoms : AtomGroup.
+        AtomGroup of reference selection to define the surface
+        of the membrane.
     n_cells_x : int.
         number of cells in the grid of size `max_width_x`, `x` axis.
     n_cells_y : int.
         number of cells in the grid of size `max_width_y`, `y` axis.
-    selection : AtomGroup.
-        AtomGroup of reference selection to define the surface
-        of the membrane.
     max_width_x: float.
         Maximum width of simulation box in x axis. (Determined by simulation box dimensions)
     max_width_y: float.
@@ -26,7 +26,7 @@ def derive_surface(n_cells_x, n_cells_y, selection, max_width_x, max_width_y):
         shape `(n_cells_x, n_cells_y)`.
 
     """
-    coordinates = selection.positions
+    coordinates = atoms.positions
     return get_z_surface(coordinates, n_x_bins=n_cells_x, n_y_bins=n_cells_y,
                          x_range=(0, max_width_x), y_range=(0, max_width_y))
 
@@ -105,6 +105,3 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
     z_normalized = grid_z_coordinates / grid_norm_unit
 
     return z_normalized
-
-
-

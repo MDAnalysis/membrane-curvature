@@ -9,6 +9,7 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
 from membrane_curvature.tests.datafiles import (GRO_PO4_SMALL, XTC_PO4_SMALL)
+from membrane_curvature.base import MembraneCurvature
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
@@ -176,7 +177,7 @@ def test_derive_surface(small_grofile):
     n_cells, max_width = 3, 30
     expected_surface = np.array(([150., 150., 120.], [150., 120., 120.], [150., 120., 120.]))
     max_width_x = max_width_y = max_width
-    surface = derive_surface(n_cells, n_cells, small_grofile, max_width_x, max_width_y)
+    surface = derive_surface(small_grofile, n_cells, n_cells, max_width_x, max_width_y)
     assert_almost_equal(surface, expected_surface)
 
 
@@ -205,3 +206,104 @@ def test_get_z_surface(x_bin, y_bin, x_range, y_range, expected_surface):
                             [0., 200., 150.], [100., 200., 150.], [200., 200., 150.]])
     surface = get_z_surface(dummy_array, x_bin, y_bin, x_range, y_range)
     assert_almost_equal(surface, expected_surface)
+
+
+class TestMembraneCurvature(object):
+    @pytest.fixture()
+    def universe(self):
+        return mda.Universe(GRO_PO4_SMALL, XTC_PO4_SMALL)
+
+    @pytest.fixture()
+    def universe_dummy(self):
+        a = np.array([[0., 0., 150.], [0., 0., 150.], [200., 0., 150.],
+                      [0., 0., 150.], [100., 100., 150.], [200., 100., 150.],
+                      [0., 200., 150.], [100., 200., 150.], [200., 200., 150.]])
+
+        u = mda.Universe(a, n_atoms=9)
+        u.dimensions = [3, 3, 3,  90., 90., 90.]
+
+        return u
+
+    def test_invalid_selection(self, universe):
+        with pytest.raises(ValueError, match=r'Invalid selection'):
+            MembraneCurvature(universe, select='name P')
+
+    def test_grid_bigger_than_simulation_box_x_dim(self, universe):
+        regex = (r"Grid range in x does not cover entire "
+                 r"dimensions of simulation box.\n Minimum dimensions "
+                 r"must be equal to simulation box.")
+        with pytest.warns(UserWarning, match=regex):
+            MembraneCurvature(universe, select='name PO4', x_range=(0, 10))
+
+    def test_grid_bigger_than_simulation_box_y_dim(self, universe):
+        regex = (r"Grid range in y does not cover entire "
+                 r"dimensions of simulation box.\n Minimum dimensions "
+                 r"must be equal to simulation box.")
+        with pytest.warns(UserWarning, match=regex):
+            MembraneCurvature(universe, select='name PO4', y_range=(0, 10))
+
+    @pytest.mark.parametrize('x_bin, y_bin, x_range, y_range, expected_surface', [
+        (3, 3, (0, 300), (0, 300), np.array(([150., np.nan, 150.],
+                                             [np.nan, 150., 150.],
+                                             [150., 150., 150.]))),
+        (3, 4, (0, 300), (0, 400), np.array([[150.,  np.nan, 150.,  np.nan],
+                                             [np.nan, 150., 150.,  np.nan],
+                                             [150., 150., 150.,  np.nan]]))
+    ])
+    def test_analysis_get_z_surface_dummy(self, universe_dummy, x_bin, y_bin, x_range, y_range, expected_surface):
+        u = universe_dummy
+        mc = MembraneCurvature(u, select='all',
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               x_range=x_range,
+                               y_range=y_range).run()
+
+        avg_surface = mc.results.average_z_surface
+        assert_almost_equal(avg_surface, expected_surface)
+
+    @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
+        (3, 3,
+         np.array([[150., 150., 120.],
+                   [150., 120., 120.],
+                   [150., 120., 120.]])),
+        (4, 4,
+         np.array([[150., 150., 135., 120.],
+                   [150., 120., 120., np.nan],
+                   [150., 120., 120., 120.],
+                   [150., np.nan, 120., 120.]])),
+        (5, 5,
+         np.array([[150., 150., 150., 120., 120.],
+                   [150., 120., np.nan, 120., np.nan],
+                   [150., np.nan, 120., np.nan, 120.],
+                   [150., 120., np.nan, 120., np.nan],
+                   [150., np.nan, 120., np.nan, 120.]]))
+    ])
+    def test_analysis_get_z_surface(self, universe, x_bin, y_bin, expected_surface):
+        mc = MembraneCurvature(universe,
+                               select='name PO4',
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin).run()
+        avg_surface = mc.results.average_z_surface
+        assert_almost_equal(avg_surface, expected_surface)
+
+    def test_analysis_mean(self, universe):
+        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
+                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
+                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
+        mc = MembraneCurvature(universe,
+                               select='name PO4',
+                               n_x_bins=3,
+                               n_y_bins=3).run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)
+
+
+    def test_analysis_mean_default_selection(self, universe):
+        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
+                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
+                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
+        mc = MembraneCurvature(universe,
+                               n_x_bins=3,
+                               n_y_bins=3).run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)

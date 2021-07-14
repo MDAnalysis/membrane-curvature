@@ -6,16 +6,13 @@ dependencies:
   - python
   - pip
   - numpy
-  - MDAnalysis
-  - mdtraj # temporary; remove after refactoring
   - sphinx
-
-    # Testing
+     # Testing
   - pytest
   - pytest-cov
   - codecov
 
     # Pip-only installs
-  #- pip:
-  #  - codecov
+  - pip:
+    - MDAnalysis==2.0.0b0
 
