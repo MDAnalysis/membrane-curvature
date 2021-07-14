@@ -12,8 +12,8 @@ surfaces derived from a selection of reference.
 
 import numpy as np
 import warnings
-from membrane_curvature.surface import get_z_surface
-from membrane_curvature.curvature import mean_curvature, gaussian_curvature
+from .surface import get_z_surface
+from .curvature import mean_curvature, gaussian_curvature
 
 import MDAnalysis as mda
 from MDAnalysis.analysis.base import AnalysisBase

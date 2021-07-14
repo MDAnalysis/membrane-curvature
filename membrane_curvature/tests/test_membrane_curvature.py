@@ -296,3 +296,14 @@ class TestMembraneCurvature(object):
                                n_y_bins=3).run()
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
+
+
+    def test_analysis_mean_default_selection(self, universe):
+        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
+                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
+                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
+        mc = MembraneCurvature(universe,
+                               n_x_bins=3,
+                               n_y_bins=3).run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)
