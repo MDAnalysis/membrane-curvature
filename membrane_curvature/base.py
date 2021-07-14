@@ -18,6 +18,7 @@ from .curvature import mean_curvature, gaussian_curvature
 import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisBase
 
+import logging 
 MDAnalysis.start_logging()
 
 logger = logging.getLogger("MDAnalysis.MDAKit.membrane_curvature")
@@ -70,13 +71,13 @@ class MembraneCurvature(AnalysisBase):
     Notes
     -----
     The derived surface and calculated curvatures are available in the
-     :attr:`results` attributes.
+    :attr:`results` attributes.
 
-    The attribute :attr:`MembraneCurvature.results.z_surface` contains the
+    The attribute :attr:`~MembraneCurvature.results.z_surface` contains the
     derived surface averaged over the `n_frames` of the trajectory.
 
-    The attributes :attr:`MembraneCurvature.results.mean_curvature` and
-    :attr:`MembraneCurvature.results.gaussian_curvature` contain the computed
+    The attributes :attr:`~MembraneCurvature.results.mean_curvature` and
+    :attr:`~MembraneCurvature.results.gaussian_curvature` contain the computed
     values of mean and Gaussian curvature averaged over the `n_frames` of the
     trajectory.
 
@@ -94,7 +95,7 @@ class MembraneCurvature(AnalysisBase):
         mean_curvature =  mc.results.average_mean_curvature
         gaussian_curvature = mc.results.average_gaussian_curvature
 
-    The respective 2D plots can be obtained using the `matplotlib` package for
+    The respective 2D curvature plots can be obtained using the `matplotlib` package for
     data visualization via `imshow`. We recommend using the `gaussian` interpolation. 
 
     A simple plot using `imshow` can be obtained by
