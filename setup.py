@@ -1,6 +1,6 @@
 """
-
-MDAkit for Membrane Curvature
+MembraneCurvature MDAkit
+A tool to calculate Membrane Curvature
 """
 import sys
 from setuptools import setup, find_packages
@@ -12,12 +12,36 @@ short_description = __doc__.split("\n")
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-try:
-    with open("README.md", "r") as handle:
-        long_description = handle.read()
-except:
-    long_description = "\n".join(short_description[2:])
+# Check Python version
+if sys.version_info[:2] < (3, 6):
+    print('This package requires a verion of Python>=3.6.'
+          'Please upgrading your version of Python to use MembraneCurvature.')
+    sys.exit(-1)
 
+# Add release
+RELEASE = "0.0.0-dev0"
+
+# Check numpy is installed
+try:
+    import numpy as np
+except ImportError:
+    print("MembraneCurvature requires numpy>=1.20.2")
+
+
+if __name__ == "__main__":
+
+    try:
+        with open("README.md", "r") as handle:
+            long_description = handle.read()
+    except:
+        long_description = "\n".join(short_description[2:])
+
+    # set requirements
+    install_requires = [
+        'numpy>=1.20.2',
+        'mdanalysis>=2.0.0',
+        'mdanalysistests>=2.0.0',
+    ]
 
 setup(
     # Self-descriptive entries which should always be present
@@ -42,7 +66,7 @@ setup(
     include_package_data=True,
 
     # Allows `setup.py test` to work correctly with pytest
-    setup_requires=[] + pytest_runner,
+    setup_requires=['numpy>=1.20.2'] + pytest_runner,
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
@@ -51,7 +75,7 @@ setup(
     #            'Mac OS-X',
     #            'Unix',
     #            'Windows'],            # Valid platforms your code works on, adjust to your flavor
-    # python_requires=">=3.5",          # Python version restrictions
+    python_requires=">=3.7",          # Python version restrictions
 
     # Manual control if final package is compressible or not, set False to prevent the .egg from being made
     # zip_safe=False,
