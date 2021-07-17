@@ -2,6 +2,7 @@
 Unit and regression test for the membrane_curvature package.
 """
 
+from numpy.lib.stride_tricks import DummyArray
 import pytest
 from membrane_curvature.surface import normalized_grid, derive_surface, get_z_surface
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
@@ -220,7 +221,18 @@ class TestMembraneCurvature(object):
                       [0., 200., 150.], [100., 200., 150.], [200., 200., 150.]])
 
         u = mda.Universe(a, n_atoms=9)
-        u.dimensions = [3, 3, 3,  90., 90., 90.]
+        u.dimensions = [300, 300, 300,  90., 90., 90.]
+
+        return u
+
+    @pytest.fixture()
+    def universe_dummy_full(self):
+        a = np.array([[0., 0., 150.], [100., 0., 150.], [200., 0., 150.],
+                      [0., 200., 150.], [100., 200., 120.], [200., 200., 120.],
+                      [0., 100., 120.], [100., 100., 120.], [200., 100., 120.]])
+
+        u = mda.Universe(a, n_atoms=9)
+        u.dimensions = [300, 300, 300,  90., 90., 90.]
 
         return u
 
@@ -261,6 +273,7 @@ class TestMembraneCurvature(object):
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 
+    @pytest.mark.xfail(reason="PBC conditions not applied.")
     @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
         (3, 3,
          np.array([[150., 150., 120.],
@@ -286,24 +299,82 @@ class TestMembraneCurvature(object):
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 
-    def test_analysis_mean(self, universe):
-        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
-                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
-                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
-        mc = MembraneCurvature(universe,
-                               select='name PO4',
+    # Expected values update after applying coordinates wrap
+    @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
+        (3, 3,
+         np.array([[150., 120., 150.],
+                   [150., 120., 120.],
+                   [150., 120., 120.]])),
+        (4, 4,
+         np.array([[150., 120., 150., np.nan],
+                   [150., 120., 120., np.nan],
+                   [150., 120., 120., np.nan],
+                   [np.nan, np.nan, np.nan, np.nan]])),
+        (5, 5,
+         np.array([[150., 120., np.nan, 150., np.nan],
+                  [150., 120., np.nan, 120., np.nan],
+                  [np.nan, np.nan, np.nan, np.nan, np.nan],
+                  [150., 120., np.nan, 120., np.nan],
+                  [np.nan, np.nan, np.nan, np.nan, np.nan]]))
+
+    ])
+    def test_analysis_get_z_surface(self, universe_dummy_full, x_bin, y_bin, expected_surface):
+        mc = MembraneCurvature(universe_dummy_full,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin).run()
+        avg_surface = mc.results.average_z_surface
+        assert_almost_equal(avg_surface, expected_surface)
+
+    def test_analysis_mean(self, universe_dummy_full):
+        expected_mean = np.array([[-5.54630914e-04, - 1.50000000e+01,  8.80203593e-02],
+                                  [-2.77315457e-04, - 2.20748929e-03, - 5.01100068e-01],
+                                  [-2.77315457e-04, - 2.20748929e-03, - 1.50000000e+01]])
+        mc = MembraneCurvature(universe_dummy_full,
                                n_x_bins=3,
                                n_y_bins=3).run()
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
 
+    @ pytest.mark.parametrize('dummy_array, expected_surface', [
+        # test with negative x coordinates
+        (np.array([[0., 0., 150.], [-100., 0., 150.], [- 200., 0., 150.],
+                  [0., 100., 150.], [-100., 100., 120.], [-200., 100., 120.],
+                  [0., 200., 120.], [-100., 200., 120.], [-200., 200., 120.]]),
+         np.array([[150., 150., 120.],
+                   [150., 120., 120.],
+                   [150., 120., 120.]])),
+        # test with negative y coordinates
+        (np.array([[0., 0., 150.], [100., 0., 150.], [200., 0., 150.],
+                  [0., -100., 150.], [100., -100., 120.], [200., -100., 120.],
+                  [0., -200., 120.], [100., -200., 120.], [200., -200., 120.]]),
+            np.array([[150., 120., 150.],
+                      [150., 120., 120.],
+                      [150., 120., 120.]])),
+        # test with negative z coordinates
+        (np.array([[0., 0., -150.], [100., 0., -150.], [200., 0., -150.],
+                  [0., 100., -150.], [100., 100., 120.], [200., 100., 120.],
+                  [0., 200., 120.], [100., 200., 120.], [200., 200., 120.]]),
+            np.array([[150., 150., 120.],
+                      [150., 120., 120.],
+                      [150., 120., 120.]]))
+    ])
+    def test_analysis_wrapping_coordinates(self, dummy_array, expected_surface):
+        x_bin, y_bin, = 3, 3
+        x_range, y_range = (0, 300), (0, 300)
+        u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
+        box_dim = 300
+        u.dimensions = [box_dim, box_dim, box_dim,  90., 90., 90.]
+        # Check with wrapped coords in base
+        mc = MembraneCurvature(u, select='all',
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               x_range=x_range,
+                               y_range=y_range).run()
+        avg_surface = mc.results.average_z_surface
+        # assert if default values of pbc z_surface returns correctly
+        assert_almost_equal(avg_surface, expected_surface)
 
-    def test_analysis_mean_default_selection(self, universe):
-        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
-                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
-                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
-        mc = MembraneCurvature(universe,
-                               n_x_bins=3,
-                               n_y_bins=3).run()
-        avg_mean = mc.results.average_mean
-        assert_almost_equal(avg_mean, expected_mean)
+    def test_test_analysis_no_pbc(self, universe):
+        regex = (r"`PBC == False` may result in inaccurate calculation")
+        with pytest.warns(UserWarning, match=regex):
+            MembraneCurvature(universe, pbc=False)

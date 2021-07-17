@@ -17,6 +17,7 @@ from .curvature import mean_curvature, gaussian_curvature
 
 import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisBase
+from MDAnalysis.transformations import wrap
 
 import logging
 MDAnalysis.start_logging()
@@ -128,6 +129,15 @@ class MembraneCurvature(AnalysisBase):
                 warnings.warn(msg)
                 logger.warn(msg)
 
+        # Apply PBC conditions
+        if self.pbc == True:
+            self.ag.wrap()
+            print(self.ag)
+        else:
+            warnings.warn(" `PBC == False` may result in inaccurate calculation "
+                          "of membrane curvature. Surfaces will be derived from "
+                          "a reduced number of atoms.")
+
     def _prepare(self):
         # Initialize empty np.array with results
         self.results.z_surface = np.full((self.n_frames,
@@ -141,6 +151,8 @@ class MembraneCurvature(AnalysisBase):
                                          self.n_y_bins), np.nan)
 
     def _single_frame(self):
+        if self.pbc:
+            self.ag.wrap(inplace=True)
         # Populate a slice with np.arrays of surface, mean, and gaussian per frame
         self.results.z_surface[self._frame_index] = get_z_surface(self.ag.positions,
                                                                   n_x_bins=self.n_x_bins,
