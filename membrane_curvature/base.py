@@ -130,9 +130,8 @@ class MembraneCurvature(AnalysisBase):
                 logger.warn(msg)
 
         # Apply PBC conditions
-        if self.pbc == True:
+        if self.pbc is True:
             self.ag.wrap()
-            print(self.ag)
         else:
             warnings.warn(" `PBC == False` may result in inaccurate calculation "
                           "of membrane curvature. Surfaces will be derived from "
@@ -152,7 +151,7 @@ class MembraneCurvature(AnalysisBase):
 
     def _single_frame(self):
         if self.pbc:
-            self.ag.wrap(inplace=True)
+            self.ag.wrap()
         # Populate a slice with np.arrays of surface, mean, and gaussian per frame
         self.results.z_surface[self._frame_index] = get_z_surface(self.ag.positions,
                                                                   n_x_bins=self.n_x_bins,
