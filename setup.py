@@ -30,11 +30,8 @@ except ImportError:
 
 if __name__ == "__main__":
 
-    try:
-        with open("README.md", "r") as handle:
-            long_description = handle.read()
-    except:
-        long_description = "\n".join(short_description[2:])
+    with open("README.md", "r") as handle:
+        long_description = handle.read()
 
     # set requirements
     install_requires = [
