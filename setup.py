@@ -13,8 +13,8 @@ needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 # Check Python version
-if sys.version_info[:2] < (3, 7):
-    raise RuntimeError('Python version >=3.7 required.')
+if sys.version_info[:2] < (3, 6):
+    raise RuntimeError('Python version >=3.6 required.')
 
 # Add release
 RELEASE = "0.0.0-dev0"
