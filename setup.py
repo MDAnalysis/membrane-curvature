@@ -12,17 +12,6 @@ short_description = __doc__.split("\n")
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-# Check Python version
-if sys.version_info[:2] < (3, 6):
-    raise RuntimeError('Python version >=3.6 required.')
-
-# Check numpy is installed
-try:
-    import numpy as np
-except ImportError:
-    print("MembraneCurvature requires NumPy.")
-
-
 if __name__ == "__main__":
 
     with open("README.md", "r") as handle:
@@ -30,9 +19,9 @@ if __name__ == "__main__":
 
     # set requirements
     install_requires = [
-        'numpy>=1.16.0',
+        'numpy>=1.19.5',
         'mdanalysis>=2.0.0b0',
-        'mdanalysistests>=2.0.0',
+        'mdanalysistests>=2.0.0b0',
     ]
 
 setup(
@@ -58,7 +47,7 @@ setup(
     include_package_data=True,
 
     # Allows `setup.py test` to work correctly with pytest
-    setup_requires=['numpy>=1.16.0'] + pytest_runner,
+    setup_requires=['numpy>=1.19.0'] + pytest_runner,
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website

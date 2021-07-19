@@ -25,13 +25,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, ubuntu-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9]
-        include:
-          - name: numpy_min
-            os: ubuntu-latest
-            python-version: 3.7
-            codecov: false
-            numpy: numpy=1.16.0
+        python-version: [3.6, 3.7, 3.8, 3.9]
+        
 
     steps:
     - uses: actions/checkout@v1
@@ -49,14 +44,13 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         environment-file: devtools/conda-envs/test_env.yaml
-        mamba-version: "*"
         channels: conda-forge, defaults
 
         activate-environment: test
         auto-update-conda: false
         auto-activate-base: false
         show-channel-urls: true
-
+        
     - name: Install package
 
       # conda setup requires this special shell
@@ -67,7 +61,6 @@ jobs:
 
 
     - name: Run tests
-
       # conda setup requires this special shell
       shell: bash -l {0}
 
