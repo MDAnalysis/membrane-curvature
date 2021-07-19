@@ -13,10 +13,8 @@ needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 # Check Python version
-if sys.version_info[:2] < (3, 6):
-    print('This package requires a verion of Python>=3.6.'
-          'Please upgrading your version of Python to use MembraneCurvature.')
-    sys.exit(-1)
+if sys.version_info[:2] < (3, 7):
+    raise RuntimeError('Python version >=3.7 required.')
 
 # Add release
 RELEASE = "0.0.0-dev0"
@@ -25,7 +23,7 @@ RELEASE = "0.0.0-dev0"
 try:
     import numpy as np
 except ImportError:
-    print("MembraneCurvature requires numpy>=1.20.2")
+    print("MembraneCurvature requires NumPy.")
 
 
 if __name__ == "__main__":
@@ -35,8 +33,8 @@ if __name__ == "__main__":
 
     # set requirements
     install_requires = [
-        'numpy>=1.20.2',
-        'mdanalysis>=2.0.0',
+        'numpy>=1.16.0',
+        'mdanalysis>=2.0.0b0',
         'mdanalysistests>=2.0.0',
     ]
 
@@ -63,7 +61,7 @@ setup(
     include_package_data=True,
 
     # Allows `setup.py test` to work correctly with pytest
-    setup_requires=['numpy>=1.20.2'] + pytest_runner,
+    setup_requires=['numpy>=1.16.0'] + pytest_runner,
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
@@ -72,7 +70,7 @@ setup(
     #            'Mac OS-X',
     #            'Unix',
     #            'Windows'],            # Valid platforms your code works on, adjust to your flavor
-    python_requires=">=3.7",          # Python version restrictions
+    python_requires=">=3.6",          # Python version restrictions
 
     # Manual control if final package is compressible or not, set False to prevent the .egg from being made
     # zip_safe=False,
