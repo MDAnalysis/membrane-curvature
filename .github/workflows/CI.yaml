@@ -30,8 +30,6 @@ jobs:
           - name: numpy_min
             os: ubuntu-latest
             python-version: 3.6
-            run_type: FULL
-            install_hole: false
             codecov: false
             numpy: numpy=1.16.0
 
@@ -51,7 +49,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         environment-file: devtools/conda-envs/test_env.yaml
-        # mamba-version: "*"
+        mamba-version: "*"
         channels: conda-forge, defaults
 
         activate-environment: test

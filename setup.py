@@ -16,9 +16,6 @@ pytest_runner = ['pytest-runner'] if needs_pytest else []
 if sys.version_info[:2] < (3, 6):
     raise RuntimeError('Python version >=3.6 required.')
 
-# Add release
-RELEASE = "0.0.0-dev0"
-
 # Check numpy is installed
 try:
     import numpy as np
