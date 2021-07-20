@@ -17,6 +17,10 @@ concurrency:
   group: "${{ github.ref }}-${{ github.head_ref }}"
   cancel-in-progress: true
 
+env:
+  MDA_CONDA_MIN_DEPS: "pip pytest mmtf-python biopython networkx cython matplotlib-base scipy griddataformats hypothesis gsd codecov threadpoolctl"
+  MDA_PIP_MIN_DEPS: 'coveralls coverage<5 pytest-cov pytest-xdist'
+
 jobs:
   test:
     name: Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}
@@ -26,6 +30,11 @@ jobs:
       matrix:
         os: [macOS-latest, ubuntu-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8, 3.9]
+        - name: numpy_min
+          os: ubuntu-latest
+          python-version: 3.6
+          codecov: false
+          numpy: numpy=1.16.0
         
 
     steps:
@@ -50,6 +59,8 @@ jobs:
         auto-update-conda: false
         auto-activate-base: false
         show-channel-urls: true
+        mamba-version: "*"
+  
         
     - name: Install package
 
@@ -58,6 +69,16 @@ jobs:
       run: |
         python -m pip install . --no-deps
         conda list
+
+
+    - name: Install numpy
+      # install version of NumPy
+      env:
+        MDA_CONDA_FULL_DEPS: "${{ env.MDA_CONDA_MIN_DEPS }}"
+        MDA_PIP_FULL_DEPS: "${{ env.MDA_PIP_MIN_DEPS }}"
+      run: |
+        mamba install ${conda_deps}
+        pip install ${pip_deps}
 
 
     - name: Run tests
