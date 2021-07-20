@@ -17,10 +17,9 @@ concurrency:
   group: "${{ github.ref }}-${{ github.head_ref }}"
   cancel-in-progress: true
 
-# env:
-#   MDA_CONDA_MIN_NUMPY: "pip pytest mmtf-python biopython networkx cython matplotlib-base scipy griddataformats hypothesis gsd codecov threadpoolctl numpy=1.16.0"
-#   MDA_CONDA_MIN_DEPS: "pip pytest mmtf-python biopython networkx cython matplotlib-base scipy griddataformats hypothesis gsd codecov threadpoolctl"
-#   MDA_PIP_MIN_DEPS: 'coveralls coverage<5 pytest-cov pytest-xdist'
+env:
+  MDA_CONDA_MIN_DEPS: "numpy==1.16.0 pip pytest mmtf-python biopython networkx cython matplotlib-base scipy griddataformats hypothesis gsd codecov threadpoolctl"
+  MDA_PIP_MIN_DEPS: 'coveralls coverage<5 pytest-cov pytest-xdist'
 
 jobs:
   test:
@@ -31,6 +30,7 @@ jobs:
       matrix:
         os: [macOS-latest, ubuntu-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8, 3.9]
+        #numpy-version: [1.16.0]
         # include:
           # - name: numpy_min
           #   os: ubuntu-latest
@@ -63,7 +63,16 @@ jobs:
         show-channel-urls: true
         mamba-version: "*"
   
-        
+    - name: Install numpy
+      env:
+        MDA_CONDA_MIN_DEPS: "${{ env.MDA_CONDA_MIN_DEPS }}"
+      # install version of NumPy
+      run: |
+        conda_deps= "${MDA_CONDA_MIN_DEPS}"
+        pip_deps=${MDA_PIP_MIN_DEPS}
+        mamba install ${conda_deps}
+        pip install ${pip_deps}    
+    
     - name: Install package
 
       # conda setup requires this special shell
@@ -71,17 +80,6 @@ jobs:
       run: |
         python -m pip install . --no-deps
         conda list
-
-
-    # - name: Install numpy
-    #   env:
-    #     MDA_CONDA_FULL_DEPS: "${{ env.MDA_CONDA_MIN_NUMPY }}"
-    #   # install version of NumPy
-    #   run: |
-    #     conda_deps="${{matrix.numpy}} ${MDA_CONDA_MIN_NUMPY}"
-    #     pip_deps=${MDA_PIP_MIN_NUMPY}
-    #     mamba install ${conda_deps}
-    #     pip install ${pip_deps}
 
 
     - name: Run tests
