@@ -47,7 +47,7 @@ setup(
     include_package_data=True,
 
     # Allows `setup.py test` to work correctly with pytest
-    setup_requires=['numpy>=1.19.0'] + pytest_runner,
+    setup_requires=['numpy>=1.19.5'] + pytest_runner,
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
