@@ -64,9 +64,6 @@ jobs:
         mamba-version: "*"
   
     - name: Install numpy
-      env:
-        MDA_CONDA_MIN_DEPS: "${{ env.MDA_CONDA_MIN_DEPS }}"
-      # install version of NumPy
       run: |
         conda_deps= "${MDA_CONDA_MIN_DEPS}"
         pip_deps=${MDA_PIP_MIN_DEPS}
