@@ -32,10 +32,10 @@ jobs:
         python-version: [3.6, 3.7, 3.8, 3.9]
         include:
           - name: numpy_min
-          os: ubuntu-latest
-          python-version: 3.6
-          codecov: false
-          numpy: numpy=1.16.0
+            os: ubuntu-latest
+            python-version: 3.6
+            codecov: false
+            numpy: numpy=1.16.0
         
 
     steps:
