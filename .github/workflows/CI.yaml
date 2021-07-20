@@ -75,8 +75,8 @@ jobs:
     - name: Install numpy
       # install version of NumPy
       run: |
-        conda_deps="${{ matrix.numpy }} ${ MDA_CONDA_MIN_DEPS }"
-        pip_deps=${ MDA_PIP_MIN_DEPS }
+        conda_deps="${{matrix.numpy}} ${MDA_CONDA_MIN_DEPS}"
+        pip_deps=${MDA_PIP_MIN_DEPS}
         mamba install ${conda_deps}
         pip install ${pip_deps}
 
