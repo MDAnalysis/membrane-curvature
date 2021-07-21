@@ -31,6 +31,7 @@ jobs:
         env_file: [env, ]
         include:
           - name: minimum_requirements
+            os: ubuntu-latest
             python-version: 3.6
             env_file: min
 
