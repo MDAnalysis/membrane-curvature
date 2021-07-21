@@ -46,13 +46,13 @@ setup(
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
-    install_requires = [
+    install_requires=[
         'numpy>=1.16.0',
         'mdanalysis>=2.0.0b0',
     ],
 
     # packages required to run tests
-    tests_require = [
+    tests_require=[
         'pytest',
     ],
     # platforms=['Linux',
