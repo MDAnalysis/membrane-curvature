@@ -44,7 +44,7 @@ jobs:
     # An environment for the minimum versions 
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: ${{ matrix.python-versio-min }}
+        python-version: ${{ matrix.python-version-min }}
         environment-file: devtools/conda-envs/test_min.yaml
         channels: conda-forge, defaults
 
