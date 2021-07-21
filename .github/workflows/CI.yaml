@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - "main"
-      # remove before merging
       - "issue46"
   # schedule:
     # Nightly tests run on master by default:
@@ -18,6 +17,7 @@ on:
 concurrency:
   group: "${{ github.ref }}-${{ github.head_ref }}"
   cancel-in-progress: true
+
 
 jobs:
   test:
