@@ -52,7 +52,7 @@ setup(
     ],
 
     # packages required to run tests
-    test_require = [
+    tests_require = [
         'pytest',
     ],
     # platforms=['Linux',
