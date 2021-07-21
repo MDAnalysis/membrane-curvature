@@ -1,12 +1,12 @@
-name: test
+name: test_min
 channels:
   - conda-forge
   - defaults
 dependencies:
   - python
   - pip
-  - numpy==1.18.0
   - sphinx
+  - numpy==1.16.0
      # Testing
   - pytest
   - pytest-cov
