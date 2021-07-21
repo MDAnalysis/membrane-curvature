@@ -21,8 +21,8 @@ concurrency:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    name: "Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}"
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
