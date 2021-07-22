@@ -167,7 +167,7 @@ def interpolation_by_array(array_surface):
 
 def surface_interpolation(array_surface):
     """
-        Calculates interpolation 
+        Calculates interpolation
 
     Parameters
     ----------
@@ -179,7 +179,7 @@ def surface_interpolation(array_surface):
     -------
 
     Returns interpolated surface
-        Interpolated surface derived from set of coordinates 
+        Interpolated surface derived from set of coordinates
         in grid of `x_range, y_range` dimensions.
         Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
 
