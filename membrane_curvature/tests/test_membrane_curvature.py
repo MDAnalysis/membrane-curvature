@@ -4,7 +4,7 @@ Unit and regression test for the membrane_curvature package.
 
 
 import pytest
-from membrane_curvature.surface import normalized_grid, derive_surface, get_z_surface
+from membrane_curvature.surface import interpolation_by_array, normalized_grid, derive_surface, get_z_surface, surface_interpolation
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -207,6 +207,39 @@ def test_get_z_surface(x_bin, y_bin, x_range, y_range, expected_surface):
                             [0., 200., 150.], [100., 200., 150.], [200., 200., 150.]])
     surface = get_z_surface(dummy_array, x_bin, y_bin, x_range, y_range)
     assert_almost_equal(surface, expected_surface)
+
+
+@pytest.mark.parametrize('dummy_surface, expected_interpolated_surface', [
+    # array 3x3 with all 150 and one nan
+    (np.array(([150., 150., 150.],
+               [150., np.nan, 150.],
+               [150., 150., 150.])),
+     np.full((3, 3), 150.)),
+    # array 4x3 with all 150 and two nans
+    (np.array([[150.,  150, 150.,  150.],
+               [150., np.nan, np.nan,  150.],
+               [150., 150., 150.,  150.]]),
+     np.array([[150., 150,  150.,  150.],
+               [150., 150., 150.,  150.],
+               [150., 150., 150.,  150.]])),
+    # array 4x4 ith all 150 and two nans
+    (np.array([[150., 150,  150.,  150.],
+               [150., np.nan, np.nan,  150.],
+               [150., 130., 140.,  150.],
+               [150., 150., 150.,  150.]]),
+     np.array([[150., 150, 150.,  150.],
+               [150., 140., 145.,  150.],
+               [150., 130., 140.,  150.],
+               [150., 150., 150.,  150.]])),
+    # array 3x3  with lots of nans)
+    (np.array([[np.nan, np.nan, 150.],
+              [150, np.nan, 150.],
+              [np.nan, 150., np.nan]]),
+     np.full((3, 3), 150.))
+])
+def test_surface_interpolation(dummy_surface, expected_interpolated_surface):
+    surface = surface_interpolation(dummy_surface)
+    assert_almost_equal(surface, expected_interpolated_surface)
 
 
 class TestMembraneCurvature(object):
