@@ -4,7 +4,7 @@ Unit and regression test for the membrane_curvature package.
 
 
 import pytest
-from membrane_curvature.surface import (interpolation_by_array, normalized_grid, 
+from membrane_curvature.surface import (interpolation_by_array, normalized_grid,
                                         derive_surface, get_z_surface, surface_interpolation)
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 import numpy as np
