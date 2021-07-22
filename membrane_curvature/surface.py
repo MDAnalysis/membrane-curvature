@@ -131,3 +131,60 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
     z_normalized = grid_z_coordinates / grid_norm_unit
 
     return z_normalized
+
+
+def interpolation_by_array(array_surface):
+    """
+        Interpolates values contained in array_surface over axi
+
+    Parameters
+    ----------
+
+    array_surface: numpy.ndarray
+        Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
+
+    Returns
+    -------
+    interpolated_array: np.ndarray
+        Returns interpolated array.
+        Numpy array of shape (`n_x_bins` x `n_y_bins`,)
+
+    """
+
+    # create mask for nans
+    mask_nans = np.isnan(array_surface)
+
+    # index of array_surface
+    index_array = np.arange(array_surface.shape[0])
+
+    # interpolate values in array
+    interpolated_array = np.interp(index_array,
+                                   np.flatnonzero(~mask_nans),
+                                   array_surface[~mask_nans])
+
+    return interpolated_array
+
+
+def surface_interpolation(array_surface):
+    """
+        Calculates interpolation 
+
+    Parameters
+    ----------
+
+    array_surface: np.ndarray
+        Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
+
+    Returns
+    -------
+
+    Returns interpolated surface
+        Interpolated surface derived from set of coordinates 
+        in grid of `x_range, y_range` dimensions.
+        Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
+
+    """
+
+    interpolated_surface = np.apply_along_axis(interpolation_by_array, axis=0, arr=array_surface)
+
+    return interpolated_surface
