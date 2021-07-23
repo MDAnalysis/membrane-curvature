@@ -12,17 +12,12 @@ short_description = __doc__.split("\n")
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-if __name__ == "__main__":
-
+try:
     with open("README.md", "r") as handle:
         long_description = handle.read()
+except:
+    long_description = "\n".join(short_description[2:])
 
-    # set requirements
-    install_requires = [
-        'numpy>=1.19.5',
-        'mdanalysis>=2.0.0b0',
-        'mdanalysistests>=2.0.0b0',
-    ]
 
 setup(
     # Self-descriptive entries which should always be present
@@ -47,11 +42,19 @@ setup(
     include_package_data=True,
 
     # Allows `setup.py test` to work correctly with pytest
-    setup_requires=['numpy>=1.19.5'] + pytest_runner,
+    setup_requires=[] + pytest_runner,
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
-    # install_requires=[],              # Required packages, pulls from pip if needed; do not use for Conda deployment
+    install_requires=[
+        'numpy>=1.16.0',
+        'mdanalysis>=2.0.0b0',
+    ],
+
+    # packages required to run tests
+    tests_require=[
+        'pytest',
+    ],
     # platforms=['Linux',
     #            'Mac OS-X',
     #            'Unix',
