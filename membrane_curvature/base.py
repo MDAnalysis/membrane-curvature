@@ -17,7 +17,6 @@ from .curvature import mean_curvature, gaussian_curvature
 
 import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisBase
-from MDAnalysis.transformations import wrap
 
 import logging
 MDAnalysis.start_logging()
@@ -36,8 +35,8 @@ class MembraneCurvature(AnalysisBase):
     select : str or iterable of str, optional. 
         The selection string of an atom selection to use as a
         reference to derive a surface.
-    pbc : bool, optional
-        Apply periodic boundary conditions.
+    wrap : bool, optional
+        Apply coordinate wrapping.
     n_x_bins : int, optional, default: '100'
         Number of bins in grid in the x dimension.
     n_y_bins : int, optional, default: '100'
@@ -105,11 +104,11 @@ class MembraneCurvature(AnalysisBase):
                  n_x_bins=100, n_y_bins=100,
                  x_range=None,
                  y_range=None,
-                 pbc=True, **kwargs):
+                 wrap=True, **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
         self.ag = universe.select_atoms(select)
-        self.pbc = pbc
+        self.wrap = wrap
         self.n_x_bins = n_x_bins
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
@@ -129,11 +128,11 @@ class MembraneCurvature(AnalysisBase):
                 warnings.warn(msg)
                 logger.warn(msg)
 
-        # Apply PBC conditions
-        if self.pbc is True:
+        # Apply wrapping coordinates
+        if self.wrap:
             self.ag.wrap()
         else:
-            warnings.warn(" `PBC == False` may result in inaccurate calculation "
+            warnings.warn(" `wrap == False` may result in inaccurate calculation "
                           "of membrane curvature. Surfaces will be derived from "
                           "a reduced number of atoms.")
 
@@ -150,7 +149,7 @@ class MembraneCurvature(AnalysisBase):
                                          self.n_y_bins), np.nan)
 
     def _single_frame(self):
-        if self.pbc:
+        if self.wrap:
             self.ag.wrap()
         # Populate a slice with np.arrays of surface, mean, and gaussian per frame
         self.results.z_surface[self._frame_index] = get_z_surface(self.ag.positions,

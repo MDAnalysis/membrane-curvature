@@ -273,7 +273,7 @@ class TestMembraneCurvature(object):
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 
-    @pytest.mark.xfail(reason="PBC conditions not applied.")
+    @pytest.mark.xfail(reason="Wrapping coordinates not applied.")
     @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
         (3, 3,
          np.array([[150., 150., 120.],
@@ -371,10 +371,10 @@ class TestMembraneCurvature(object):
                                x_range=x_range,
                                y_range=y_range).run()
         avg_surface = mc.results.average_z_surface
-        # assert if default values of pbc z_surface returns correctly
+        # assert if default values of wrapped coords in z_surface returns correctly
         assert_almost_equal(avg_surface, expected_surface)
 
-    def test_test_analysis_no_pbc(self, universe):
-        regex = (r"`PBC == False` may result in inaccurate calculation")
+    def test_test_analysis_no_wrapping(self, universe):
+        regex = (r"`wrap == False` may result in inaccurate calculation")
         with pytest.warns(UserWarning, match=regex):
-            MembraneCurvature(universe, pbc=False)
+            MembraneCurvature(universe, wrap=False)
