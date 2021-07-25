@@ -8,7 +8,7 @@ from membrane_curvature.surface import (interpolation_by_array, normalized_grid,
                                         derive_surface, get_z_surface, surface_interpolation)
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_allclose
 import MDAnalysis as mda
 from membrane_curvature.tests.datafiles import (GRO_PO4_SMALL, XTC_PO4_SMALL)
 from membrane_curvature.base import MembraneCurvature
@@ -216,13 +216,11 @@ def test_get_z_surface(x_bin, y_bin, x_range, y_range, expected_surface):
                [150., np.nan, 150.],
                [150., 150., 150.])),
      np.full((3, 3), 150.)),
-    # array 4x3 with all 150 and two nans
+    # array 3x4 with all 150 and two nans
     (np.array([[150.,  150, 150.,  150.],
                [150., np.nan, np.nan,  150.],
                [150., 150., 150.,  150.]]),
-     np.array([[150., 150,  150.,  150.],
-               [150., 150., 150.,  150.],
-               [150., 150., 150.,  150.]])),
+     np.full((3,4), 150.)),
     # array 4x4 with all 150 and two nans
     (np.array([[150., 150,  150.,  150.],
                [150., np.nan, np.nan,  150.],

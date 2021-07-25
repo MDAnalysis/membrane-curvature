@@ -39,7 +39,7 @@ def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
 
     Returns
     -------
-    z_coordinates: numpy.ndarray
+    z_coordinates: np.ndarray
         Average z-coordinate values. Return Numpy array of floats of
         shape `(n_cells_x, n_cells_y)`.
 
@@ -55,8 +55,8 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
     Parameters
     ----------
-    coordinates : numpy.ndarray 
-        Coordinates of AtomGroup. Numpy array of shape=(n_atoms, 3).
+    coordinates : np.ndarray 
+        Coordinates of AtomGroup. NumPy array of shape=(n_atoms, 3).
     n_x_bins : int.
         Number of bins in grid in the `x` dimension. 
     n_y_bins : int.
@@ -70,7 +70,7 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
     -------
     z_surface: np.ndarray
         Surface derived from set of coordinates in grid of `x_range, y_range` dimensions.
-        Returns Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
+        Returns NumPy array of floats of shape (`n_x_bins`, `n_y_bins`)
 
     """
 
@@ -135,53 +135,53 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
 
 def interpolation_by_array(array_surface):
     """
-        Interpolates values contained in array_surface over axi
+        Interpolates values contained in `array_surface` over axis
 
     Parameters
     ----------
 
-    array_surface: numpy.ndarray
-        Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
+    array_surface: np.ndarray
+        Array of floats of shape (`n_x_bins`, `n_y_bins`)
 
     Returns
     -------
     interpolated_array: np.ndarray
         Returns interpolated array.
-        Numpy array of shape (`n_x_bins` x `n_y_bins`,)
+        Array of shape (`n_x_bins` x `n_y_bins`,)
 
     """
 
     # create mask for nans
-    mask_nans = np.isnan(array_surface)
+    mask_nans = ~np.isnan(array_surface)
 
     # index of array_surface
     index_array = np.arange(array_surface.shape[0])
 
     # interpolate values in array
     interpolated_array = np.interp(index_array,
-                                   np.flatnonzero(~mask_nans),
-                                   array_surface[~mask_nans])
+                                   np.flatnonzero(mask_nans),
+                                   array_surface[mask_nans])
 
     return interpolated_array
 
 
 def surface_interpolation(array_surface):
     """
-        Calculates interpolation
+        Calculates interpolation of arrays.
 
     Parameters
     ----------
 
     array_surface: np.ndarray
-        Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
+        Array of floats of shape (`n_x_bins`, `n_y_bins`)
 
     Returns
     -------
 
-    Returns interpolated surface
+    interpolated_surface: np.ndarray
         Interpolated surface derived from set of coordinates
         in grid of `x_range, y_range` dimensions.
-        Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
+        Array of floats of shape (`n_x_bins`, `n_y_bins`)
 
     """
 
