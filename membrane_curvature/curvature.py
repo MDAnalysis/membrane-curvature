@@ -19,7 +19,7 @@ Notes
 ---------
 Numpy cannot calculate the gradient for arrays with inner array of
 `length==1` unless `axis=0` is specified. Therefore in the functions here included
-for mean and Gaussian curvature, shape of arrays must be at least (2,2).  
+for mean and Gaussian curvature, shape of arrays must be at least (2,2).
 In general, to calculate a numerical gradients shape of arrays must be >=(`edge_order` +
 1).
 
@@ -39,12 +39,13 @@ def gaussian_curvature(Z):
 
     Parameters
     ----------
-    Z: ndarray. Multidimensional array of shape (n,n).
+    Z: np.ndarray. 
+        Multidimensional array of shape (n,n).
 
 
     Returns
     -------
-    K : ndarray. 
+    K : np.ndarray.
         The result of gaussian curvature of Z. Returns multidimensional
         array object with values of gaussian curvature of shape `(n, n)`.
 
@@ -66,13 +67,13 @@ def mean_curvature(Z):
 
     Parameters
     ----------
-    Z: ndarray. Multidimensional array of shape (n,n).
+    Z: np.ndarray.
+        Multidimensional array of shape (n,n).
 
 
     Returns
     -------
-    H : ndarray. 
-
+    H : np.ndarray. 
         The result of gaussian curvature of Z. Returns multidimensional
         array object with values of gaussian curvature of shape `(n, n)`.
 

@@ -1,7 +1,7 @@
 r"""
 .. role:: raw-math(raw) :format: latex html
 
-Calculation of curvature requires a surface of reference. In MembraneCurvature, 
+Calculation of curvature requires a surface of reference. In MembraneCurvature,
 the surface of reference is defined by the `z` position of the `atoms` in `AtomGroup`.
 
 
@@ -63,7 +63,7 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
     Returns
     -------
-    z_surface: np.ndarray 
+    z_surface: np.ndarray
         Surface derived from set of coordinates in grid of `x_range, y_range` dimensions.
         Returns Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
 
@@ -102,7 +102,7 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
     ----------
 
     z_ref: np.array
-        Empty array of `(l,m)` 
+        Empty array of `(l,m)`
     grid_z_coordinates: np.array
         Array of size `(l,m)` with `z` coordinates stored in unit cell.
     grid_norm_unit: np.array
@@ -110,7 +110,7 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
 
     Returns
     -------
-    z_surface: np.ndarray 
+    z_surface: np.ndarray
         Normalized `z` coordinates in grid.
         Returns Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
 
