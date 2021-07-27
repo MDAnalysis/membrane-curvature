@@ -1,18 +1,31 @@
+r"""
+.. role:: raw-math(raw) :format: latex html
+
+Calculation of curvature requires a surface of reference. In MembraneCurvature, 
+the surface of reference is defined by the `z` position of the `atoms` in `AtomGroup`.
+
+
+Functions
+---------
+
+
+"""
+
 import numpy as np
 
 
 def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
     """
-    Derive surface from AtomGroup positions.
+    Derive surface from `atom` positions in `AtomGroup`.
 
     Parameters
     ----------
-    atoms : AtomGroup.
+    atoms: AtomGroup.
         AtomGroup of reference selection to define the surface
         of the membrane.
-    n_cells_x : int.
+    n_cells_x: int.
         number of cells in the grid of size `max_width_x`, `x` axis.
-    n_cells_y : int.
+    n_cells_y: int.
         number of cells in the grid of size `max_width_y`, `y` axis.
     max_width_x: float.
         Maximum width of simulation box in x axis. (Determined by simulation box dimensions)
@@ -50,7 +63,7 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
     Returns
     -------
-    z_surface: numpy.ndarray 
+    z_surface: np.ndarray 
         Surface derived from set of coordinates in grid of `x_range, y_range` dimensions.
         Returns Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
 
@@ -83,21 +96,23 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
 def normalized_grid(grid_z_coordinates, grid_norm_unit):
     """
-    Calculates average z coordinate in unit cell
+    Calculates average `z` coordinates in unit cell.
 
     Parameters
     ----------
 
     z_ref: np.array
-        Empty array of (l,m) 
+        Empty array of `(l,m)` 
     grid_z_coordinates: np.array
-        Array of size (l,m) with z coordinates stored in unit cell.
+        Array of size `(l,m)` with `z` coordinates stored in unit cell.
     grid_norm_unit: np.array
-        Array of size (l,m) with number of atoms in unit cell.
+        Array of size `(l,m)` with number of atoms in unit cell.
 
     Returns
     -------
-    Returns nornalized set of z coordinates in grid.
+    z_surface: np.ndarray 
+        Normalized `z` coordinates in grid.
+        Returns Numpy array of floats of shape (`n_x_bins`, `n_y_bins`)
 
     """
 
