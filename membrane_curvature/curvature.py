@@ -39,7 +39,7 @@ def gaussian_curvature(Z):
 
     Parameters
     ----------
-    Z: np.ndarray. 
+    Z: np.ndarray.
         Multidimensional array of shape (n,n).
 
 
@@ -73,7 +73,7 @@ def mean_curvature(Z):
 
     Returns
     -------
-    H : np.ndarray. 
+    H : np.ndarray.
         The result of gaussian curvature of Z. Returns multidimensional
         array object with values of gaussian curvature of shape `(n, n)`.
 
