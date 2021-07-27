@@ -3,36 +3,57 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Membrane Curvature's documentation!
+Welcome to MembraneCurvature's documentation!
 =========================================================
 
-The MDAnalysis membrane curvature analysis module calculates the Gaussian and mean 
+The MDAnalysis MembraneCurvature analysis module calculates the Gaussian and mean 
 curvature of lipid bilayers from molecular dynamics simulations. 
 
-This module returns a 2-dimensional Numpy array, allowing you to visualize values
-of membrane curvature in 2D maps.
 
-Currently docs are under construction. Use this docs as a reference but at 
-your own risk.
+Features
+----------
 
+MembraneCurvature calculates mean and Gaussian curvature from MD simulations in:
+
+#. Monolayers.
+#. Membrane-only systems.
+#. Membrane-protein systems.
+
+
+Why MembraneCurvature?
+-------------------------
+Here a statement of need.
 
 .. Contents
 .. ========
 
+
+
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
+   :caption: Contents:
 
    getting_started
    api
    ./source/pages/Algorithm
    ./source/pages/Usage
    ./source/pages/Visualization
-   
 
 .. autosummary::
    :toctree: autosummary
    :recursive:
 
+License 
+------- 
+
+Source code included in this project is available under the `GNU Public
+Licence v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
+
+
+.. _GNU Public Licence v3:
+   http://www.gnu.org/licenses/old-licenses/gpl-3.0.html
+.. _MDAnalysis: https://www.mdanalysis.org
+.. _`github.com/MDAnalysis/membrane_curvature`: http://github.com/MDAnalysis/membrane_curvature
 
 Indices and tables
 ==================
