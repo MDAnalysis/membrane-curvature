@@ -15,7 +15,7 @@ Gaussian curvature is defined by
 Mean curvature is defined by
 
 .. math:: H =
-    \frac{(1+\partial_x^2)\partial_{yy}+(1+\partial_y^2)\partial_{xx}-2\partial_x\partial_y\partial{xy}}
+    \frac{(1+\partial_x^2)\partial_{yy}+(1+\partial_y^2)\partial_{xx}-2\partial_x\partial_y\partial_{xy}}
     {2(1+\partial_x^2+\partial_y^2)^{3/2}}.
 
 
