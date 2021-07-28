@@ -3,11 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-MembraneCurvature's Documentation
+Welcome to MembraneCurvature's Documentation
 =========================================================
 
 **Minimum MDAnalysis version:** |MDAnalysis_version|
-
 
 **Last updated:** |today|
 
@@ -77,7 +76,7 @@ Licence v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
 
 
 .. _GNU Public Licence v3:
-   http://www.gnu.org/licenses/old-licenses/gpl-3.0.html
+   https://www.gnu.org/licenses/gpl-3.0.en.html
 .. _MDAnalysis: https://www.mdanalysis.org
 .. _`github.com/MDAnalysis/membrane_curvature`: https://github.com/MDAnalysis/membrane-curvature
 .. _`Usage`: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
