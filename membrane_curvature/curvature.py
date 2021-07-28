@@ -1,3 +1,38 @@
+r"""
+.. role:: raw-math(raw) :format: latex html
+
+--------------------
+Curvature
+--------------------
+
+In MembraneCurvature, we calculate Gaussian and mean curvature from a cloud of points.
+
+Gaussian curvature is defined by
+
+.. math:: K = \frac{\partial_{xx}\partial_{yy}-\partial_{xy}^2}
+   {(1+\partial_x^2+\partial_y^2)^2}.
+
+Mean curvature is defined by
+
+.. math:: H =
+    \frac{(1+\partial_x^2)\partial_{yy}+(1+\partial_y^2)\partial_{xx}-2\partial_x\partial_y\partial{xy}}
+    {2(1+\partial_x^2+\partial_y^2)^{3/2}}.
+
+
+Notes
+---------
+Numpy cannot calculate the gradient for arrays with inner array of
+`length==1` unless `axis=0` is specified. Therefore in the functions here included
+for mean and Gaussian curvature, shape of arrays must be at least (2,2).
+In general, to calculate a numerical gradients shape of arrays must be >=(`edge_order` +
+1).
+
+
+Functions
+---------
+
+"""
+
 import numpy as np
 
 
@@ -8,13 +43,15 @@ def gaussian_curvature(Z):
 
     Parameters
     ----------
-    Z : Numpy array, cloud of points.
+    Z: np.ndarray.
+        Multidimensional array of shape (n,n).
 
 
     Returns
     -------
-    K : 2d-array
-        Returns 2-dimensional array object with values of mean curvature.
+    K : np.ndarray.
+        The result of gaussian curvature of Z. Returns multidimensional
+        array object with values of gaussian curvature of shape `(n, n)`.
 
     """
 
@@ -34,13 +71,15 @@ def mean_curvature(Z):
 
     Parameters
     ----------
-    Z : Numpy array, cloud of points.
+    Z: np.ndarray.
+        Multidimensional array of shape (n,n).
 
 
     Returns
     -------
-    H : 2d-array
-        Returns 2-dimensional array object with values of gaussian curvature.
+    H : np.ndarray.
+        The result of gaussian curvature of Z. Returns multidimensional
+        array object with values of gaussian curvature of shape `(n, n)`.
 
     """
 

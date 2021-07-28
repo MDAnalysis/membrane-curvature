@@ -1,10 +1,13 @@
-API Documentation
-=================
+=====================================
+MembraneCurvature's API Documentation
+=====================================
 
 .. autosummary::
-   :toctree: autosummary
+   :toctree: stubs
 
 .. toctree::
 
+   api/membrane_curvature
+   api/curvature
+   api/surface
 
-   membrane_curvature.canvas
