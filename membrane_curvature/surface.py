@@ -1,6 +1,10 @@
 r"""
 .. role:: raw-math(raw) :format: latex html
 
+--------------------
+Surface
+--------------------
+
 Calculation of curvature requires a surface of reference. In MembraneCurvature,
 the surface of reference is defined by the `z` position of the `atoms` in `AtomGroup`.
 

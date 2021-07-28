@@ -1,23 +1,13 @@
+=====================================
 MembraneCurvature's API Documentation
 =====================================
 
-.. automodule:: membrane_curvature.base
-   :members:
-
 .. autosummary::
-   :toctree: autosummary
+   :toctree: stubs
 
 .. toctree::
 
+   api/membrane_curvature
+   api/curvature
+   api/surface
 
-Curvature
-------------------
-
-.. automodule:: membrane_curvature.curvature
-   :members:
-
-Surface
-------------------
-
-.. automodule:: membrane_curvature.surface
-   :members:

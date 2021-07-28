@@ -1,6 +1,10 @@
 r"""
 .. role:: raw-math(raw) :format: latex html
 
+--------------------
+Curvature
+--------------------
+
 In MembraneCurvature, we calculate Gaussian and mean curvature from a cloud of points.
 
 Gaussian curvature is defined by
