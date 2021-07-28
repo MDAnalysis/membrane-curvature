@@ -36,7 +36,7 @@ class MembraneCurvature(AnalysisBase):
         The selection string of an atom selection to use as a
         reference to derive a surface.
     wrap : bool, optional
-        Apply coordinate wrapping.
+        Apply coordinate wrapping to pack atoms into the primary unit cell.
     n_x_bins : int, optional, default: '100'
         Number of bins in grid in the x dimension.
     n_y_bins : int, optional, default: '100'
@@ -68,8 +68,20 @@ class MembraneCurvature(AnalysisBase):
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
 
+    See also
+    --------
+    `MDAnalysis.transformations.wrap 
+    <https://docs.mdanalysis.org/1.0.0/documentation_pages/transformations/wrap.html>`_
+
     Notes
     -----
+    Use `wrap=True` when `mda.Universe` contains the raw trajectory, and
+    `wrap=False` for processed trajectories. For more details on when to use
+    `wrap=True`, check the `Usage
+    <https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html>`_
+    page.
+
+
     The derived surface and calculated curvatures are available in the
     :attr:`results` attributes.
 
@@ -95,8 +107,10 @@ class MembraneCurvature(AnalysisBase):
         mean_curvature =  mc.results.average_mean_curvature
         gaussian_curvature = mc.results.average_gaussian_curvature
 
-    The respective 2D curvature plots can be obtained using the `matplotlib` package for
-    data visualization via `imshow`. We recommend using the `gaussian` interpolation. 
+    The respective 2D curvature plots can be obtained using the `matplotlib`
+    package for data visualization via `imshow`. We recommend using the
+    `gaussian` interpolation. 
+
 
     """
 
@@ -132,9 +146,11 @@ class MembraneCurvature(AnalysisBase):
         if self.wrap:
             self.ag.wrap()
         else:
-            warnings.warn(" `wrap == False` may result in inaccurate calculation "
-                          "of membrane curvature. Surfaces will be derived from "
-                          "a reduced number of atoms.")
+            msg = (" `wrap == False` may result in inaccurate calculation "
+                   "of membrane curvature. Surfaces will be derived from "
+                   "a reduced number of atoms.")
+            warnings.warn(msg)
+            logger.warn(msg)
 
     def _prepare(self):
         # Initialize empty np.array with results
