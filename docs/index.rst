@@ -75,7 +75,7 @@ Source code included in this project is available under the `GNU Public
 Licence v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
 
 
-.. _GNU Public Licence v3:
+.. _GNU Public License v3:
    https://www.gnu.org/licenses/gpl-3.0.en.html
 .. _MDAnalysis: https://www.mdanalysis.org
 .. _`github.com/MDAnalysis/membrane_curvature`: https://github.com/MDAnalysis/membrane-curvature
