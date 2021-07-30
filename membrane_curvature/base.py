@@ -70,13 +70,13 @@ class MembraneCurvature(AnalysisBase):
 
     See also
     --------
-    `MDAnalysis.transformations.wrap 
+    `MDAnalysis.transformations.wrap
     <https://docs.mdanalysis.org/1.0.0/documentation_pages/transformations/wrap.html>`_
 
     Notes
     -----
-    Use `wrap=True` to translates the atoms of your `mda.Universe` back 
-    in the unit cell. Use `wrap=False` for processed trajectories where 
+    Use `wrap=True` to translates the atoms of your `mda.Universe` back
+    in the unit cell. Use `wrap=False` for processed trajectories where
     rotational/translational fit is performed.
 
     For more details on when to use `wrap=True`, check the `Usage
@@ -111,7 +111,7 @@ class MembraneCurvature(AnalysisBase):
 
     The respective 2D curvature plots can be obtained using the `matplotlib`
     package for data visualization via `imshow`. We recommend using the
-    `gaussian` interpolation. 
+    `gaussian` interpolation.
 
 
     """
