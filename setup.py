@@ -29,7 +29,7 @@ setup(
     long_description_content_type="text/markdown",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    license='MIT',
+    license='GNU General Public License v3 (GPLv3)',
 
     # Which Python importable modules should be included when your package is installed
     # Handled automatically by setuptools. Use 'exclude' to prevent some specific
