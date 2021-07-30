@@ -324,8 +324,8 @@ class TestMembraneCurvature(object):
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
 
-
     # Expected values update after applying coordinates wrap
+
     @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
         (3, 3,
          np.array([[150., 120., 150.],

@@ -78,7 +78,7 @@ class MembraneCurvature(AnalysisBase):
     Use `wrap=True` to translates the atoms of your `mda.Universe` back 
     in the unit cell. Use `wrap=False` for processed trajectories where 
     rotational/translational fit is performed.
-    
+
     For more details on when to use `wrap=True`, check the `Usage
     <https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html>`_
     page.
@@ -152,7 +152,7 @@ class MembraneCurvature(AnalysisBase):
         else:
             msg = (" `wrap == False` may result in inaccurate calculation "
                    "of membrane curvature. Surfaces will be derived from "
-                   "a reduced number of atoms. \n " 
+                   "a reduced number of atoms. \n "
                    " Ignore this warning if your trajectory has "
                    " rotational/translational fit rotations! ")
             warnings.warn(msg)
