@@ -75,9 +75,11 @@ class MembraneCurvature(AnalysisBase):
 
     Notes
     -----
-    Use `wrap=True` when `mda.Universe` contains the raw trajectory, and
-    `wrap=False` for processed trajectories. For more details on when to use
-    `wrap=True`, check the `Usage
+    Use `wrap=True` to translates the atoms of your `mda.Universe` back 
+    in the unit cell. Use `wrap=False` for processed trajectories where 
+    rotational/translational fit is performed.
+    
+    For more details on when to use `wrap=True`, check the `Usage
     <https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html>`_
     page.
 
@@ -127,6 +129,7 @@ class MembraneCurvature(AnalysisBase):
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
         self.y_range = y_range if y_range else (0, universe.dimensions[1])
+        print(universe.dimensions)
 
         # Raise if selection doesn't exist
         if len(self.ag) == 0:
@@ -145,10 +148,13 @@ class MembraneCurvature(AnalysisBase):
         # Apply wrapping coordinates
         if self.wrap:
             self.ag.wrap()
+        # Warning
         else:
             msg = (" `wrap == False` may result in inaccurate calculation "
                    "of membrane curvature. Surfaces will be derived from "
-                   "a reduced number of atoms.")
+                   "a reduced number of atoms. \n " 
+                   " Ignore this warning if your trajectory has "
+                   " rotational/translational fit rotations! ")
             warnings.warn(msg)
             logger.warn(msg)
 

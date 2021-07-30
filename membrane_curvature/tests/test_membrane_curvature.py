@@ -2,7 +2,7 @@
 Unit and regression test for the membrane_curvature package.
 """
 
-from numpy.lib.stride_tricks import DummyArray
+
 import pytest
 from membrane_curvature.surface import normalized_grid, derive_surface, get_z_surface
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
@@ -212,7 +212,7 @@ def test_get_z_surface(x_bin, y_bin, x_range, y_range, expected_surface):
 class TestMembraneCurvature(object):
     @pytest.fixture()
     def universe(self):
-        return mda.Universe(GRO_PO4_SMALL, XTC_PO4_SMALL)
+        return mda.Universe(GRO_PO4_SMALL)
 
     @pytest.fixture()
     def universe_dummy(self):
@@ -298,6 +298,32 @@ class TestMembraneCurvature(object):
                                n_y_bins=y_bin).run()
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
+
+    # test using wrap=True
+    def test_analysis_mean_wrap(self, universe):
+        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
+                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
+                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
+        mc = MembraneCurvature(universe,
+                               select='name PO4',
+                               n_x_bins=3,
+                               n_y_bins=3).run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)
+
+    # test using wrap=False
+    def test_analysis_mean_no_wrap(self, universe):
+        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
+                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
+                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
+        mc = MembraneCurvature(universe,
+                               select='name PO4',
+                               n_x_bins=3,
+                               n_y_bins=3,
+                               wrap='False').run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)
+
 
     # Expected values update after applying coordinates wrap
     @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
