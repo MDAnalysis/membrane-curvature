@@ -320,7 +320,7 @@ class TestMembraneCurvature(object):
                                select='name PO4',
                                n_x_bins=3,
                                n_y_bins=3,
-                               wrap='False').run()
+                               wrap=False).run()
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
 
