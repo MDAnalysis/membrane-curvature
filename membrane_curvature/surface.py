@@ -87,6 +87,10 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
     for l, m, z in zip(cell_x_floor, cell_y_floor, z_coords):
 
         try:
+            if l < 0 or m < 0:
+                print("Atom outside grid boundaries. Skipping atom.")
+                continue
+
             grid_z_coordinates[l, m] += z
             grid_norm_unit[l, m] += 1
 
