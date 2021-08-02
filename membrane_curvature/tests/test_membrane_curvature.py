@@ -404,12 +404,8 @@ class TestMembraneCurvature(object):
         expected_mean = mean_curvature(dummy_surface)
         assert_almost_equal(avg_mean, expected_mean)
 
-    def test_analysis_mean_wrap_xy(self, universe_dummy_wrap_xy, dummy_surface):
-        x_bin = y_bin = 3
-        mc = MembraneCurvature(universe_dummy_wrap_xy,
-                               n_x_bins=x_bin,
-                               n_y_bins=y_bin).run()
-        avg_mean = mc.results.average_mean
+    def test_analysis_mean_wrap_xy(self, curvature_unwrapped_universe, dummy_surface):
+        avg_mean = curvature_unwrapped_universe.results.average_mean
         expected_mean = mean_curvature(dummy_surface)
         assert_almost_equal(avg_mean, expected_mean)
 
@@ -419,12 +415,8 @@ class TestMembraneCurvature(object):
         expected_gaussian = gaussian_curvature(dummy_surface)
         assert_almost_equal(avg_gaussian, expected_gaussian)
 
-    def test_analysis_mean_gaussian_wrap_xy(self, universe_dummy_wrap_xy, dummy_surface):
-        x_bin = y_bin = 3
-        mc = MembraneCurvature(universe_dummy_wrap_xy,
-                               n_x_bins=x_bin,
-                               n_y_bins=y_bin).run()
-        avg_gaussian = mc.results.average_gaussian
+    def test_analysis_mean_gaussian_wrap_xy(self, curvature_unwrapped_universe, dummy_surface):
+        avg_gaussian = curvature_unwrapped_universe.results.average_gaussian
         expected_gaussian = gaussian_curvature(dummy_surface)
         assert_almost_equal(avg_gaussian, expected_gaussian)
 
