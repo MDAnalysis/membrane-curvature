@@ -129,7 +129,6 @@ class MembraneCurvature(AnalysisBase):
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
         self.y_range = y_range if y_range else (0, universe.dimensions[1])
-        print(universe.dimensions)
 
         # Raise if selection doesn't exist
         if len(self.ag) == 0:
@@ -146,10 +145,8 @@ class MembraneCurvature(AnalysisBase):
                 logger.warn(msg)
 
         # Apply wrapping coordinates
-        if self.wrap:
-            self.ag.wrap()
-        # Warning
-        else:
+        if not self.wrap:
+            # Warning
             msg = (" `wrap == False` may result in inaccurate calculation "
                    "of membrane curvature. Surfaces will be derived from "
                    "a reduced number of atoms. \n "
@@ -171,6 +168,7 @@ class MembraneCurvature(AnalysisBase):
                                          self.n_y_bins), np.nan)
 
     def _single_frame(self):
+        # Apply wrapping coordinates
         if self.wrap:
             self.ag.wrap()
         # Populate a slice with np.arrays of surface, mean, and gaussian per frame

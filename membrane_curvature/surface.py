@@ -16,6 +16,7 @@ Functions
 """
 
 import numpy as np
+import warnings
 
 
 def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
@@ -88,14 +89,16 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
         try:
             if l < 0 or m < 0:
-                print("Atom outside grid boundaries. Skipping atom.")
+                msg = ("Atom outside grid boundaries. Skipping atom.")
+                warnings.warn(msg)
                 continue
 
             grid_z_coordinates[l, m] += z
             grid_norm_unit[l, m] += 1
 
         except IndexError:
-            print("Atom outside grid boundaries. Skipping atom.")
+            msg = ("Atom outside grid boundaries. Skipping atom.")
+            warnings.warn(msg)
 
     z_surface = normalized_grid(grid_z_coordinates, grid_norm_unit)
 
