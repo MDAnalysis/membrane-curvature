@@ -35,8 +35,8 @@ class MembraneCurvature(AnalysisBase):
     select : str or iterable of str, optional. 
         The selection string of an atom selection to use as a
         reference to derive a surface.
-    pbc : bool, optional
-        Apply periodic boundary conditions.
+    wrap : bool, optional
+        Apply coordinate wrapping to pack atoms into the primary unit cell.
     n_x_bins : int, optional, default: '100'
         Number of bins in grid in the x dimension.
     n_y_bins : int, optional, default: '100'
@@ -68,8 +68,22 @@ class MembraneCurvature(AnalysisBase):
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
 
+    See also
+    --------
+    `MDAnalysis.transformations.wrap
+    <https://docs.mdanalysis.org/1.0.0/documentation_pages/transformations/wrap.html>`_
+
     Notes
     -----
+    Use `wrap=True` to translates the atoms of your `mda.Universe` back
+    in the unit cell. Use `wrap=False` for processed trajectories where
+    rotational/translational fit is performed.
+
+    For more details on when to use `wrap=True`, check the `Usage
+    <https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html>`_
+    page.
+
+
     The derived surface and calculated curvatures are available in the
     :attr:`results` attributes.
 
@@ -95,8 +109,10 @@ class MembraneCurvature(AnalysisBase):
         mean_curvature =  mc.results.average_mean_curvature
         gaussian_curvature = mc.results.average_gaussian_curvature
 
-    The respective 2D curvature plots can be obtained using the `matplotlib` package for
-    data visualization via `imshow`. We recommend using the `gaussian` interpolation. 
+    The respective 2D curvature plots can be obtained using the `matplotlib`
+    package for data visualization via `imshow`. We recommend using the
+    `gaussian` interpolation.
+
 
     """
 
@@ -104,11 +120,11 @@ class MembraneCurvature(AnalysisBase):
                  n_x_bins=100, n_y_bins=100,
                  x_range=None,
                  y_range=None,
-                 pbc=True, **kwargs):
+                 wrap=True, **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
         self.ag = universe.select_atoms(select)
-        self.pbc = pbc
+        self.wrap = wrap
         self.n_x_bins = n_x_bins
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
@@ -128,6 +144,17 @@ class MembraneCurvature(AnalysisBase):
                 warnings.warn(msg)
                 logger.warn(msg)
 
+        # Apply wrapping coordinates
+        if not self.wrap:
+            # Warning
+            msg = (" `wrap == False` may result in inaccurate calculation "
+                   "of membrane curvature. Surfaces will be derived from "
+                   "a reduced number of atoms. \n "
+                   " Ignore this warning if your trajectory has "
+                   " rotational/translational fit rotations! ")
+            warnings.warn(msg)
+            logger.warn(msg)
+
     def _prepare(self):
         # Initialize empty np.array with results
         self.results.z_surface = np.full((self.n_frames,
@@ -141,6 +168,9 @@ class MembraneCurvature(AnalysisBase):
                                          self.n_y_bins), np.nan)
 
     def _single_frame(self):
+        # Apply wrapping coordinates
+        if self.wrap:
+            self.ag.wrap()
         # Populate a slice with np.arrays of surface, mean, and gaussian per frame
         self.results.z_surface[self._frame_index] = get_z_surface(self.ag.positions,
                                                                   n_x_bins=self.n_x_bins,

@@ -2,6 +2,7 @@
 Unit and regression test for the membrane_curvature package.
 """
 
+
 import pytest
 from membrane_curvature.surface import normalized_grid, derive_surface, get_z_surface
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
@@ -211,7 +212,7 @@ def test_get_z_surface(x_bin, y_bin, x_range, y_range, expected_surface):
 class TestMembraneCurvature(object):
     @pytest.fixture()
     def universe(self):
-        return mda.Universe(GRO_PO4_SMALL, XTC_PO4_SMALL)
+        return mda.Universe(GRO_PO4_SMALL)
 
     @pytest.fixture()
     def universe_dummy(self):
@@ -220,9 +221,70 @@ class TestMembraneCurvature(object):
                       [0., 200., 150.], [100., 200., 150.], [200., 200., 150.]])
 
         u = mda.Universe(a, n_atoms=9)
-        u.dimensions = [3, 3, 3,  90., 90., 90.]
+        u.dimensions = [300, 300, 300,  90., 90., 90.]
 
         return u
+
+    @pytest.fixture()
+    def universe_dummy_full(self):
+        a = np.array([[0., 0., 150.], [100., 0., 150.], [200., 0., 150.],
+                      [0., 200., 150.], [100., 200., 120.], [200., 200., 120.],
+                      [0., 100., 120.], [100., 100., 120.], [200., 100., 120.]])
+
+        u = mda.Universe(a, n_atoms=9)
+        u.dimensions = [300, 300, 300,  90., 90., 90.]
+
+        return u
+
+    @pytest.fixture()
+    def universe_dummy_wrap(self):
+        # Atoms out of bounds in x
+        #   +-----------+
+        #   |   | 8 | 9 | 7
+        #   +-----------+
+        # 6 | 4 | 5 |   |
+        #   +-----------+
+        #   |   | 2 | 3 | 1
+        #   +-----------+
+        a = np.array([[300., 0., 110.], [100., 0., 150.], [200., 0., 150.],
+                      [0., 100., 150.], [100., 100., 150.], [-100., 100., 150.],
+                      [300., 200., 110.], [100., 200., 150.], [200., 200., 150.]])
+
+        u = mda.Universe(a, n_atoms=9)
+        u.dimensions = [300, 300, 300,  90., 90., 90.]
+        return u
+
+    # Equivalent to universe_dummy_wrap when wrapping is applied.
+    # Atoms out of bounds in x and y
+    @pytest.fixture()
+    def universe_dummy_wrap_xy(self):
+        a = np.array([[300., 0., 110.], [100., 0., 150.], [200., 0., 150.],
+                      [0., -200., 150.], [100., -200., 150.], [-100., 100., 150.],
+                      [300., 200., 110.], [100., 200., 150.], [200., 200., 150.]])
+
+        u = mda.Universe(a, n_atoms=9)
+        u.dimensions = [300, 300, 300,  90., 90., 90.]
+
+        return u
+
+    @pytest.fixture()
+    def dummy_surface(self):
+        surface = np.array([[110., 150., 110.],
+                            [150., 150., 150.],
+                            [150., 150., 150.]])
+        return surface
+
+    @pytest.fixture()
+    def curvature_unwrapped_universe(self, universe_dummy_wrap):
+        return MembraneCurvature(universe_dummy_wrap,
+                                 n_x_bins=3,
+                                 n_y_bins=3).run()
+
+    @pytest.fixture()
+    def curvature_unwrapped_universe_xy(self, universe_dummy_wrap_xy):
+        return MembraneCurvature(universe_dummy_wrap_xy,
+                                 n_x_bins=3,
+                                 n_y_bins=3).run()
 
     def test_invalid_selection(self, universe):
         with pytest.raises(ValueError, match=r'Invalid selection'):
@@ -261,6 +323,7 @@ class TestMembraneCurvature(object):
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 
+    @pytest.mark.xfail(reason="Wrapping coordinates not applied.")
     @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
         (3, 3,
          np.array([[150., 150., 120.],
@@ -286,7 +349,8 @@ class TestMembraneCurvature(object):
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 
-    def test_analysis_mean(self, universe):
+    # test using wrap=True with test grofile
+    def test_analysis_mean_wrap(self, universe):
         expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
                                   [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
                                   [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
@@ -297,13 +361,211 @@ class TestMembraneCurvature(object):
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
 
-
-    def test_analysis_mean_default_selection(self, universe):
+    # test using wrap=False with test grofile
+    def test_analysis_mean_no_wrap(self, universe):
         expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
                                   [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
                                   [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
         mc = MembraneCurvature(universe,
+                               select='name PO4',
+                               n_x_bins=3,
+                               n_y_bins=3,
+                               wrap=False).run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)
+
+    # test using dummy Universe with atoms out of boounds
+    # with wrap=True (default)
+    #   +-----------+          +-----------+
+    #   |   | 8 | 9 | 7        | 7 | 8 | 9 |
+    #   +-----------+          +-----------+
+    # 6 | 4 | 5 |   |   --->   | 4 | 5 | 6 |
+    #   +-----------+          +-----------+
+    #   |   | 2 | 3 | 1        | 1 | 2 | 3 |
+    #   +-----------+          +-----------+
+    #
+    # test surface in universe with atoms out of bounds in x
+    def test_analysis_get_z_surface_wrap(self, curvature_unwrapped_universe, dummy_surface):
+        avg_surface = curvature_unwrapped_universe.results.average_z_surface
+        assert_almost_equal(avg_surface, dummy_surface)
+
+    # test surface in universe with atoms out of bounds in x and y
+    def test_analysis_get_z_surface_wrap_xy(self, universe_dummy_wrap_xy, dummy_surface):
+        x_bin = y_bin = 3
+        mc = MembraneCurvature(universe_dummy_wrap_xy,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin).run()
+        avg_surface = mc.results.average_z_surface
+        assert_almost_equal(avg_surface, dummy_surface)
+
+    # test mean curvature
+    def test_analysis_mean_wrap(self, curvature_unwrapped_universe, dummy_surface):
+        avg_mean = curvature_unwrapped_universe.results.average_mean
+        expected_mean = mean_curvature(dummy_surface)
+        assert_almost_equal(avg_mean, expected_mean)
+
+    def test_analysis_mean_wrap_xy(self, curvature_unwrapped_universe, dummy_surface):
+        avg_mean = curvature_unwrapped_universe.results.average_mean
+        expected_mean = mean_curvature(dummy_surface)
+        assert_almost_equal(avg_mean, expected_mean)
+
+    # test gaussian
+    def test_analysis_gaussian_wrap(self, curvature_unwrapped_universe, dummy_surface):
+        avg_gaussian = curvature_unwrapped_universe.results.average_gaussian
+        expected_gaussian = gaussian_curvature(dummy_surface)
+        assert_almost_equal(avg_gaussian, expected_gaussian)
+
+    def test_analysis_mean_gaussian_wrap_xy(self, curvature_unwrapped_universe, dummy_surface):
+        avg_gaussian = curvature_unwrapped_universe.results.average_gaussian
+        expected_gaussian = gaussian_curvature(dummy_surface)
+        assert_almost_equal(avg_gaussian, expected_gaussian)
+
+    # test using dummy Universe with atoms out of boounds
+    # with wrap=False
+    #   +-----------+
+    #   |   | 8 | 9 | 7
+    #   +-----------+
+    # 6 | 4 | 5 |   |
+    #   +-----------+
+    #   |   | 2 | 3 | 1
+    #   +-----------+
+    # test surface
+    # with wrap=False in universe with atoms out of bounds in x
+    def test_analysis_get_z_surface_no_wrap(self, universe_dummy_wrap):
+        expected_surface = [[np.nan, 150.,  np.nan],
+                            [150., 150., 150.],
+                            [150., np.nan, 150.]]
+        x_bin = y_bin = 3
+        mc = MembraneCurvature(universe_dummy_wrap,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               wrap=False).run()
+        avg_surface = mc.results.average_z_surface
+        assert_almost_equal(avg_surface, expected_surface)
+
+    # test surface in universe with atoms out of bounds in x and y
+    def test_analysis_get_z_surface_no_wrap_xy(self, universe_dummy_wrap_xy):
+        expected_surface = [[np.nan, np.nan,  np.nan],
+                            [150., np.nan, 150.],
+                            [150., np.nan, 150.]]
+        x_bin = y_bin = 3
+        mc = MembraneCurvature(universe_dummy_wrap_xy,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               wrap=False).run()
+        avg_surface = mc.results.average_z_surface
+        assert_almost_equal(avg_surface, expected_surface)
+
+    # test mean
+    def test_analysis_mean_no_wrap(self, universe_dummy_wrap):
+        expected_mean = np.array(np.full((3, 3), np.nan))
+        x_bin = y_bin = 3
+        mc = MembraneCurvature(universe_dummy_wrap,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               wrap=False).run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)
+
+    def test_analysis_mean_no_wrap(self, universe_dummy_wrap_xy):
+        expected_mean = np.array(np.full((3, 3), np.nan))
+        x_bin = y_bin = 3
+        mc = MembraneCurvature(universe_dummy_wrap_xy,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               wrap=False).run()
+        avg_mean = mc.results.average_mean
+        assert_almost_equal(avg_mean, expected_mean)
+
+    # test gaussian
+    def test_analysis_gaussian_no_wrap(self, universe_dummy_wrap):
+        expected_gaussian = np.array(np.full((3, 3), np.nan))
+        x_bin = y_bin = 3
+        mc = MembraneCurvature(universe_dummy_wrap,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               wrap=False).run()
+        avg_gaussian = mc.results.average_gaussian
+        assert_almost_equal(avg_gaussian, expected_gaussian)
+
+    def test_analysis_gaussian_no_wrap(self, universe_dummy_wrap_xy):
+        expected_gaussian = np.array(np.full((3, 3), np.nan))
+        x_bin = y_bin = 3
+        mc = MembraneCurvature(universe_dummy_wrap_xy,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               wrap=False).run()
+        avg_gaussian = mc.results.average_gaussian
+        assert_almost_equal(avg_gaussian, expected_gaussian)
+
+    @pytest.mark.parametrize('x_bin, y_bin, expected_surface', [
+        (3, 3,
+         np.array([[150., 120., 150.],
+                   [150., 120., 120.],
+                   [150., 120., 120.]])),
+        (4, 4,
+         np.array([[150., 120., 150., np.nan],
+                   [150., 120., 120., np.nan],
+                   [150., 120., 120., np.nan],
+                   [np.nan, np.nan, np.nan, np.nan]])),
+        (5, 5,
+         np.array([[150., 120., np.nan, 150., np.nan],
+                  [150., 120., np.nan, 120., np.nan],
+                  [np.nan, np.nan, np.nan, np.nan, np.nan],
+                  [150., 120., np.nan, 120., np.nan],
+                  [np.nan, np.nan, np.nan, np.nan, np.nan]]))
+
+    ])
+    def test_analysis_get_z_surface(self, universe_dummy_full, x_bin, y_bin, expected_surface):
+        mc = MembraneCurvature(universe_dummy_full,
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin).run()
+        avg_surface = mc.results.average_z_surface
+        assert_almost_equal(avg_surface, expected_surface)
+
+    def test_analysis_mean(self, universe_dummy_full):
+        expected_mean = np.array([[-5.54630914e-04, - 1.50000000e+01,  8.80203593e-02],
+                                  [-2.77315457e-04, - 2.20748929e-03, - 5.01100068e-01],
+                                  [-2.77315457e-04, - 2.20748929e-03, - 1.50000000e+01]])
+        mc = MembraneCurvature(universe_dummy_full,
                                n_x_bins=3,
                                n_y_bins=3).run()
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
+
+    @pytest.mark.parametrize('x_bin, y_bin, box_dim, dummy_array, expected_surface', [
+        # test with negative z coordinates with 3 bins
+        (3, 3, 300, np.array([[0., 0., -150.], [100., 0., -150.], [200., 0., -150.],
+                              [0., 100., -150.], [100., 100., 120.], [200., 100., 120.],
+                              [0., 200., 120.], [100., 200., 120.], [200., 200., 120.]]),
+            np.array([[150., 150., 120.],
+                      [150., 120., 120.],
+                      [150., 120., 120.]])),
+        # test with negative z coordinates with 4 bins
+        (4, 4, 400, np.array([[0., 0., -150.], [100., 0., -150.], [200., 0., -150.], [300., 0., -150.],
+                              [0., 100., -150.], [100., 100., 120.], [200., 100., 120.], [300., 100., -150.],
+                              [0., 200., 120.], [100., 200., 120.], [200., 200., 120.], [300., 200., -150.],
+                              [0., 300., -150.], [100., 300., -150.], [200., 300., -150.], [300., 300., -150.]]),
+            np.array([[150., 150., 120., 150.],
+                      [150., 120., 120., 150.],
+                      [150., 120., 120., 150.],
+                      [150., 150., 150., 150.]]))
+    ])
+    def test_analysis_wrapping_coordinates(self, x_bin, y_bin, box_dim, dummy_array, expected_surface):
+        x_range, y_range = (0, box_dim), (0, box_dim)
+        u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
+        u.dimensions = [box_dim, box_dim, 300,  90., 90., 90.]
+        # Check with wrapped coords in base
+        mc = MembraneCurvature(u, select='all',
+                               n_x_bins=x_bin,
+                               n_y_bins=y_bin,
+                               x_range=x_range,
+                               y_range=y_range).run()
+        avg_surface = mc.results.average_z_surface
+        # assert if default values of wrapped coords in z_surface returns correctly
+        assert_almost_equal(avg_surface, expected_surface)
+
+    def test_test_analysis_no_wrapping(self, universe):
+        regex = (r"`wrap == False` may result in inaccurate calculation")
+        with pytest.warns(UserWarning, match=regex):
+            MembraneCurvature(universe, wrap=False)
