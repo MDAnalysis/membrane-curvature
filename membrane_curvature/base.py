@@ -87,11 +87,11 @@ class MembraneCurvature(AnalysisBase):
     The derived surface and calculated curvatures are available in the
     :attr:`results` attributes.
 
-    The attribute :attr:`~MembraneCurvature.results.z_surface` contains the
+    The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains the
     derived surface averaged over the `n_frames` of the trajectory.
 
-    The attributes :attr:`~MembraneCurvature.results.mean_curvature` and
-    :attr:`~MembraneCurvature.results.gaussian_curvature` contain the computed
+    The attributes :attr:`~MembraneCurvature.results.average_mean_curvature` and
+    :attr:`~MembraneCurvature.results.average_gaussian_curvature` contain the computed
     values of mean and Gaussian curvature averaged over the `n_frames` of the
     trajectory.
 
