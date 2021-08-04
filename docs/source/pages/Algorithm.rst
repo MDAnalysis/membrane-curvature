@@ -1,47 +1,121 @@
+.. role:: raw-math(raw) :format: latex html
+
 Algorithm
 =========================================================
 
-The membrane curvature MDAnalysis module calculates the mean and Gaussian curvature 
-from surfaces derived by a group of reference. By default, the group of reference 
-implemented are lipid headgroups.
+Overview
+---------
 
-The algorithm locates all the atoms in the group of reference and maps each element 
-of the group to a grid of `m x n` dimensions. The dimensions of the grid are 
-determined by the length of the simulation box in the first frame of the 
-trajectory.
 
-The grid is then divided in `m x n` elements, with unit cells of width `uw` = 2nm 
-(default value). In this way, for every atom in the group of reference an indexed cell 
-in the grid is assigned according to their respective `x` and `y` coordinates.
-i.e. `(x, y) ↦ [i, j]`. 
+MembraneCurvature calculates mean and Gaussian curvature of surfaces derived
+from atoms of reference in 4 steps:
+
+:ref:`select-atoms`
+
+:ref:`set-grid`
+
+:ref:`derive-surface-curvature` 
+
+:ref:`iterate`
+
+A summary of the algorithm used in MembraneCurvature is shown in the following
+diagram:
+
+|diagram|
+
+.. _select-atoms:
+
+1. Select atoms of reference
+-----------------------------
+
+The first step in the algorithm consists in selecting atoms that will be used as
+a reference to derive a surface. This selection will be contained in an
+AtomGroup. Typically in biological membranes, lipid headgroups are the most
+common elements to use as an AtomGroup of reference. 
+
+|atoms|
+
+.. _set-grid:
+
+2. Set grid
+-------------
+The dimensions of the grid are determined by the size of the simulation box
+contained in the `MDAnalysis Universe`_. The grid comprises `n_x_bins` x `n_y_bins` number of bins.
 
 |grid|
 
-Once the grid is populated with the atoms in the group of reference, the associated
-`z` coordinate of each atom is stored in an array assigned to each [i, j] unit cell.
-The length of these arrays will depend on the number of atoms of reference that
-are mapped to a given `[i, j]` unit cell. Subsequently, once all values of `z` are
-stored, the mean value of `z` stored in that array is calculated. Since this operation 
-is performed for every frame, the length of the array containing the mean `z` position
-will be determined by the number of frames iterated in the trajectory.
+For every atom in the AtomGroup of reference, MembraneCurvature assigns an index
+in the grid, according to their respective `x` and `y` coordinates. i.e. `(x, y) ↦ [l, m]`. 
 
-.. code-block:: python
+.. note::
+  Unless the user provides a different input, the dimensions of the grid will be determined by
 
-    len(reference_atoms[i,j]) == len(u.trajectory)
+  .. code-block:: python
 
-After iterating over every frame of the trajectory, the mean value of the stored `z`
-coordinate are calculated. These mean values of `z` are the ones used to derive the
-surface.
+      grid_dimension_x = (0, universe.dimensions[0])
+      grid_dimension_y = (0, universe.dimensions[1])
 
-With the defined surface, then values of mean (`H`) and Gaussian (`K`) curvature
-are calculated. This analysis returns a 2-dimensional array of `m x n` with the values of mean
-mean and Gaussian curvature. The length of this array is `m x n`.
+Once the grid is populated according to the coordinates of the atoms in the
+AtomGroup of reference, the associated `z` coordinate of each atom in the AtomGroup 
+is stored in an array assigned to each `[l, m]` index.
 
-More information on how to visualize the results of the MDAnalysis Membrane 
-Curvature toolkit can be found in the Visualization_ page .
+.. _derive-surface-curvature:
 
-.. |grid| image:: ../_static/gridmap.png
+3. Derive surface and calculate curvature
+------------------------------------------
+
+Once the surface formed by the atoms of reference is derived, values of mean (`H`)
+and Gaussian (`K`) curvature are calculated according to their respective equations.
+
+For every frame of the trajectory, the surface derived from the `AtomGroup` is
+calculated and stored in :attr:`MembraneCurvature.results.z_surface`.
+Similarly, the calculation of mean and Gaussian curvature is performed in every
+frame and stored in :attr:`MembraneCurvature.results.mean_curvature` and
+:attr:`MembraneCurvature.results.gaussian_curvature`, respectively.
+
+|surf|
+
+.. _iterate:
+
+4. Average over frames
+-----------------------------------
+
+The attributes :attr:`MembraneCurvature.results.average_mean_curvature` and
+:attr:`MembraneCurvature.results.average_gaussian_curvature` contain the computed
+values of mean and Gaussian curvature averaged over the `n_frames` of the
+trajectory. 
+
+After performing the average over frames, the 
+:attr:`~MembraneCurvature.results.average_z_surface`
+:attr:`~MembraneCurvature.results.average_mean_curvature`, 
+:attr:`~MembraneCurvature.results.average_gaussian_curvature` arrays have shape 
+`(n_x_bins, n_y_bins)`.
+
+|avg_frames|
+
+
+.. |grid_map| image:: ../_static/gridmap.png
   :width: 400
   :alt: GridMap
 
-.. _Visualization:
+.. |diagram| image:: ../_static/DiagramAlgorithm.png
+  :width: 800
+  :alt: MembraneCurvature_diagram
+
+.. |atoms| image:: ../_static/AtomsReference.png
+  :width: 600
+  :alt: atoms_ref
+
+.. |grid| image:: ../_static/grid.png
+  :width: 600
+  :alt: Grid
+
+.. |surf| image:: ../_static/DeriveSurfCurv_.png
+  :width: 800
+  :alt: CurvDiaagram
+
+.. |avg_frames| image:: ../_static/AvgFrames.png
+  :width: 800
+  :alt: avgFrames
+
+.. _`MDAnalysis Universe`: https://docs.mdanalysis.org/2.0.0-dev0/documentation_pages/core/universe.html?highlight=universe

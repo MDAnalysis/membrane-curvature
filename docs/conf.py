@@ -49,8 +49,10 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
+    'sphinx.ext.autosectionlabel'
 ]
 
+autosectionlabel_prefix_document = True
 autosummary_generate = True
 napoleon_google_docstring = False
 napoleon_use_param = False
