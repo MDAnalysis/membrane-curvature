@@ -601,3 +601,39 @@ class TestMembraneCurvature(object):
         regex = (r"`wrap == False` may result in inaccurate calculation")
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(universe, wrap=False)
+
+    # test curvature with interpolated surface
+    @pytest.mark.parametrize('dim_x, dim_y, x_bins, y_bins, dummy_array, expected_interpolated_surface', [
+        # array 3x3 with all 150 and one nan
+        (300, 300, 3, 3, np.array([[0., 0.,   150.], [100., 0.,   150.],   [200., 0.,   150.],
+                                   [0., 100., 150.], [100., 100., np.nan], [200., 100., 150.],
+                                   [0., 200., 150.], [100., 200., 150.],   [200., 200., 150.]]),
+         np.full((1, 3, 3), 150.)),
+        # array 3x3 with all 150 and one nan
+        (300, 300, 3, 3, np.array([[0., 0.,   150.], [100., 0.,   150.],   [200., 0.,   150.],
+                                   [0., 100., 150.], [100., 100., np.nan], [200., 100., 150.],
+                                   [0., 200., np.nan], [100., 200., 150.],   [200., 200., 150.]]),
+         np.full((1, 3, 3), 150.)),
+        # array 3x4 with all 150 and three nans
+        (300, 400, 3, 4, np.array([[0., 0.,   150.], [100., 0.,   150.],   [200., 0.,   150.],
+                                   [0., 100., 150.], [100., 100., np.nan], [200., 100., 150.],
+                                   [0., 200., 150],  [100., 200., np.nan], [200., 200., np.nan],
+                                   [0., 300., 150.], [100., 300., 150.],   [200., 300., 150.]]),
+         np.full((1, 3, 4), 150.)),
+        # array 4x4 with all 120 and many nans
+        (400, 400, 4, 4, np.array([[0., 0.,   np.nan], [100., 0.,   120.],   [200., 0.,   120.],   [300., 0.,   np.nan],
+                                   [0., 100., 120.],   [100., 100., np.nan], [200., 100., 120.],   [300., 100., 120.],
+                                   [0., 200., 120],    [100., 200., np.nan], [200., 200., np.nan], [300., 200., 120.],
+                                   [0., 300., np.nan], [100., 300., 120.],   [200., 300., 120.],   [300., 300., np.nan]]),
+         np.full((1, 4, 4), 120.))
+    ])
+    def test_analysis_interpolates_surface(self, dim_x, dim_y, x_bins, y_bins, dummy_array, expected_interpolated_surface):
+        u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
+        u.dimensions = [dim_x, dim_y, 300,  90., 90., 90.]
+        mc = MembraneCurvature(u,
+                               n_x_bins=x_bins,
+                               n_y_bins=y_bins,
+                               wrap=True,
+                               interpolation=True).run()
+        surface = mc.results.interpolated_z_surface
+        assert_allclose(surface, expected_interpolated_surface)

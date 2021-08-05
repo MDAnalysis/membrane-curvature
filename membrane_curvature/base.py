@@ -12,7 +12,7 @@ surfaces derived from a selection of reference.
 
 import numpy as np
 import warnings
-from .surface import get_z_surface
+from .surface import get_z_surface, surface_interpolation
 from .curvature import mean_curvature, gaussian_curvature
 
 import MDAnalysis
@@ -32,7 +32,7 @@ class MembraneCurvature(AnalysisBase):
     ----------
     universe : Universe or AtomGroup
         An MDAnalysis Universe object.
-    select : str or iterable of str, optional. 
+    select : str or iterable of str, optional.
         The selection string of an atom selection to use as a
         reference to derive a surface.
     wrap : bool, optional
@@ -57,13 +57,13 @@ class MembraneCurvature(AnalysisBase):
     results.gaussian_curvature : ndarray
         Gaussian curvature associated to the surface.
         Arrays of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
-    results.average_z_surface : ndarray 
-        Average of the array elements in `z_surface`. 
+    results.average_z_surface : ndarray
+        Average of the array elements in `z_surface`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_mean_curvature : ndarray 
+    results.average_mean_curvature : ndarray
         Average of the array elements in `mean_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_gaussian_curvature: ndarray 
+    results.average_gaussian_curvature: ndarray
         Average of the array elements in `gaussian_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
@@ -120,7 +120,8 @@ class MembraneCurvature(AnalysisBase):
                  n_x_bins=100, n_y_bins=100,
                  x_range=None,
                  y_range=None,
-                 wrap=True, **kwargs):
+                 wrap=True,
+                 interpolation=False, **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
         self.ag = universe.select_atoms(select)
@@ -129,6 +130,7 @@ class MembraneCurvature(AnalysisBase):
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
         self.y_range = y_range if y_range else (0, universe.dimensions[1])
+        self.interpolation = interpolation
 
         # Raise if selection doesn't exist
         if len(self.ag) == 0:
@@ -156,7 +158,6 @@ class MembraneCurvature(AnalysisBase):
             logger.warn(msg)
 
     def _prepare(self):
-        # Initialize empty np.array with results
         self.results.z_surface = np.full((self.n_frames,
                                           self.n_x_bins,
                                           self.n_y_bins), np.nan)
@@ -166,6 +167,9 @@ class MembraneCurvature(AnalysisBase):
         self.results.gaussian = np.full((self.n_frames,
                                          self.n_x_bins,
                                          self.n_y_bins), np.nan)
+        self.results.interpolated_z_surface = np.full((self.n_frames,
+                                                       self.n_x_bins,
+                                                       self.n_y_bins), np.nan)
 
     def _single_frame(self):
         # Apply wrapping coordinates
@@ -179,8 +183,20 @@ class MembraneCurvature(AnalysisBase):
                                                                   y_range=self.y_range)
         self.results.mean[self._frame_index] = mean_curvature(self.results.z_surface[self._frame_index])
         self.results.gaussian[self._frame_index] = gaussian_curvature(self.results.z_surface[self._frame_index])
+        # Perform interpolation fo surface
+        if self.interpolation:
+            # Populate a slice with np.arrays of interpolated surface
+            self.results.interpolated_z_surface[self._frame_index] = surface_interpolation(
+                self.results.z_surface[self._frame_index])
 
     def _conclude(self):
         self.results.average_z_surface = np.nanmean(self.results.z_surface, axis=0)
         self.results.average_mean = np.nanmean(self.results.mean, axis=0)
         self.results.average_gaussian = np.nanmean(self.results.gaussian, axis=0)
+        if self.interpolation:
+            self.results.average_interpolated_z_surface = np.nanmean(
+                self.results.interpolated_z_surface[self._frame_index], axis=0)
+            self.results.average_interpolated_mean = np.nanmean(mean_curvature(
+                self.results.interpolated_z_surface[self._frame_index]), axis=0)
+            self.results.average_interpolated_gaussian = np.nanmean(gaussian_curvature(
+                self.results.interpolated_z_surface[self._frame_index]), axis=0)
