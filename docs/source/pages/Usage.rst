@@ -1,7 +1,7 @@
 Usage
 =========================================================
 
-MembraneCurvature can be used to derive membrane curvature profiles in three types of 
+In this page, you can find examples of how to use MembraneCurvature to derive  curvature profiles in three types of 
 systems:
 
 :ref:`membrane-only`.
@@ -12,30 +12,44 @@ systems:
 
         :ref:`membrane-protein-no-pr`.
 
+.. note::
+   All the examples included in this page show how to use MembraneCurvature
+   using data files from `MDAnalysisTests`_ and `MDAnalysisData`_. 
+   You can find instructions on how to install MDAnalysisData the `installation page`_.
+
 .. _membrane-only:
 
 1. Membrane-only systems
 -----------------------------
 
-A typical usage of MembraneCurvature to calculate the averaged mean curvature
-over the trajectory of a system containing a membrane only is provided in the
-following example::
+In this example, we show a basic usage of MembraneCurvature in a system that
+comprises a lipid bilayer of DPPC:CHOL using the Martini force field. Since we
+have a bilayer, we select atoms of phoshpholipid head groups in the upper
+leaflet only using the :attr:`~select` parameter and apply coordinate wrapping.
+Once we run :attr:`~MembraneCurvature`, we can extract the values of mean and
+Gaussian curvature::
 
         import MDAnalysis as mda
         from membrane_curvature.base import MembraneCurvature
-        from MDAnalysis.tests.datafiles import TPR_MEMB, GRO_MEMB
+        from MDAnalysis.tests.datafiles import Martini_membrane_gro
 
-        universe = mda.Universe(TPR_MEMB, GRO_MEMB)
+        universe = mda.Universe(Martini_membrane_gro)
         
-        membrane_curvature = MembraneCurvature(universe, 
-                                               select='name PO4', 
-                                               wrap=True,
-                                               n_x_bins=10,
-                                               n_y_bins=10)
+        curvature_upper_leaflet = MembraneCurvature(universe, 
+                                                    select='resid 1-225 and name PO4', 
+                                                    n_x_bins=8, 
+                                                    n_y_bins=8, 
+                                                    wrap=True).run()
 
-        membrane_curvature.run()
 
-        avg_mean_curvature  = membrane_curvature.results.mean_curvature
+        # extract mean curvature
+        mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
+
+        # extract Gaussian
+        gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
+
+You can find more complex examples in the tutorial notebooks.
+
 
 .. _membrane-protein:
 
@@ -47,28 +61,29 @@ following example::
 
 2.1.1 Membrane-protein systems, protein with position restraints
 ------------------------------------------------------------------
-Similarly, in membrane-protein systems, when position restraints are applied on the protein,
-we can calculate membrane curvature as::
+
+In this example, we have a simulation box comprising a copy of the Yiip
+transporter, embedded in a lipid bilayer of POPE:POPG. Similar to the example
+for membrane-only, we select the atoms for the upper leaflet and apply
+coordinate wrapping. Then, we can calculate membrane curvature as::
 
         import MDAnalysis as mda
         from membrane_curvature.base import MembraneCurvature
-        from MDAnalysis.tests.datafiles import TPR_MEMB_PROT, GRO_MEMB_PROT
+        from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT
 
-        universe = mda.Universe(TPR_MEMB,_PROT GRO_MEMB_PROT)
+        universe = mda.Universe(GRO_MEMB_PROT, XTC_MEMPROT)
         
-        membrane_curvature = MembraneCurvature(universe, 
-                                               select='name PO4', 
-                                               wrap=True,
-                                               n_x_bins=10,
-                                               n_y_bins=10)
+        curvature_upper_leaflet = MembraneCurvature(universe,
+                                               select='resid 297-517 and name P', 
+                                               n_x_bins=2, 
+                                               n_y_bins=2, 
+                                               wrap=True).run
 
-        membrane_curvature.run()
-
-        avg_mean_curvature  = membrane_curvature.results.mean_curvature
+        avg_curvature_upper_leaflet = membrane_curvature.results.average_mean_curvature
 
 .. note::
-        Usage of MembraneCurvature in systems of :ref:`membrane-only` and 
-        :ref:`membrane-protein-pr` is the same. 
+        When passing raw trajectories, in systems of :ref:`membrane-only` and 
+        :ref:`membrane-protein-pr` set :attr:`~wrap=True` to improve sampling. 
 
 Some points to keep in mind when calculating membrane curvature in :ref:`membrane-only`
 and :ref:`membrane-protein-pr` are addressed in this `blog post`_. 
@@ -101,8 +116,12 @@ After you have preprocessed the trajectory, a typical usage of membrane curvatur
 
 
 More information on how to visualize the results of the MDAnalysis Membrane 
-Curvature tool can be found in the Visualization_ page.
-
-.. _Visualization: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Visualization.html
+Curvature tool can be found in the :ref:`visualization` page.
 
 .. _`blog post`: https://ojeda-e.github.io/blog/Considerations-curvature-MD-simulations-PartI/
+
+.. _`installation page`: https://www.mdanalysis.org/MDAnalysisData/install.html
+
+.. _`MDAnalysisData`: https://www.mdanalysis.org/MDAnalysisData/
+
+.. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
