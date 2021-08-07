@@ -71,7 +71,7 @@ coordinate wrapping. Then, we can calculate membrane curvature as::
         from membrane_curvature.base import MembraneCurvature
         from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT
 
-        universe = mda.Universe(GRO_MEMB_PROT, XTC_MEMPROT)
+        universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
         
         curvature_upper_leaflet = MembraneCurvature(universe,
                                                select='resid 297-517 and name P', 
@@ -95,6 +95,14 @@ and :ref:`membrane-protein-pr` are addressed in this `blog post`_.
 
 For membrane-protein systems where the simulation setup has no position
 restraints on the protein, a trajectory preprocessing by the user is required.
+If the goal is to assess membrane curvature induced by the protein, the 
+preprocessed trajectory should have the protein centered in the simulation box 
+with translational and rotational fit.
+
+In `Gromacs`_, the trajectory would be preprocessed with  
+
+        gmx trjconv -pbc whole -ur compact -c
+        gmx trjconv -fit rot+transxy
 
 After you have preprocessed the trajectory, a typical usage of membrane curvature is::
 
@@ -106,7 +114,7 @@ After you have preprocessed the trajectory, a typical usage of membrane curvatur
         
         membrane_curvature = MembraneCurvature(universe, 
                                                select='name PO4', 
-                                               wrap=False,
+                                               wrap=False, # wrap=False when passing preprocessed trajs!
                                                n_x_bins=10,
                                                n_y_bins=10)
 
@@ -125,3 +133,5 @@ Curvature tool can be found in the :ref:`visualization` page.
 .. _`MDAnalysisData`: https://www.mdanalysis.org/MDAnalysisData/
 
 .. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
+
+.. _`Gromacs`: https://www.gromacs.org/

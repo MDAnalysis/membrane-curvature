@@ -8,7 +8,7 @@ dependencies:
   - pip
   - numpy
   - MDAnalysis
-  - mdtraj # temporary; remove after refactoring
+  - ipython
 
     # Pip-only installs
   #- pip:
