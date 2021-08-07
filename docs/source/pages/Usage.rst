@@ -1,8 +1,8 @@
 Usage
 =========================================================
 
-In this page, you can find examples of how to use MembraneCurvature to derive  curvature profiles in three types of 
-systems:
+In this page, you can find examples of how to use MembraneCurvature to derive
+curvature profiles in three types of systems:
 
 :ref:`membrane-only`.
 
@@ -13,9 +13,10 @@ systems:
         :ref:`membrane-protein-no-pr`.
 
 .. note::
-   All the examples included in this page show how to use MembraneCurvature
-   using data files from `MDAnalysisTests`_ and `MDAnalysisData`_. 
-   You can find instructions on how to install MDAnalysisData the `installation page`_.
+   Examples included in this page show how to use MembraneCurvature
+   using data files from `MDAnalysisTests`_. In order to run the examples
+   here provided, `MDAnalysisTests`_ must be installed.
+
 
 .. _membrane-only:
 
@@ -79,7 +80,7 @@ coordinate wrapping. Then, we can calculate membrane curvature as::
                                                n_y_bins=2, 
                                                wrap=True).run
 
-        avg_curvature_upper_leaflet = membrane_curvature.results.average_mean_curvature
+        avg_mean_curvature_upper_leaflet = membrane_curvature.results.average_mean_curvature
 
 .. note::
         When passing raw trajectories, in systems of :ref:`membrane-only` and 
@@ -99,7 +100,7 @@ If the goal is to assess membrane curvature induced by the protein, the
 preprocessed trajectory should have the protein centered in the simulation box 
 with translational and rotational fit.
 
-In `Gromacs`_, the trajectory would be preprocessed with  
+In `Gromacs`_, the trajectory would be preprocessed with::
 
         gmx trjconv -pbc whole -ur compact -c
         gmx trjconv -fit rot+transxy
@@ -108,29 +109,30 @@ After you have preprocessed the trajectory, a typical usage of membrane curvatur
 
         import MDAnalysis as mda
         from membrane_curvature.base import MembraneCurvature
-        from MDAnalysis.tests.datafiles import TPR_MEMB_PROT_FIT, GRO_MEMB_PROT_FIT
+        from membrane_curvature.tests.datafiles import XTC_MEMBPROT_FIT, GRO_MEMBPROT_FIT
 
-        universe = mda.Universe(TPR_MEMB_PROT_FIT, GRO_MEMB_PROT_FIT)
+        universe = mda.Universe(GRO_MEMBPROT_FIT, XTC_MEMBPROT_FIT)
         
-        membrane_curvature = MembraneCurvature(universe, 
-                                               select='name PO4', 
-                                               wrap=False, # wrap=False when passing preprocessed trajs!
-                                               n_x_bins=10,
-                                               n_y_bins=10)
+        curvature_lower_leaflet = MembraneCurvature(universe, 
+                                                    select='resid 2583-3042', 
+                                                    wrap=False, # wrap=False when passing preprocessed trajs!
+                                                    n_x_bins=10,
+                                                    n_y_bins=10).run()
 
-        membrane_curvature.run()
+        avg_mean_curvature  = curvature_lower_leaflet.results.average_mean
 
-        avg_mean_curvature  = membrane_curvature.results.mean_curvature
+.. note::
+
+        Since you are prividing a preprocess trajectory with translation/rotational fit 
+        you can ignore the warning message: 
+        ``WARNING   `wrap == False` may result in inaccurate calculation of membrane curvature.`` 
+        
 
 
 More information on how to visualize the results of the MDAnalysis Membrane 
 Curvature tool can be found in the :ref:`visualization` page.
 
 .. _`blog post`: https://ojeda-e.github.io/blog/Considerations-curvature-MD-simulations-PartI/
-
-.. _`installation page`: https://www.mdanalysis.org/MDAnalysisData/install.html
-
-.. _`MDAnalysisData`: https://www.mdanalysis.org/MDAnalysisData/
 
 .. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 
