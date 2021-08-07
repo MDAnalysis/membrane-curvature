@@ -7,9 +7,9 @@ dependencies:
   - python
   - pip
   - numpy
-  - MDAnalysis
   - ipython
 
     # Pip-only installs
-  #- pip:
+  - pip:
+  - MDAnalysis==2.0.0b0
 
