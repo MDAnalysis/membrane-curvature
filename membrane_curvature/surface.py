@@ -55,7 +55,7 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
     Parameters
     ----------
-    coordinates : np.ndarray 
+    coordinates : np.ndarray
         Coordinates of AtomGroup. NumPy array of shape=(n_atoms, 3).
     n_x_bins : int.
         Number of bins in grid in the `x` dimension. 

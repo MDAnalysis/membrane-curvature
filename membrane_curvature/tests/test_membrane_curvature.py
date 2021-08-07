@@ -4,13 +4,13 @@ Unit and regression test for the membrane_curvature package.
 
 
 import pytest
-from membrane_curvature.surface import (interpolation_by_array, normalized_grid,
-                                        derive_surface, get_z_surface, surface_interpolation)
+from membrane_curvature.surface import (normalized_grid, derive_surface, get_z_surface, 
+                                        surface_interpolation)
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_allclose
 import MDAnalysis as mda
-from membrane_curvature.tests.datafiles import (GRO_PO4_SMALL, XTC_PO4_SMALL)
+from membrane_curvature.tests.datafiles import (GRO_PO4_SMALL)
 from membrane_curvature.base import MembraneCurvature
 
 # Reference data from datafile
@@ -139,13 +139,13 @@ def test_gaussian_curvature_small():
 def test_mean_curvature_small():
     H_test = mean_curvature(MEMBRANE_CURVATURE_DATA['z_ref']['small'])
     for h, h_test in zip(MEMBRANE_CURVATURE_DATA['mean_curvature']['small'], H_test):
-        assert_allclose(h, h_test, rtol=6)
+        assert_allclose(h, h_test)
 
 
 def test_gaussian_curvature_all():
     K_test = gaussian_curvature(MEMBRANE_CURVATURE_DATA['z_ref']['all'])
     for k, k_test in zip(MEMBRANE_CURVATURE_DATA['gaussian_curvature']['all'], K_test):
-        assert_allclose(k, k_test, rtol=6)
+        assert_allclose(k, k_test, rtol=1e-4)
 
 
 def test_mean_curvature_all():
@@ -603,7 +603,7 @@ class TestMembraneCurvature(object):
             MembraneCurvature(universe, wrap=False)
 
     # test curvature with interpolated surface
-    @pytest.mark.parametrize('dim_x, dim_y, x_bins, y_bins, dummy_array, expected_interpolated_surface', [
+    @pytest.mark.parametrize('dim_x, dim_y, x_bins, y_bins, dummy_array, expected_interp_surf', [
         # array 3x3 with all 150 and one nan
         (300, 300, 3, 3, np.array([[0., 0.,   150.], [100., 0.,   150.],   [200., 0.,   150.],
                                    [0., 100., 150.], [100., 100., np.nan], [200., 100., 150.],
@@ -621,13 +621,13 @@ class TestMembraneCurvature(object):
                                    [0., 300., 150.], [100., 300., 150.],   [200., 300., 150.]]),
          np.full((1, 3, 4), 150.)),
         # array 4x4 with all 120 and many nans
-        (400, 400, 4, 4, np.array([[0., 0.,   np.nan], [100., 0.,   120.],   [200., 0.,   120.],   [300., 0.,   np.nan],
-                                   [0., 100., 120.],   [100., 100., np.nan], [200., 100., 120.],   [300., 100., 120.],
-                                   [0., 200., 120],    [100., 200., np.nan], [200., 200., np.nan], [300., 200., 120.],
-                                   [0., 300., np.nan], [100., 300., 120.],   [200., 300., 120.],   [300., 300., np.nan]]),
+        (400, 400, 4, 4, np.array([[0., 0., np.nan], [100., 0., 120.], [200., 0., 120.], [300., 0., np.nan],
+                                   [0., 100., 120.], [100., 100., np.nan], [200., 100., 120.], [300., 100., 120.],
+                                   [0., 200., 120], [100., 200., np.nan], [200., 200., np.nan], [300., 200., 120.],
+                                   [0., 300., np.nan], [100., 300., 120.], [200., 300., 120.], [300., 300., np.nan]]),
          np.full((1, 4, 4), 120.))
     ])
-    def test_analysis_interpolates_surface(self, dim_x, dim_y, x_bins, y_bins, dummy_array, expected_interpolated_surface):
+    def test_analysis_interpolates_surface(self, dim_x, dim_y, x_bins, y_bins, dummy_array, expected_interp_surf):
         u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
         u.dimensions = [dim_x, dim_y, 300,  90., 90., 90.]
         mc = MembraneCurvature(u,
@@ -636,4 +636,4 @@ class TestMembraneCurvature(object):
                                wrap=True,
                                interpolation=True).run()
         surface = mc.results.interpolated_z_surface
-        assert_allclose(surface, expected_interpolated_surface)
+        assert_allclose(surface, expected_interp_surf)
