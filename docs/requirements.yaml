@@ -8,8 +8,8 @@ dependencies:
   - pip
   - numpy
   - MDAnalysis
-  - mdtraj # temporary; remove after refactoring
-
+  - ipython
+  - MDAnalysisTests
     # Pip-only installs
   #- pip:
 

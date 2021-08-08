@@ -49,8 +49,12 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
+    'sphinx.ext.autosectionlabel',
+    'IPython.sphinxext.ipython_console_highlighting',
+    'IPython.sphinxext.ipython_directive'
 ]
 
+autosectionlabel_prefix_document = True
 autosummary_generate = True
 napoleon_google_docstring = False
 napoleon_use_param = False
@@ -171,3 +175,7 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+intersphinx_mapping = {'Python': ('https://docs.python.org/3', None),
+                       'MDAnalysis': ('https://docs.mdanalysis.org/stable/', None),
+                       'Matplotlib': ('https://matplotlib.org/stable', None),
+                       'SciPy': ('https://docs.scipy.org/doc/scipy/', None)}
