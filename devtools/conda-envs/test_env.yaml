@@ -1,4 +1,4 @@
-name: membrane-curvature
+name: test
 channels:
   - conda-forge
   - defaults
@@ -6,7 +6,11 @@ dependencies:
   - python
   - pip
   - numpy
-  - MDAnalysisTests
+  - sphinx
+     # Testing
+  - pytest
+  - pytest-cov
+  - codecov
 
     # Pip-only installs
   - pip:
