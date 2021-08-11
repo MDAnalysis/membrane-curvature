@@ -25,6 +25,12 @@ With MembraneCurvature you can:
 Installation
 --------------
 
+MembraneCurvature is available via pip:
+
+```
+pip install membrane-curvature
+```
+
 To install from source:
 
 ```
