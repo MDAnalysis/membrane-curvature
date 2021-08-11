@@ -42,10 +42,16 @@ python setup.py install
 ```
 
 Some of the examples included in the MembraneCurvatre documentation use test
-cases from `MDAnalysisTests`. To install the unit tests:
+cases from [MDAnalysisTests]. To install the unit tests via pip:
 
 ```
-conda install MDAnalysisTests
+pip install --upgrade MDAnalysisTests
+```
+
+or via conda
+
+```
+conda install -c conda-forge MDAnalysisTests
 ```
 
 Usage
@@ -117,3 +123,4 @@ Copyright (c) 2021, Estefania Barreto-Ojeda
 [Visualization]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Visualization.html
 [Algorithm]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Algorithm.html
 [API]: https://membrane-curvature.readthedocs.io/en/latest/api/membrane_curvature.html
+[MDAnalysisTests]: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
