@@ -22,6 +22,26 @@ With MembraneCurvature you can:
 - Live a happier life.
 
 
+Installation
+--------------
+
+To install from source:
+
+```
+git clone https://github.com/MDAnalysis/membrane-curvature.git
+cd membrane-curvature
+conda env create -f devtools/conda-envs/environment.yaml
+conda activate membrane-curvature
+python setup.py install
+```
+
+Some of the examples included in the MembraneCurvatre documentation use test
+cases from `MDAnalysisTests`. To install the unit tests:
+
+```
+conda install MDAnalysisTests
+```
+
 Usage
 --------------
 
@@ -55,19 +75,6 @@ derive a surface and calculate its respective mean and Gaussian curvature.
 
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
 
-Installation
---------------
-
-To install from source:
-
-```
-git clone https://github.com/MDAnalysis/membrane-curvature.git
-cd membrane-curvature
-conda env create -f devtools/conda-envs/environment.yaml
-conda activate membrane-curvature
-python setup.py install
-```
-
 Documentation
 ---------------
 
@@ -79,12 +86,6 @@ where you can find:
 - Detailed explanation of the [Algorithm] implemented in MembraneCurvature.
 - Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
 
-Some of the examples included in the MembraneCurvatre documentation use test
-cases from `MDAnalysisTests`. To install the unit tests:
-
-```
-conda install MDAnalysisTests
-```
 
 License
 ---------------

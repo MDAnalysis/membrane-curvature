@@ -6,7 +6,6 @@ dependencies:
   - python
   - pip
   - numpy
-  - MDAnalysisTests
 
     # Pip-only installs
   - pip:
