@@ -9,4 +9,4 @@ dependencies:
 
     # Pip-only installs
   - pip:
-    - MDAnalysis=>2.0.0b0
+    - MDAnalysis>=2.0.0b0
