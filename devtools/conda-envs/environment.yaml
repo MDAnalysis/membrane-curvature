@@ -1,0 +1,12 @@
+name: membrane-curvature
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pip
+  - numpy
+
+    # Pip-only installs
+  - pip:
+    - MDAnalysis>=2.0.0b0

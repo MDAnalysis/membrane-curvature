@@ -6,37 +6,108 @@ Membrane Curvature
 [![codecov](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main/graph/badge.svg)](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main)
 [![docs](https://readthedocs.org/projects/membrane-curvature/badge/?version=latest)](https://membrane-curvature.readthedocs.io/en/latest/)
 
+<img src="docs/source/_static/PM_Membrane_EBO.png" alt="solution_posres"
+width="650"/>
 
-This is an [MDAnalysis][mdanalysis] module to calculate membrane curvature from 
-molecular dynamics simulations. 
+MembraneCurvature is an [MDAnalysis] tool to calculate membrane curvature from 
+Molecular Dynamics simulations. 
 
-The MDAkit for membrane curvature analysis is part of the [Google Summer of Code][GSoC] program 
-and it is linked to a [Code of Conduct][code_of_conduct].
+Features
+--------------
+
+With MembraneCurvature you can:
+
+- Calculate mean and Gaussian curvature from MD simulations.
+- Derive 2D curvature profiles.
+- Live a happier life.
+
+
+Installation
+--------------
+
+To install from source:
+
+```
+git clone https://github.com/MDAnalysis/membrane-curvature.git
+cd membrane-curvature
+conda env create -f devtools/conda-envs/environment.yaml
+conda activate membrane-curvature
+python setup.py install
+```
+
+Some of the examples included in the MembraneCurvatre documentation use test
+cases from `MDAnalysisTests`. To install the unit tests:
+
+```
+conda install MDAnalysisTests
+```
+
+Usage
+--------------
+
+This is a quick example on how to run MembraneCurvature:
+
+```
+import MDAnalysis as mda
+from membrane_curvature.base import MembraneCurvature
+from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+universe = mda.Universe(Martini_membrane_gro)
+
+curvature_upper_leaflet = MembraneCurvature(universe,
+                                            select='resid 1-225 and name PO4',
+                                            n_x_bins=8,
+                                            n_y_bins=8,
+                                            wrap=True).run()
+
+# extract mean curvature
+mean_upper_leaflet = curvature_upper_leaflet.results.z_surface
+
+# extract mean curvature
+mean_upper_leaflet = curvature_upper_leaflet.results.mean
+
+# extract Gaussian
+gaussian_upper_leaflet = curvature_upper_leaflet.results.gaussian
+```
+
+In this example, we use the PO4 beads in the upper leaflet as reference to
+derive a surface and calculate its respective mean and Gaussian curvature.
+
+You can find more examples on how to run MembraneCurvature in the [Usage] page.
+
+Documentation
+---------------
+
+To help you get the most out MembraneCurvature, we have [documentation] available 
+where you can find:
+
+- The standard [API] documentation.
+- Quick examples of how to run Membrane Curvature in the [Usage] page.
+- Detailed explanation of the [Algorithm] implemented in MembraneCurvature.
+- Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
+
+
+License
+---------------
+
+Source code included in this project is available in the GitHub repository
+https://github.com/MDAnalysis/membrane-curvature under the GNU Public License
+v3 , version 3 (see [LICENSE]).
+
+MembraneCurvature was developed as a [Google Summer of Code 2021][GSoC] 
+project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduct].
 
 Copyright (c) 2021, Estefania Barreto-Ojeda
 
-## Abstract
-Elements of differential geometry enable us to quantify the curvature of a surface. 
-The core elements of biological membranes, phospholipids, provide tridimensional 
-configurations from which a surface can be derived to calculate curvature descriptors. 
-We would like to integrate to [MDAnalysis][mdanalysis] an analysis module to calculate 
-average mean and Gaussian curvature from Molecular Dynamics simulations. By integrating 
-a membrane curvature analysis module in [MDAnalysis][mdanalysis], users will benefit from 
-a tool that enables rapid extraction of relevant properties of lipid bilayers in 
-biomolecular systems. Our approach extracts key elements of the membrane using 
-phospholipid head groups to define a surface, followed by a transformation into 
-[NumPy] arrays. In this way, the functionality offered by [NumPy][numpy] and 
-[SciPy] can be used to derive values of mean and gaussian curvature of biological 
-membranes. Since [MDAnalysis][mdanalysis] already works very well to explore data 
-interactively, visualization of the membrane curvature analysis outputs in 2D-maps can be
-easily performed.
-
-### Disclaimer:
-Code in this repository is under active developmentand is NOT guaranteed to be bug free. 
-Use it at your own risk.
 
 [GSoC]: https://summerofcode.withgoogle.com/
-[mdanalysis]: https://www.mdanalysis.org
+[MDAnalysis]: https://www.mdanalysis.org
 [NumPy]: https://numpy.org
 [SciPy]: https://www.scipy.org
 [code_of_conduct]: https://www.mdanalysis.org/pages/conduct/
+[Usage]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
+[License]: https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE
+[documentation]: https://membrane-curvature.readthedocs.io/en/latest/index.html#
+[Visualization]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Visualization.html
+[Algorithm]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Algorithm.html
+[API]: https://membrane-curvature.readthedocs.io/en/latest/api/membrane_curvature.html

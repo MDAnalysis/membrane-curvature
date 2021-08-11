@@ -10,8 +10,11 @@ Welcome to MembraneCurvature's Documentation
 
 **Last updated:** |today|
 
-The MDAnalysis **MembraneCurvature** analysis module calculates the Gaussian and mean 
-curvature from molecular dynamics simulations. 
+The MDAnalysis **MembraneCurvature** tool module calculates the Gaussian and mean 
+curvature from Molecular Dynamics (MD) simulations. 
+
+..  figure:: source/_static/PM_Membrane_EBO.png
+    :align: center
 
 **MembraneCurvature** derives 2D curvature profiles of a surface of reference.
 To suit the needs of your system, we offer flexible atom selection that will
