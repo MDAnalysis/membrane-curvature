@@ -6,8 +6,7 @@ Membrane Curvature
 [![codecov](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main/graph/badge.svg)](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main)
 [![docs](https://readthedocs.org/projects/membrane-curvature/badge/?version=latest)](https://membrane-curvature.readthedocs.io/en/latest/)
 
-<img src="docs/source/_static/PM_Membrane_EBO.png" alt="solution_posres"
-width="650"/>
+![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
 
 MembraneCurvature is an [MDAnalysis] tool to calculate membrane curvature from 
 Molecular Dynamics simulations. 
@@ -25,6 +24,9 @@ With MembraneCurvature you can:
 Installation
 --------------
 
+The main dependecy in MembraneCurvature is [MDAnalysis]. You can find
+instructions to install the latest stable version of MDAnalysis via `conda` in the [UserGuide].
+
 MembraneCurvature is available via pip:
 
 ```
@@ -41,17 +43,17 @@ conda activate membrane-curvature
 python setup.py install
 ```
 
-Some of the examples included in the MembraneCurvatre documentation use test
-cases from [MDAnalysisTests]. To install the unit tests via pip:
-
-```
-pip install --upgrade MDAnalysisTests
-```
-
-or via conda
+Some of the examples included in the MembraneCurvature documentation use test
+cases from [MDAnalysisTests]. To install the unit tests via conda:
 
 ```
 conda install -c conda-forge MDAnalysisTests
+```
+
+or via pip:
+
+```
+pip install --upgrade MDAnalysisTests
 ```
 
 Usage
@@ -124,3 +126,4 @@ Copyright (c) 2021, Estefania Barreto-Ojeda
 [Algorithm]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Algorithm.html
 [API]: https://membrane-curvature.readthedocs.io/en/latest/api/membrane_curvature.html
 [MDAnalysisTests]: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
+[UserGuide]: https://userguide.mdanalysis.org/2.0.0-dev0/installation.html
