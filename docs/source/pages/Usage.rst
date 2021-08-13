@@ -80,7 +80,7 @@ coordinate wrapping. Then, we can calculate membrane curvature as::
                                                n_y_bins=2, 
                                                wrap=True).run
 
-        avg_mean_curvature_upper_leaflet = membrane_curvature.results.average_mean_curvature
+        avg_mean_curvature_upper_leaflet = curvature_upper_leaflet.results.average_mean_curvature
 
 .. note::
         When passing raw trajectories, in systems of :ref:`membrane-only` and 
@@ -123,7 +123,7 @@ After you have preprocessed the trajectory, a typical usage of membrane curvatur
 
 .. note::
 
-        Since you are prividing a preprocess trajectory with translation/rotational fit 
+        Since you are providing a preprocess trajectory with translation/rotational fit 
         you can ignore the warning message: 
         ``WARNING   `wrap == False` may result in inaccurate calculation of membrane curvature.`` 
         
