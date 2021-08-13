@@ -24,7 +24,7 @@ With MembraneCurvature you can:
 Installation
 --------------
 
-The main dependecy in MembraneCurvature is [MDAnalysis]. You can find
+The main dependency in MembraneCurvature is [MDAnalysis]. You can find
 instructions to install the latest stable version of MDAnalysis via `conda` in the [UserGuide].
 
 MembraneCurvature is available via pip:
