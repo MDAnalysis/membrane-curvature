@@ -13,8 +13,8 @@ __all__ = [
     # From lower to higher complexity
     "GRO_PO4_SMALL",  # Gromacs file of PO4 beads in POPC POPE membrane with 10 lipids
     "XTC_PO4_SMALL",  # Gromacs traj file of PO4 beacs in POPC POPE membrane with 10 lipids with indexes inverted.
-    "MEMB_GRO", # Gromacs file patch of big membrane in squared cell of ~ 240 A dimensions
-    "MEMB_XTC", # Gromacs trajectory file of big membrane.
+    "MEMB_GRO",  # Gromacs file patch of big membrane in squared cell of ~ 240 A dimensions
+    "MEMB_XTC",  # Gromacs trajectory file of big membrane.
     "GRO_PO4",  # Gromacs file of PO4 beads in POPC POPE membrane with 914 lipids
     "XTC_PO4",  # Gromacs trajectory of GRO_PO4
     "GRO_MEMBRANE_PROTEIN",  # Gromacs file of POPC POPE CHOL membrane
