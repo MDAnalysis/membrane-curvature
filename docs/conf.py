@@ -189,6 +189,3 @@ nbsphinx_prolog = r"""
     <script>require=requirejs;</script>
 
 """
-
-nbsphinx_requirejs_path = ""
-nbsphinx_widgets_path = ""
