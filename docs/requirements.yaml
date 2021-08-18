@@ -12,4 +12,4 @@ dependencies:
   - MDAnalysisTests
     # Pip-only installs
   - pip:
-  - nbsphinx
+    - nbsphinx
