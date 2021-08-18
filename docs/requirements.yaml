@@ -13,3 +13,5 @@ dependencies:
     # Pip-only installs
   - pip:
     - nbsphinx
+    - ipywidgets
+    - nglview
