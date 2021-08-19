@@ -11,5 +11,7 @@ dependencies:
   - ipython
   - MDAnalysisTests
     # Pip-only installs
-  #- pip:
-
+  - pip:
+    - nbsphinx
+    - ipywidgets
+    - nglview

@@ -64,6 +64,7 @@ Are you interested in calculating mean and Gaussian curvature from MD simulation
    ./source/pages/Algorithm
    ./source/pages/Usage
    ./source/pages/Visualization
+   ./source/pages/Tutorials
 
 .. autosummary::
    :toctree: autosummary

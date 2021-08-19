@@ -51,7 +51,9 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx.ext.autosectionlabel',
     'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive'
+    'IPython.sphinxext.ipython_directive',
+    'sphinx_rtd_theme',
+    'nbsphinx'
 ]
 
 autosectionlabel_prefix_document = True
@@ -179,3 +181,11 @@ intersphinx_mapping = {'Python': ('https://docs.python.org/3', None),
                        'MDAnalysis': ('https://docs.mdanalysis.org/stable/', None),
                        'Matplotlib': ('https://matplotlib.org/stable', None),
                        'SciPy': ('https://docs.scipy.org/doc/scipy/', None)}
+
+nbsphinx_prolog = r"""
+.. raw:: html
+
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js'></script>
+    <script>require=requirejs;</script>
+
+"""
