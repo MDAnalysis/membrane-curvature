@@ -3,17 +3,41 @@
 Tutorials
 =========================================================
 
-The goal of these tutorials is to introduce the user to the MDAnalysis
-MembraneCurvature tool. We offer three different types of tutorials with
-example on how to calculate curvature and derive 2D curvature profiles
-in three different types of systems.
+**MembraneCurvature** derives 2D curvature profiles from an
+:class:`~MDAnalysis.core.groups.AtomGroup` of reference. To help you to get the
+most out of the MDAnalysis MembraneCurvature tool, we designed tutorials with
+nice visualizatons covering different types of MD systems!
 
+You can find the list of available tutorials below:
 
 .. toctree::
    :maxdepth: 1
-   :caption: MembraneCurvature in
+   :caption: Membrane-only systems
 
    Curvature_membrane-only_systems.ipynb
-   Curvature_membrane-protein_systems_pr.ipynb
-   Curvature_membrane-protein_systems_no_pr.ipynb
 
+How to calculate curvature of a lipid bilayer of lipid composition POPC:POPE:CHOL and a
+5:4:1 ratio from a Molecular Dynamics (MD) simulation carried out using the
+Martini_ force field.
+
+..  figure:: ../_static/memb2.png
+    :align: center
+    :width: 300
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Membrane-protein systems 
+
+   Curvature_membrane_protein_pr_all_atom.ipynb
+
+MembraneCurvature to derive 2D maps of curvature induced by the sodium-proton antiporter NhaA.
+MD simulations used in this tutorial were carried out using the CHARMM36 force field.
+
+..  figure:: ../_static/Nhaa.png
+    :align: center
+    :width: 300
+
+
+   
+
+.. _`Martini`: http://cgmartini.nl/
