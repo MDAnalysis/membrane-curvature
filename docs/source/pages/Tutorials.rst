@@ -36,8 +36,6 @@ MD simulations used in this tutorial were carried out using the CHARMM36 force f
 ..  figure:: ../_static/Nhaa.png
     :align: center
     :width: 300
-
-
-   
+  
 
 .. _`Martini`: http://cgmartini.nl/
