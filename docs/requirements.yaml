@@ -15,3 +15,4 @@ dependencies:
     - nbsphinx
     - ipywidgets
     - nglview
+    - more-itertools
