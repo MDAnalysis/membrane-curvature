@@ -79,28 +79,27 @@ class MembraneCurvature(AnalysisBase):
     in the unit cell. Use `wrap=False` for processed trajectories where
     rotational/translational fit is performed.
 
-    For more details on when to use `wrap=True`, check the `Usage
-    <https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html>`_
+    For more details on when to use `wrap=True`, check the :ref:`usage`
     page.
 
 
     The derived surface and calculated curvatures are available in the
     :attr:`results` attributes.
 
-    The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains the
-    derived surface averaged over the `n_frames` of the trajectory.
+    The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
+    the derived surface averaged over the `n_frames` of the trajectory.
 
     The attributes :attr:`~MembraneCurvature.results.average_mean_curvature` and
-    :attr:`~MembraneCurvature.results.average_gaussian_curvature` contain the computed
-    values of mean and Gaussian curvature averaged over the `n_frames` of the
-    trajectory.
+    :attr:`~MembraneCurvature.results.average_gaussian_curvature` contain the
+    computed values of mean and Gaussian curvature averaged over the `n_frames`
+    of the trajectory.
 
     Example
     -----------
     You can pass a universe containing your selection of reference::
 
         import MDAnalysis as mda
-        from MDAnalysis.analysis import MembraneCurvature
+        from membrane_curvature.base import MembraneCurvature
 
         u = mda.Universe(coordinates, trajectory)
         mc = MembraneCurvature(u).run()
@@ -110,9 +109,12 @@ class MembraneCurvature(AnalysisBase):
         gaussian_curvature = mc.results.average_gaussian_curvature
 
     The respective 2D curvature plots can be obtained using the `matplotlib`
-    package for data visualization via `imshow`. We recommend using the
-    `gaussian` interpolation.
+    package for data visualization via `contourf` or `imshow`.
 
+    For specific examples visit the :ref:`usage` page.
+    Check the :ref:`visualization` page for more examples to plot
+    MembraneCurvature results using `contourf`
+    and `imshow`.
 
     """
 
