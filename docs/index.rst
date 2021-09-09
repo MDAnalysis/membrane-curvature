@@ -21,7 +21,9 @@ To suit the needs of your system, we offer flexible atom selection that will
 enable you to use the most convenient `AtomGroup` to extract curvature from your
 MD simulations!
 
-This is an example on how to use MembraneCurvature::
+This is an example on how to use MembraneCurvature:
+
+.. code-block:: python
 
       import MDAnalysis as mda
       from membrane_curvature.base import MembraneCurvature
@@ -51,6 +53,43 @@ Why MembraneCurvature?
 **MembraneCurvature** is a user-friendly, actively-maintained, well-documented tool 
 in Python 3 to derive 2D maps of membrane curvature from MD Simulations, using the most recent version of `MDAnalysis`_ 
 Are you interested in calculating mean and Gaussian curvature from MD simulations? This tool is for you!
+
+
+Installation
+--------------
+
+The main dependency in MembraneCurvature is `MDAnalysis`_. You can find
+instructions to install the latest stable version of MDAnalysis via `conda`_ in the `User Guide`_.
+
+MembraneCurvature is available via pip:
+
+.. code-block:: bash
+
+   pip install membrane-curvature
+
+To install from source:
+
+.. code-block:: sh
+
+   git clone https://github.com/MDAnalysis/membrane-curvature.git
+   cd membrane-curvature
+   conda env create -f devtools/conda-envs/environment.yaml
+   conda activate membrane-curvature
+   python setup.py install
+
+Some of the examples included in the MembraneCurvature documentation use test
+cases from `MDAnalysis Tests`_. To install the unit tests via conda:
+
+.. code-block:: bash
+
+   conda install -c conda-forge MDAnalysisTests
+
+or via pip:
+
+.. code-block:: bash
+
+   pip install --upgrade MDAnalysisTests
+
 
 .. Contents
 .. ========
@@ -83,6 +122,9 @@ License v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
 .. _MDAnalysis: https://www.mdanalysis.org
 .. _`github.com/MDAnalysis/membrane_curvature`: https://github.com/MDAnalysis/membrane-curvature
 .. _`Usage`: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
+.. _`MDAnalysis Tests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
+.. _`User Guide`: https://userguide.mdanalysis.org/stable/index.html
+.. _`conda`: https://conda.io/en/latest/
 .. |MDAnalysis_version| replace:: 1.1.1
 
 Indices and tables
