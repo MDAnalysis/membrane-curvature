@@ -59,7 +59,7 @@ Installation
 --------------
 
 The main dependency in MembraneCurvature is `MDAnalysis`_. You can find
-instructions to install the latest stable version of MDAnalysis via `conda`_ in the `User Guide`_.
+instructions to install the latest stable version of MDAnalysis via `conda`_ in the `Installation Quick Start`_ page.
 
 MembraneCurvature is available via pip:
 
@@ -69,7 +69,7 @@ MembraneCurvature is available via pip:
 
 To install from source:
 
-.. code-block:: sh
+.. code-block:: bash
 
    git clone https://github.com/MDAnalysis/membrane-curvature.git
    cd membrane-curvature
@@ -123,7 +123,7 @@ License v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
 .. _`github.com/MDAnalysis/membrane_curvature`: https://github.com/MDAnalysis/membrane-curvature
 .. _`Usage`: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
 .. _`MDAnalysis Tests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
-.. _`User Guide`: https://userguide.mdanalysis.org/stable/index.html
+.. _`Installation Quick Start`: https://www.mdanalysis.org/pages/installation_quick_start/#installation-quick-start
 .. _`conda`: https://conda.io/en/latest/
 .. |MDAnalysis_version| replace:: 1.1.1
 
