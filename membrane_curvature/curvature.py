@@ -87,7 +87,7 @@ def mean_curvature(Z):
     Zxy, Zxx = np.gradient(Zx)
     Zyy, _ = np.gradient(Zy)
 
-    H = (Zx**2 + 1) * Zyy - 2 * Zx * Zy * Zxy + (Zy**2 + 1) * Zxx
-    H = -H / (2 * (Zx**2 + Zy**2 + 1)**(1.5))
+    H = (1 + Zx**2) * Zyy + (1 + Zy**2) * Zxx - 2 * Zx * Zy * Zxy
+    H = H / (2 * (1 + Zx**2 + Zy**2)**(1.5))
 
     return H
