@@ -70,8 +70,8 @@ class MembraneCurvature(AnalysisBase):
 
     See also
     --------
-    `MDAnalysis.transformations.wrap
-    <https://docs.mdanalysis.org/1.0.0/documentation_pages/transformations/wrap.html>`_
+    :class:`~MDAnalysis.transformations.wrap.wrap`
+        Wrap/unwrap the atoms of a given AtomGroup in the unit cell.
 
     Notes
     -----
@@ -109,12 +109,13 @@ class MembraneCurvature(AnalysisBase):
         gaussian_curvature = mc.results.average_gaussian_curvature
 
     The respective 2D curvature plots can be obtained using the `matplotlib`
-    package for data visualization via `contourf` or `imshow`.
+    package for data visualization via :func:`~matplotlib.pyplot.contourf` or 
+    :func:`~matplotlib.pyplot.imshow`.
 
     For specific examples visit the :ref:`usage` page.
     Check the :ref:`visualization` page for more examples to plot
-    MembraneCurvature results using `contourf`
-    and `imshow`.
+    MembraneCurvature results using :func:`~matplotlib.pyplot.contourf`
+    and :func:`~matplotlib.pyplot.imshow`.
 
     """
 
