@@ -109,7 +109,7 @@ class MembraneCurvature(AnalysisBase):
         gaussian_curvature = mc.results.average_gaussian_curvature
 
     The respective 2D curvature plots can be obtained using the `matplotlib`
-    package for data visualization via :func:`~matplotlib.pyplot.contourf` or 
+    package for data visualization via :func:`~matplotlib.pyplot.contourf` or
     :func:`~matplotlib.pyplot.imshow`.
 
     For specific examples visit the :ref:`usage` page.
