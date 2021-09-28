@@ -30,12 +30,19 @@ Martini_ force field.
 
    Curvature_membrane_protein_pr_all_atom.ipynb
 
-MembraneCurvature to derive 2D maps of curvature induced by the sodium-proton antiporter NhaA.
-MD simulations used in this tutorial were carried out using the CHARMM36 force field.
+Use MembraneCurvature to derive 2D maps of curvature induced by the sodium-proton antiporter NhaA.
+MD simulations used in this tutorial were carried out using the CHARMM36 force field [Huang2013]_.
 
 ..  figure:: ../_static/Nhaa.png
     :align: center
     :width: 300
-  
 
-.. _`Martini`: http://cgmartini.nl/
+References 
+----------
+
+.. [Huang2013] Huang J, MacKerell AD Jr. CHARMM36 all-atom additive protein force field: 
+               validation based on comparison to NMR data. J Comput Chem. 2013 Sep 30;
+               34(25):2135-45. doi: 10.1002/jcc.23354. Epub 2013 Jul 6. PMID: 23832629; 
+               PMCID: PMC3800559.
+
+.. _Martini: http://cgmartini.nl/
