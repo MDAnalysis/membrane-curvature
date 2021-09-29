@@ -18,7 +18,7 @@ You can find the list of available tutorials below:
 
 How to calculate curvature of a lipid bilayer of lipid composition POPC:POPE:CHOL and a
 5:4:1 ratio from a Molecular Dynamics (MD) simulation carried out using the
-Martini_ force field.
+Martini_ force field [Marrink2007]_.
 
 ..  figure:: ../_static/memb2.png
     :align: center
@@ -45,6 +45,12 @@ References
                34(25):2135-45. doi: `10.1002/jcc.23354`_. Epub 2013 Jul 6. PMID: 23832629; 
                PMCID: PMC3800559.
 
+.. [Marrink2007] Siewert J. Marrink, H. Jelger Risselada, Serge Yefimov, D. Peter Tieleman, 
+                 and Alex H. de Vries. The MARTINI Force Field: Coarse Grained Model for 
+                 Biomolecular Simulations. The Journal of Physical Chemistry B 2007 111 (27), 
+                 7812-7824. doi: `10.1021/jp071097f`_. 
+
 .. _Martini: http://cgmartini.nl/
 
+.. _`10.1021/jp071097f`: https://pubs.acs.org/doi/10.1021/jp071097f
 .. _`10.1002/jcc.23354`: https://doi.org/10.1002/jcc.23354
