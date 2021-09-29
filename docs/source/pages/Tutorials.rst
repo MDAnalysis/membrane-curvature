@@ -28,7 +28,7 @@ Martini_ force field.
    :maxdepth: 1
    :caption: Membrane-protein systems 
 
-   Curvature_membrane_protein_pr_all_atom.ipynb
+   Curvature_membrane_protein_nopr_all_atom.ipynb
 
 Use MembraneCurvature to derive 2D maps of curvature induced by the sodium-proton antiporter NhaA.
 MD simulations used in this tutorial were carried out using the CHARMM36 force field [Huang2013]_.
