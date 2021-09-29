@@ -3,17 +3,48 @@
 Tutorials
 =========================================================
 
-The goal of these tutorials is to introduce the user to the MDAnalysis
-MembraneCurvature tool. We offer three different types of tutorials with
-example on how to calculate curvature and derive 2D curvature profiles
-in three different types of systems.
+**MembraneCurvature** derives 2D curvature profiles from an
+:class:`~MDAnalysis.core.groups.AtomGroup` of reference. To help you to get the
+most out of the MDAnalysis MembraneCurvature tool, we designed tutorials with
+nice visualizatons covering different types of MD systems!
 
+You can find the list of available tutorials below:
 
 .. toctree::
    :maxdepth: 1
-   :caption: MembraneCurvature in
+   :caption: Membrane-only systems
 
    Curvature_membrane-only_systems.ipynb
-   Curvature_membrane-protein_systems_pr.ipynb
-   Curvature_membrane-protein_systems_no_pr.ipynb
 
+How to calculate curvature of a lipid bilayer of lipid composition POPC:POPE:CHOL and a
+5:4:1 ratio from a Molecular Dynamics (MD) simulation carried out using the
+Martini_ force field.
+
+..  figure:: ../_static/memb2.png
+    :align: center
+    :width: 300
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Membrane-protein systems 
+
+   Curvature_membrane_protein_nopr_all_atom.ipynb
+
+Use MembraneCurvature to derive 2D maps of curvature induced by the sodium-proton antiporter NhaA.
+MD simulations used in this tutorial were carried out using the CHARMM36 force field [Huang2013]_.
+
+..  figure:: ../_static/Nhaa.png
+    :align: center
+    :width: 300
+
+References 
+----------
+
+.. [Huang2013] Huang J, MacKerell AD Jr. CHARMM36 all-atom additive protein force field: 
+               validation based on comparison to NMR data. J Comput Chem. 2013 Sep 30;
+               34(25):2135-45. doi: `10.1002/jcc.23354`_. Epub 2013 Jul 6. PMID: 23832629; 
+               PMCID: PMC3800559.
+
+.. _Martini: http://cgmartini.nl/
+
+.. _`10.1002/jcc.23354`: https://doi.org/10.1002/jcc.23354
