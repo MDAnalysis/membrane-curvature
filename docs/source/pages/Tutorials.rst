@@ -42,7 +42,9 @@ References
 
 .. [Huang2013] Huang J, MacKerell AD Jr. CHARMM36 all-atom additive protein force field: 
                validation based on comparison to NMR data. J Comput Chem. 2013 Sep 30;
-               34(25):2135-45. doi: 10.1002/jcc.23354. Epub 2013 Jul 6. PMID: 23832629; 
+               34(25):2135-45. doi: `10.1002/jcc.23354`_. Epub 2013 Jul 6. PMID: 23832629; 
                PMCID: PMC3800559.
 
 .. _Martini: http://cgmartini.nl/
+
+.. _`10.1002/jcc.23354`: https://doi.org/10.1002/jcc.23354
