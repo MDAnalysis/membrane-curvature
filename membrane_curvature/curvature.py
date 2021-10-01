@@ -22,10 +22,10 @@ Mean curvature is defined by
 Notes
 ---------
 
-Since the mean curvature calculates the arithmetic mean of two 
-principal curvatures, the default units of :math:`H` are Å\ :sup:`-1`. 
-On the other hand, Gaussian curvature calculates the geometric mean of the 
-two principal curvatures. Therefore, the default units of :math:`K` are Å\ :sup:`-2`. 
+Since the mean curvature calculates the arithmetic mean of two
+principal curvatures, the default units of :math:`H` are Å\ :sup:`-1`.
+On the other hand, Gaussian curvature calculates the geometric mean of the
+two principal curvatures. Therefore, the default units of :math:`K` are Å\ :sup:`-2`.
 In general, units of mean curvature are [length] :sup:`-1`,
 and units of Gaussian curvature are [length] :sup:`-2`.
 
