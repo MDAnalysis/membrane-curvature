@@ -8,6 +8,9 @@ MembraneCurvature
 
 MembraneCurvature calculates the mean and Gaussian curvature of
 surfaces derived from a selection of reference.
+
+Mean curvature is calculated in units of Å :sup:`-1` and Gaussian curvature
+in units of Å :sup:`-2`.
 """
 
 import numpy as np
