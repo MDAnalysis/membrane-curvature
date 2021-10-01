@@ -21,11 +21,21 @@ Mean curvature is defined by
 
 Notes
 ---------
-Numpy cannot calculate the gradient for arrays with inner array of
-`length==1` unless `axis=0` is specified. Therefore in the functions here included
-for mean and Gaussian curvature, shape of arrays must be at least (2,2).
-In general, to calculate a numerical gradients shape of arrays must be >=(`edge_order` +
-1).
+
+Since the mean curvature calculates the arithmetic mean of two 
+principal curvatures, the default units of :math:`H` are Å\ :sup:`-1`. 
+On the other hand, Gaussian curvature calculates the geometric mean of the 
+two principal curvatures. Therefore, the default units of :math:`K` are Å\ :sup:`-2`. 
+In general, units of mean curvature are [length] :sup:`-1`,
+and units of Gaussian curvature are [length] :sup:`-2`.
+
+.. warning::
+
+    Numpy cannot calculate the gradient for arrays with inner array of
+    `length==1` unless `axis=0` is specified. Therefore in the functions here included
+    for mean and Gaussian curvature, shape of arrays must be at least (2,2).
+    In general, to calculate a numerical gradients shape of arrays must be >=(`edge_order` +
+    1).
 
 
 Functions
