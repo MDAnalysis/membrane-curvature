@@ -24,7 +24,7 @@ setup(
     name='membrane_curvature',
     author='Estefania Barreto-Ojeda',
     author_email='estefania.b.ojeda@gmail.com',
-    description=short_description[0],
+    description="MDAnalysis tool to calculate membrane curvature from MD simulations.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     version=versioneer.get_version(),
