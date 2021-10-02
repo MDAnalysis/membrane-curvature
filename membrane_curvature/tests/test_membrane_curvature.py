@@ -569,3 +569,47 @@ class TestMembraneCurvature(object):
         regex = (r"`wrap == False` may result in inaccurate calculation")
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(universe, wrap=False)
+
+    @pytest.mark.parametrize('x_bin, y_bin, box_dim, dummy_array', [
+        # test too large x coordinates 2 bins
+        (2, 2, 200, np.array([[0., 0., 150.], [200., 0., 150.],
+                              [0., 100., 150.], [100., 100., 120.]])),
+        # test too large y coordinates 2 bins
+        (2, 2, 200, np.array([[0., 0., 150.], [100., 0., 150.],
+                              [0., 200., 150.], [100., 100., 150.]])),
+        # test too large y coordinates with 3 bins
+        (3, 3, 300, np.array([[0., 0., 150.], [100., 0., 150.], [200., 0., 150.],
+                              [0., 300., 150.], [100., 100., 120.], [200., 100., 120.],
+                              [0., 350., 120.], [100., 200., 120.], [200., 200., 120.]]))
+    ])
+    def test_positive_coordinates_exceed_grid(self, x_bin, y_bin, box_dim, dummy_array):
+        u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
+        u.dimensions = [box_dim, box_dim, 300, 90., 90., 90.]
+        regex = (r"Atom coordinates exceed size of grid")
+        with pytest.warns(UserWarning, match=regex):
+            MembraneCurvature(u, select='all',
+                              n_x_bins=x_bin,
+                              n_y_bins=y_bin,
+                              wrap=False).run()
+
+    @pytest.mark.parametrize('x_bin, y_bin, box_dim, dummy_array', [
+        # test negative x coordinates 2 bins
+        (2, 2, 200, np.array([[-150., 0., 150.], [100., 0., 150.],
+                              [0., 100., 150.], [100., 100., 150.]])),
+        # test negative y coordinates 2 bins
+        (2, 2, 200, np.array([[0., 0., 150.], [200., 0., 150.],
+                              [0., -150., 150.], [100., 100., 120.]])),
+        # test negative x coordinates with 3 bins
+        (3, 3, 300, np.array([[0., 0., 150.], [-100., 0., 150.], [200., 0., 150.],
+                              [0., 100., 150.], [100., 100., 120.], [200., 100., 120.],
+                              [0., 200., 120.], [100., 200., 120.], [300., 200., 120.]]))
+    ])
+    def test_negative_coordinates_exceed_grid(self, x_bin, y_bin, box_dim, dummy_array):
+        u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
+        u.dimensions = [box_dim, box_dim, 300,  90., 90., 90.]
+        regex = (r"Atom with negative coordinates falls")
+        with pytest.warns(UserWarning, match=regex):
+            MembraneCurvature(u, select='all',
+                              n_x_bins=x_bin,
+                              n_y_bins=y_bin,
+                              wrap=False).run()

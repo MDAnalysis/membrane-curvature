@@ -17,6 +17,11 @@ Functions
 
 import numpy as np
 import warnings
+import MDAnalysis
+import logging
+
+MDAnalysis.start_logging()
+logger = logging.getLogger("MDAnalysis.MDAKit.membrane_curvature")
 
 
 def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
@@ -88,17 +93,27 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
     for l, m, z in zip(cell_x_floor, cell_y_floor, z_coords):
 
         try:
+            # negative coordinates
             if l < 0 or m < 0:
-                msg = ("Atom outside grid boundaries. Skipping atom.")
+                msg = ("Atom with negative coordinates falls "
+                       "outside grid boundaries. Element "
+                       "({},{}) in grid can't be assigned."
+                       " Skipping atom.").format(l, m)
                 warnings.warn(msg)
+                logger.warning(msg)
                 continue
 
             grid_z_coordinates[l, m] += z
             grid_norm_unit[l, m] += 1
 
+        # too large positive coordinates
         except IndexError:
-            msg = ("Atom outside grid boundaries. Skipping atom.")
+            msg = ("Atom coordinates exceed size of grid "
+                   "and element ({},{}) can't be assigned. "
+                   "Maximum (x,y) coordinates must be < ({}, {}). "
+                   "Skipping atom.").format(l, m, x_range[1], y_range[1])
             warnings.warn(msg)
+            logger.warning(msg)
 
     z_surface = normalized_grid(grid_z_coordinates, grid_norm_unit)
 
