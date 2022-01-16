@@ -30,6 +30,11 @@ With :func:`~matplotlib.pyplot.imshow`, each element of the array is plotted as 
 of `m x n` elements. The color of each square is determined by the value of 
 the corresponding array element and the colormap of preference. 
 
+.. warning::
+      Please note that the returned arrays of surface, mean, and Gaussian curvature 
+      should be transposed when plotting via :func:`~matplotlib.pyplot.imshow` or 
+      :func:`~matplotlib.pyplot.contourf`. 
+
 For example, to visualize the results obtained in :ref:`membrane-only`, we can run:
 
 .. ipython::
@@ -65,7 +70,7 @@ For example, to visualize the results obtained in :ref:`membrane-only`, we can r
    @savefig mycurvature.png width=8in
    In [8]: fig, [ax1, ax2] = plt.subplots(ncols=2, figsize=(6,3), dpi=200)
       ...: for ax, mc, lf in zip((ax1, ax2), curvatures, leaflets):
-      ...:     ax.imshow(mc, interpolation='gaussian', cmap='seismic', origin='lower')
+      ...:     ax.imshow(mc.T, interpolation='gaussian', cmap='seismic', origin='lower')
       ...:     ax.set_aspect('equal')
       ...:     ax.set_title('{} Leaflet'.format(lf))
       ...:     ax.axis('off')
@@ -94,7 +99,8 @@ to perform an interpolation. We suggest using
    @savefig mycontours.png width=8in
    In [2]: fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(5,3))
       ...: for ax, mc, lf in zip((ax1, ax2), curvatures, leaflets):
-      ...:     ax.contourf(ndimage.gaussian_filter(mc, sigma=1, order=0, mode='reflect'), 
+      ...:     arr_ = ndimage.gaussian_filter(mc, sigma=1, order=0, mode='reflect')
+      ...:     ax.contourf(arr_.T, 
       ...:                 cmap='bwr',
       ...:                 levels=30)
       ...:     ax.set_aspect('equal')
