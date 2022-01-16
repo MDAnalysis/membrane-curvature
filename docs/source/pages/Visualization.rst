@@ -10,6 +10,11 @@ Matplotlib_. Two different approaches are suggested.
 
 :ref:`plt.contourf`
 
+.. warning::
+      Please note that the returned arrays of surface, mean, and Gaussian curvature 
+      should be transposed when plotting via :func:`~matplotlib.pyplot.imshow` or 
+      :func:`~matplotlib.pyplot.contourf`. This is a critical step when plotting 
+      results obtained from MembraneCurvature analyses.
 
 .. _plt.imshow:
 
@@ -29,11 +34,6 @@ A simple plot using :func:`~matplotlib.pyplot.imshow` can be obtained like so::
 With :func:`~matplotlib.pyplot.imshow`, each element of the array is plotted as a square in a matrix 
 of `m x n` elements. The color of each square is determined by the value of 
 the corresponding array element and the colormap of preference. 
-
-.. warning::
-      Please note that the returned arrays of surface, mean, and Gaussian curvature 
-      should be transposed when plotting via :func:`~matplotlib.pyplot.imshow` or 
-      :func:`~matplotlib.pyplot.contourf`. 
 
 For example, to visualize the results obtained in :ref:`membrane-only`, we can run:
 
@@ -106,6 +106,5 @@ to perform an interpolation. We suggest using
       ...:     ax.set_aspect('equal')
       ...:     ax.set_title('{} Leaflet'.format(lf))
       ...:     ax.axis('off')
-
 
 .. _Matplotlib: https://matplotlib.org
