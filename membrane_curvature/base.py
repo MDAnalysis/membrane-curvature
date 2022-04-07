@@ -63,10 +63,10 @@ class MembraneCurvature(AnalysisBase):
     results.average_z_surface : ndarray 
         Average of the array elements in `z_surface`. 
         Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_mean_curvature : ndarray 
+    results.average_mean : ndarray 
         Average of the array elements in `mean_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_gaussian_curvature: ndarray 
+    results.average_gaussian: ndarray 
         Average of the array elements in `gaussian_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
