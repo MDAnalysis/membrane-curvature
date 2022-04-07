@@ -54,19 +54,19 @@ class MembraneCurvature(AnalysisBase):
     results.z_surface : ndarray
         Surface derived from atom selection in every frame.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
-    results.mean_curvature : ndarray
+    results.mean : ndarray
         Mean curvature associated to the surface.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
-    results.gaussian_curvature : ndarray
+    results.gaussian : ndarray
         Gaussian curvature associated to the surface.
         Arrays of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
-    results.average_z_surface : ndarray 
+    results.average_z_surface : ndarray
         Average of the array elements in `z_surface`. 
         Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_mean : ndarray 
+    results.average_mean : ndarray
         Average of the array elements in `mean_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_gaussian: ndarray 
+    results.average_gaussian: ndarray
         Average of the array elements in `gaussian_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
@@ -108,8 +108,8 @@ class MembraneCurvature(AnalysisBase):
         mc = MembraneCurvature(u).run()
 
         surface =  mc.results.average_z_surface
-        mean_curvature =  mc.results.average_mean_curvature
-        gaussian_curvature = mc.results.average_gaussian_curvature
+        mean_curvature =  mc.results.average_mean
+        gaussian_curvature = mc.results.average_gaussian
 
     The respective 2D curvature plots can be obtained using the `matplotlib`
     package for data visualization via :func:`~matplotlib.pyplot.contourf` or
