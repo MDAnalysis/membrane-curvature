@@ -585,7 +585,7 @@ class TestMembraneCurvature(object):
     def test_positive_coordinates_exceed_grid(self, x_bin, y_bin, box_dim, dummy_array):
         u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
         u.dimensions = [box_dim, box_dim, 300, 90., 90., 90.]
-        regex = (r"Atom coordinates exceed size of grid")
+        regex = (r"exceed boundaries | size of grid")
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(u, select='all',
                               n_x_bins=x_bin,
@@ -607,7 +607,7 @@ class TestMembraneCurvature(object):
     def test_negative_coordinates_exceed_grid(self, x_bin, y_bin, box_dim, dummy_array):
         u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
         u.dimensions = [box_dim, box_dim, 300,  90., 90., 90.]
-        regex = (r"Atom with negative coordinates falls")
+        regex = (r"exceed boundaries | coordinates falls")
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(u, select='all',
                               n_x_bins=x_bin,
