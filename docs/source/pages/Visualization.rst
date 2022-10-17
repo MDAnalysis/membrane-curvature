@@ -10,6 +10,21 @@ Matplotlib_. Two different approaches are suggested.
 
 :ref:`plt.contourf`
 
+.. warning::
+      Please note that when plotting via :func:`~matplotlib.pyplot.imshow` or
+      :func:`~matplotlib.pyplot.contourf`, the orientation of the plot in the
+      final rendering is determined by the ``origin`` argument. By default,
+      in these Matplotlib_ functions, the origin is set to the ``(left, top)``
+      corner. Additionally, for an array of shape ``(M, N)``, the first index
+      ``M`` runs along the vertical axis, and the second index ``N`` runs along
+      the horizontal axis.
+      
+      For these reasons, the returned arrays of surface, mean, and Gaussian
+      curvature should be transposed, and ``origin=lower`` should be passed to
+      :func:`~matplotlib.pyplot.imshow` or :func:`~matplotlib.pyplot.contourf`
+      to generate the correct plots. This is a critical step when visualizing
+      results obtained from MembraneCurvature analyses to avoid generating
+      plots of membrane surface and curvature with the wrong orientation.
 
 .. _plt.imshow:
 
@@ -22,13 +37,17 @@ A simple plot using :func:`~matplotlib.pyplot.imshow` can be obtained like so::
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots()
-        ax.imshow(avg_mean_curvature, cmap='bwr', interpolation='gaussian', origin='lower')
+        ax.imshow(avg_mean_curvature.T, cmap='bwr', interpolation='gaussian', origin='lower')
         ax.set_title('Mean Curvature')
         plt.show()
 
-With :func:`~matplotlib.pyplot.imshow`, each element of the array is plotted as a square in a matrix 
-of `m x n` elements. The color of each square is determined by the value of 
-the corresponding array element and the colormap of preference. 
+With :func:`~matplotlib.pyplot.imshow`, each element of the array is plotted as
+a square in a matrix of `M x N` elements. Since we are interested in plotting
+the array wwhere the first index runs along the horizontal axis, while the
+second index runs along the vertical, we should transpose the array obtained
+from the MembraneCurvature analysis. In the generated plot, the color of each
+square is determined by the value of the corresponding array element and the
+colormap of preference. 
 
 For example, to visualize the results obtained in :ref:`membrane-only`, we can run:
 
@@ -65,7 +84,7 @@ For example, to visualize the results obtained in :ref:`membrane-only`, we can r
    @savefig mycurvature.png width=8in
    In [8]: fig, [ax1, ax2] = plt.subplots(ncols=2, figsize=(6,3), dpi=200)
       ...: for ax, mc, lf in zip((ax1, ax2), curvatures, leaflets):
-      ...:     ax.imshow(mc, interpolation='gaussian', cmap='seismic', origin='lower')
+      ...:     ax.imshow(mc.T, origin='lower', interpolation='gaussian', cmap='seismic')
       ...:     ax.set_aspect('equal')
       ...:     ax.set_title('{} Leaflet'.format(lf))
       ...:     ax.axis('off')
@@ -94,12 +113,12 @@ to perform an interpolation. We suggest using
    @savefig mycontours.png width=8in
    In [2]: fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(5,3))
       ...: for ax, mc, lf in zip((ax1, ax2), curvatures, leaflets):
-      ...:     ax.contourf(ndimage.gaussian_filter(mc, sigma=1, order=0, mode='reflect'), 
+      ...:     arr_ = ndimage.gaussian_filter(mc, sigma=1, order=0, mode='reflect')
+      ...:     ax.contourf(arr_.T, 
       ...:                 cmap='bwr',
       ...:                 levels=30)
       ...:     ax.set_aspect('equal')
       ...:     ax.set_title('{} Leaflet'.format(lf))
       ...:     ax.axis('off')
-
 
 .. _Matplotlib: https://matplotlib.org
