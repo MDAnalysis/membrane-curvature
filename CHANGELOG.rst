@@ -1,6 +1,12 @@
 Membranecurvature CHANGELOG
 =============================
 
+0.0.3 (18-10-2022)
+-------------------
+* Fixed warning messages that affected performance (PR #95).
+* Fixed plots in documentation pages and updated plots in tutorialsss (PR #89).
+* Extended support to Python 3.10 (PR #94).
+
 
 0.0.2 (31-10-2021)
 -------------------
