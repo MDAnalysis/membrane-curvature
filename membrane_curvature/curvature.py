@@ -48,7 +48,7 @@ import numpy as np
 
 def gaussian_curvature(Z):
     """
-    Calculate gaussian curvature from Z cloud points.
+    Calculate Gaussian curvature from Z cloud points.
 
 
     Parameters
@@ -60,8 +60,8 @@ def gaussian_curvature(Z):
     Returns
     -------
     K : np.ndarray.
-        The result of gaussian curvature of Z. Returns multidimensional
-        array object with values of gaussian curvature of shape `(n, n)`.
+        The result of Gaussian curvature of Z. Returns multidimensional
+        array object with values of Gaussian curvature of shape `(n, n)`.
 
     """
 
@@ -88,8 +88,8 @@ def mean_curvature(Z):
     Returns
     -------
     H : np.ndarray.
-        The result of gaussian curvature of Z. Returns multidimensional
-        array object with values of gaussian curvature of shape `(n, n)`.
+        The result of mean curvature of Z. Returns multidimensional
+        array object with values of mean curvature of shape `(n, n)`.
 
     """
 
