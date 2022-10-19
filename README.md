@@ -4,6 +4,7 @@ Membrane Curvature
 [![GitHub Actions Status](https://github.com/MDAnalysis/membrane-curvature/workflows/CI/badge.svg)](https://github.com/MDAnalysis/membrane-curvature/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main/graph/badge.svg)](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main)
 [![docs](https://readthedocs.org/projects/membrane-curvature/badge/?version=latest)](https://membrane-curvature.readthedocs.io/en/latest/)
+![PyPI](https://img.shields.io/pypi/v/membrane-curvature?color=lightgray)
 
 ![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
 
@@ -26,7 +27,7 @@ Installation
 The main dependency in MembraneCurvature is [MDAnalysis]. You can find
 instructions to install the latest stable version of MDAnalysis via `conda` in the [UserGuide].
 
-MembraneCurvature is available via pip:
+MembraneCurvature is available via `pip`:
 
 ```
 pip install membrane-curvature
@@ -43,24 +44,26 @@ python setup.py install
 ```
 
 Some of the examples included in the MembraneCurvature documentation use test
-cases from [MDAnalysisTests]. To install the unit tests via conda:
+cases from [MDAnalysisTests]. To install the unit tests via `conda`:
 
 ```
 conda install -c conda-forge MDAnalysisTests
 ```
 
-or via pip:
+or via `pip`:
 
 ```
 pip install --upgrade MDAnalysisTests
 ```
+
+> ⚠️ In comparison to the previous version, `membrane-curvature==0.0.3` shows a significant improvement in performance, particularly notable for membrane-protein systems. Installing the last available version is highly encouraged. 
 
 Usage
 --------------
 
 This is a quick example on how to run MembraneCurvature:
 
-```
+```Python
 import MDAnalysis as mda
 from membrane_curvature.base import MembraneCurvature
 from MDAnalysis.tests.datafiles import Martini_membrane_gro
@@ -87,6 +90,7 @@ In this example, we use the PO4 beads in the upper leaflet as reference to
 derive a surface and calculate its respective mean and Gaussian curvature.
 
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
+To plot results from MembraneCurvature please check the [Visualization] page.
 
 Documentation
 ---------------
@@ -110,7 +114,7 @@ v3 , version 3 (see [LICENSE]).
 MembraneCurvature was developed as a [Google Summer of Code 2021][GSoC] 
 project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduct].
 
-Copyright (c) 2021, Estefania Barreto-Ojeda
+Copyright (c) 2021-2022, Estefania Barreto-Ojeda
 
 
 [GSoC]: https://summerofcode.withgoogle.com/
