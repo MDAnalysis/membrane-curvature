@@ -60,7 +60,22 @@ setup(
     #            'Unix',
     #            'Windows'],            # Valid platforms your code works on, adjust to your flavor
     python_requires=">=3.6",          # Python version restrictions
-
+    classifiers = [
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX',
+        'Topic :: Scientific/Engineering ',
+        'Topic :: Scientific/Engineering :: Biophysics ',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+    ]
     # Manual control if final package is compressible or not, set False to prevent the .egg from being made
     # zip_safe=False,
 
