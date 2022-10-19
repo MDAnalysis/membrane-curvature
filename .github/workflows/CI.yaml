@@ -33,9 +33,6 @@ jobs:
             os: ubuntu-latest
             python-version: 3.7
             env_file: min
-          # - os: ubuntu-latest
-          #   python-version: '3.11.0-rc.1'
-
 
     steps:
     - uses: actions/checkout@v3
@@ -80,3 +77,23 @@ jobs:
         name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
         fail_ci_if_error: True
 
+  latest_python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        latest-python : ["3.11.0-rc.2"]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.latest-python }}
+
+    - name:  pip install membrane-curvature
+      run: |
+        python -m pip install . 
+
+    - name: run tests
+      run: |
+        pytest -v --cov=membrane_curvature --cov-report=xml --color=yes membrane_curvature/tests/
