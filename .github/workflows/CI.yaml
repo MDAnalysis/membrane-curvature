@@ -92,6 +92,7 @@ jobs:
 
     - name:  pip install membrane-curvature
       run: |
+        pip install git+https://github.com/MDAnalysis/mdanalysis.git@develop
         python -m pip install . 
 
     - name: run tests
