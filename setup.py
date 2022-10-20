@@ -48,7 +48,7 @@ setup(
     # url='http://www.my_package.com',  # Website
     install_requires=[
         'numpy>=1.20.0',
-        'mdanalysis>=2.4.0-dev0'
+        'mdanalysis>=2.3.0'
     ],
 
     # packages required to run tests
