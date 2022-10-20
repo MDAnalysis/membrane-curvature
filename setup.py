@@ -59,7 +59,7 @@ setup(
     #            'Mac OS-X',
     #            'Unix',
     #            'Windows'],            # Valid platforms your code works on, adjust to your flavor
-    python_requires=">=3.6",          # Python version restrictions
+    python_requires=">=3.7",          # Python version restrictions
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
