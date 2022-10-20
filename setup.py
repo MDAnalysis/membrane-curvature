@@ -47,7 +47,7 @@ setup(
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
     install_requires=[
-        'numpy>=1.16.0',
+        'numpy>=1.20.0',
         'mdanalysis>=2.0.0b0',
     ],
 
