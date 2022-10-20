@@ -95,6 +95,10 @@ jobs:
         pip install git+https://github.com/MDAnalysis/mdanalysis.git@develop#subdirectory=package
         python -m pip install .
 
+    - name: install pytest
+      run: |
+        pip install pytest
+
     - name: run tests
       run: |
-        pytest -v --cov=membrane_curvature --cov-report=xml --color=yes membrane_curvature/tests/
+        pytest --disable-pytest-warnings membrane_curvature/tests/
