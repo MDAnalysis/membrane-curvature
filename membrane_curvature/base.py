@@ -148,7 +148,7 @@ class MembraneCurvature(AnalysisBase):
                        "dimensions of simulation box.\n Minimum dimensions "
                        "must be equal to simulation box.")
                 warnings.warn(msg)
-                logger.warn(msg)
+                logger.warning(msg)
 
         # Apply wrapping coordinates
         if not self.wrap:
@@ -159,7 +159,7 @@ class MembraneCurvature(AnalysisBase):
                    " Ignore this warning if your trajectory has "
                    " rotational/translational fit rotations! ")
             warnings.warn(msg)
-            logger.warn(msg)
+            logger.warning(msg)
 
     def _prepare(self):
         # Initialize empty np.array with results
