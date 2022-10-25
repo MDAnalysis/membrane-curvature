@@ -48,7 +48,7 @@ setup(
     # url='http://www.my_package.com',  # Website
     install_requires=[
         'numpy>=1.20.0',
-        'mdanalysis>=2.3.0'
+        'mdanalysis>=2.1.0'
     ],
 
     # packages required to run tests
@@ -59,7 +59,7 @@ setup(
     #            'Mac OS-X',
     #            'Unix',
     #            'Windows'],            # Valid platforms your code works on, adjust to your flavor
-    python_requires=">=3.7",          # Python version restrictions
+    python_requires=">=3.8",          # Python version restrictions
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -75,6 +75,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ]
     # Manual control if final package is compressible or not, set False to prevent the .egg from being made
     # zip_safe=False,

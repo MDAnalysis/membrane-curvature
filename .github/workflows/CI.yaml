@@ -26,12 +26,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, ubuntu-latest, windows-latest]
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.8, 3.9, "3.10"]
         env_file: [env, ]
         include:
           - name: minimum_requirements
             os: ubuntu-latest
-            python-version: 3.7
+            python-version: 3.8
             env_file: min
 
     steps:
@@ -77,12 +77,12 @@ jobs:
         name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
         fail_ci_if_error: True
 
-  latest_python:
+  upstream_develop:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        latest-python : ["3.11.0-rc.2"]
+        latest-python : ["3.10", "3.11"]
     
     steps:
     - uses: actions/checkout@v3
@@ -97,7 +97,7 @@ jobs:
 
     - name: install pytest
       run: |
-        pip install pytest
+        python -m pip install pytest
 
     - name: run tests
       run: |
