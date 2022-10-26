@@ -48,7 +48,7 @@ setup(
     # url='http://www.my_package.com',  # Website
     install_requires=[
         'numpy>=1.20.0',
-        'mdanalysis>=2.3.0'
+        'mdanalysis>=2.0.0'
     ],
 
     # packages required to run tests
@@ -71,7 +71,6 @@ setup(
         'Topic :: Scientific/Engineering ',
         'Topic :: Scientific/Engineering :: Biophysics ',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
