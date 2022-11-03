@@ -69,7 +69,6 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
         'Topic :: Scientific/Engineering ',
-        'Topic :: Scientific/Engineering :: Biophysics ',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
