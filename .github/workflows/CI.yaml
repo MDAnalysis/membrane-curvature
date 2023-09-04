@@ -7,11 +7,9 @@ on:
   pull_request:
     branches:
       - "main"
-  # schedule:
-    # Nightly tests run on master by default:
-    #   Scheduled workflows run on the latest commit on the default or base branch.
-    #   (from https://help.github.com/en/actions/reference/events-that-trigger-workflows#scheduled-events-schedule)
-    # - cron: "0 0 * * *"
+  schedule:
+    # 3 am Tuesdays and Fridays
+    - cron: "0 3 * * 2,5"
 
 concurrency:
   group: "${{ github.ref }}-${{ github.head_ref }}"
