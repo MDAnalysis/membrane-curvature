@@ -10,6 +10,7 @@ dependencies:
   - MDAnalysis
   - ipython
   - MDAnalysisTests
+  - sphinx<7
     # Pip-only installs
   - pip:
     - nbsphinx
