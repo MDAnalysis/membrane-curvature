@@ -25,7 +25,7 @@ __all__ = [
 
 from importlib import resources
 
-_data_ref = resources.files('membrane_curvature,data')
+_data_ref = resources.files('membrane_curvature.data')
 
 # Membrane protein systems
 GRO_MEMBRANE_PROTEIN = (_data_ref / '../data/test_curvature_abca1.gro').as_posix()

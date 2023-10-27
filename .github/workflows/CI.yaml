@@ -24,12 +24,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, ubuntu-latest, windows-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.12"]
+        python-version: ["3.9", "3.10", "3.11"]
         env_file: [env, ]
         include:
           - name: minimum_requirements
             os: ubuntu-latest
-            python-version: 3.8
+            python-version: 3.9
             env_file: min
 
     steps:
