@@ -1,14 +1,18 @@
-# readthedocs.yml
+# readthedocs.yaml
 
 version: 2
 
+sphinx:
+  configuration: docs/source/conf.py
+
 build:
-  image: latest
+  os: ubuntu-22.04
+  tools:
+    python: "mambaforge-4.10"
 
 python:
-  version: 3.8
   install:
-    - method: pip
+    - method: setuptools
       path: .
 
 conda:
