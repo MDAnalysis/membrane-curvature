@@ -46,7 +46,7 @@ Functions
 import numpy as np
 
 
-def gaussian_curvature(Z):
+def gaussian_curvature(Z, *varargs):
     """
     Calculate Gaussian curvature from Z cloud points.
 
@@ -55,7 +55,9 @@ def gaussian_curvature(Z):
     ----------
     Z: np.ndarray.
         Multidimensional array of shape (n,n).
-
+    varargs : list of scalar or array, optional
+        Spacing between f values. Default unitary spacing for all dimensions.
+        See np.gradient docs for more information.
 
     Returns
     -------
@@ -65,16 +67,16 @@ def gaussian_curvature(Z):
 
     """
 
-    Zy, Zx = np.gradient(Z)
-    Zxy, Zxx = np.gradient(Zx)
-    Zyy, _ = np.gradient(Zy)
+    Zy, Zx = np.gradient(Z, *varargs)
+    Zxy, Zxx = np.gradient(Zx, *varargs)
+    Zyy, _ = np.gradient(Zy, *varargs)
 
-    K = (Zxx * Zyy - (Zxy ** 2)) / (1 + (Zx ** 2) + (Zy ** 2)) ** 2
+    K = (Zxx * Zyy - (Zxy**2)) / (1 + (Zx**2) + (Zy**2)) ** 2
 
     return K
 
 
-def mean_curvature(Z):
+def mean_curvature(Z, *varargs):
     """
     Calculates mean curvature from Z cloud points.
 
@@ -83,7 +85,9 @@ def mean_curvature(Z):
     ----------
     Z: np.ndarray.
         Multidimensional array of shape (n,n).
-
+    varargs : list of scalar or array, optional
+        Spacing between f values. Default unitary spacing for all dimensions.
+        See np.gradient docs for more information.
 
     Returns
     -------
@@ -93,11 +97,11 @@ def mean_curvature(Z):
 
     """
 
-    Zy, Zx = np.gradient(Z)
-    Zxy, Zxx = np.gradient(Zx)
-    Zyy, _ = np.gradient(Zy)
+    Zy, Zx = np.gradient(Z, *varargs)
+    Zxy, Zxx = np.gradient(Zx, *varargs)
+    Zyy, _ = np.gradient(Zy, *varargs)
 
     H = (1 + Zx**2) * Zyy + (1 + Zy**2) * Zxx - 2 * Zx * Zy * Zxy
-    H = H / (2 * (1 + Zx**2 + Zy**2)**(1.5))
+    H = H / (2 * (1 + Zx**2 + Zy**2) ** (1.5))
 
     return H
