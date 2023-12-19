@@ -23,22 +23,24 @@ __all__ = [
     "GRO_MEMBPROT_FIT"  # Gromacs coordinates to load trajectory with fit
 ]
 
-from pkg_resources import resource_filename
+from importlib import resources
+
+_data_ref = resources.files('membrane_curvature.data')
 
 # Membrane protein systems
-GRO_MEMBRANE_PROTEIN = resource_filename(__name__, '../data/test_curvature_abca1.gro')
-XTC_MEMBRANE_PROTEIN = resource_filename(__name__, '../data/test_curvature_abca1.xtc')
+GRO_MEMBRANE_PROTEIN = (_data_ref / 'test_curvature_abca1.gro')
+XTC_MEMBRANE_PROTEIN = (_data_ref / 'test_curvature_abca1.xtc')
 # PO4 beads only
-GRO_PO4 = resource_filename(__name__, '../data/test_curvature_po4_only.gro')
-XTC_PO4 = resource_filename(__name__, '../data/test_curvature_po4_only.xtc')
+GRO_PO4 = (_data_ref / 'test_curvature_po4_only.gro')
+XTC_PO4 = (_data_ref / 'test_curvature_po4_only.xtc')
 # big systems
-GRO_PO4_SMALL = resource_filename(__name__, '../data/test_po4_small.gro')
-XTC_PO4_SMALL = resource_filename(__name__, '../data/test_po4_small.xtc')
+GRO_PO4_SMALL = (_data_ref / 'test_po4_small.gro')
+XTC_PO4_SMALL = (_data_ref / 'test_po4_small.xtc')
 # membrane-only
-MEMB_GRO = resource_filename(__name__, '../data/MEMB_traj_short.gro')
-MEMB_XTC = resource_filename(__name__, '../data/MEMB_traj_short.xtc')
+MEMB_GRO = (_data_ref / 'MEMB_traj_short.gro')
+MEMB_XTC = (_data_ref / 'MEMB_traj_short.xtc')
 # membrane-protein
-GRO_MEMBPROT_FIT = resource_filename(__name__, '../data/Membrane_protein_fit.gro')
-XTC_MEMBPROT_FIT = resource_filename(__name__, '../data/Membrane_protein_fit.xtc')
+GRO_MEMBPROT_FIT = (_data_ref / 'Membrane_protein_fit.gro')
+XTC_MEMBPROT_FIT = (_data_ref / 'Membrane_protein_fit.xtc')
 
-del resource_filename
+del resources

@@ -1,0 +1,19 @@
+# readthedocs.yml
+
+version: 2
+
+sphinx:
+  configuration: docs/conf.py
+
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "mambaforge-22.9"
+
+python:
+  install:
+    - method: setuptools
+      path: .
+
+conda:
+  environment: docs/requirements.yaml
