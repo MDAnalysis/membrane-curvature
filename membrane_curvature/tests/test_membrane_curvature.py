@@ -121,6 +121,7 @@ MEMBRANE_CURVATURE_DATA = {
 
 }
 
+
 @pytest.fixture
 def small_grofile():
     u = mda.Universe(GRO_PO4_SMALL)
@@ -131,16 +132,25 @@ def small_grofile():
 def parametric_hemisphere(
     radius: float, nx: int, ny: int, scale: float = 5
 ) -> tuple[np.ndarray, float, float]:
-    """Generate the height field and analytical mean/gaussian curvature of a hemisphere given a sampling range. The range of the patch is defined by the hemisphere radius and a scale.
+    """Generate the height field and analytical mean/gaussian curvature of a 
+    hemisphere given a sampling range. The range of the patch is defined by 
+    the hemisphere radius and a scale.
 
-    Args:
-        radius (float): Radius of hemisphere
-        nx (int): Number of x gridpoints
-        ny (int): Number of y grid points
-        patch_scale (float, optional): Scale factor for range of grid. Defaults to 5.
+    Parameters
+    ----------
+        radius: float
+            Radius of hemisphere
+        nx: int
+            Number of x gridpoints
+        ny: int 
+            Number of y grid points
+        patch_scale: float, optional
+            Scale factor for range of grid. Defaults to 5.
 
-    Returns:
-        Tuple[np.ndarray, float, float, float, float]: height field, mean curvature, gaussian curvature, dx, dy
+    Returns
+    -------
+        Tuple[np.ndarray, float, float, float, float]
+            height field, mean curvature, gaussian curvature, dx, dy
     """
     x, dx = np.linspace(-radius / scale, radius / scale, nx, retstep=True)
     y, dy = np.linspace(-radius / scale, radius / scale, ny, retstep=True)
@@ -169,16 +179,24 @@ def test_parametric_hemisphere_curvature():
 def parametric_saddle(
     length: float, nx: int, ny: int, scale: float = 1000
 ) -> tuple[np.ndarray, float, float]:
-    """Generate the height field and analytical mean/gaussian curvature corresponding to a monkey saddle.
+    """Generate the height field and analytical mean/gaussian curvature
+    corresponding to a monkey saddle.
 
-    Args:
-        length (float): Sample from - to + length.
-        nx (int): Number of x grid points
-        ny (int): Number of y grid points
-        scale (float, optional): Scale factor for range of grid. Defaults to 500.
+    Parameters
+    ----------
+        length: float
+            Sample from - to + length.
+        nx: int 
+            Number of x grid points
+        ny: int
+            Number of y grid points
+        scale: float, optional 
+            Scale factor for range of grid. Defaults to 500.
 
-    Returns:
-        tuple[np.ndarray, np.ndarray, np.ndarray, float, float]: height field, mean curvature, gaussian curvature, dx, dy
+    Returns
+    -------
+        tuple[np.ndarray, np.ndarray, np.ndarray, float, float]
+            height field, mean curvature, gaussian curvature, dx, dy
     """
     x, dx = np.linspace(-length / scale, length / scale, nx, retstep=True)
     y, dy = np.linspace(-length / scale, length / scale, ny, retstep=True)
@@ -492,12 +510,16 @@ class TestMembraneCurvature(object):
     # test gaussian
     def test_analysis_gaussian_wrap(self, curvature_unwrapped_universe, dummy_surface):
         avg_gaussian = curvature_unwrapped_universe.results.average_gaussian
-        expected_gaussian = gaussian_curvature(dummy_surface, curvature_unwrapped_universe.dy, curvature_unwrapped_universe.dx)
+        expected_gaussian = gaussian_curvature(dummy_surface, 
+                                               curvature_unwrapped_universe.dy,
+                                               curvature_unwrapped_universe.dx)
         assert_almost_equal(avg_gaussian, expected_gaussian)
 
     def test_analysis_mean_gaussian_wrap_xy(self, curvature_unwrapped_universe, dummy_surface):
         avg_gaussian = curvature_unwrapped_universe.results.average_gaussian
-        expected_gaussian = gaussian_curvature(dummy_surface, curvature_unwrapped_universe.dy, curvature_unwrapped_universe.dx)
+        expected_gaussian = gaussian_curvature(dummy_surface,
+                                               curvature_unwrapped_universe.dy,
+                                               curvature_unwrapped_universe.dx)
         assert_almost_equal(avg_gaussian, expected_gaussian)
 
     # test using dummy Universe with atoms out of boounds
@@ -604,9 +626,9 @@ class TestMembraneCurvature(object):
         assert_almost_equal(avg_surface, expected_surface)
 
     def test_analysis_mean(self, universe_dummy_full):
-        expected_mean = np.array([[0.001318109566818, 0.0015           , 0.001702672969121],
-       [0.000659054783409, 0.000725381187923, 0.001467083452574],
-       [0.000659054783409, 0.000725381187923, 0.0015           ]])
+        expected_mean = np.array([[0.001318109566818, 0.0015, 0.001702672969121],
+                                 [0.000659054783409, 0.000725381187923, 0.001467083452574],
+                                 [0.000659054783409, 0.000725381187923, 0.0015]])
         mc = MembraneCurvature(universe_dummy_full,
                                n_x_bins=3,
                                n_y_bins=3).run()
