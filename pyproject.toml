@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools", "wheel", "versioneer"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "MembraneCurvature"
+version = "1.0.0"
+license = {file = "LICENSE"}
+description = "MDAnalysis tool to calculate membrane curvature from MD simulations."
+authors = [
+    {name = "Estefania Barreto-Ojeda", email = "estefania@ojeda-e.com"},
+]
+maintainers = [
+    {name = 'MDAnalysis Core Developers', email = 'mdanalysis@numfocus.org'}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = [
+    "python", "biophysics", "molecular-dynamics",
+    "molecular-simulation", "analysis",
+    "trajectory-analysis",
+]
+dependencies = [
+    'numpy>=1.20.0',
+    'mdanalysis>=2.0.0'
+    ]
+
+classifiers = [
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX',
+        'Topic :: Scientific/Engineering ',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12'
+]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "ipython",
+    "MDAnalysisTests"
+]
+docs = [
+    "ipython",
+    "MDAnalysisTests",
+    "sphinx_rtd_theme",
+    "nbsphinx",
+    "ipywidgets",
+    "nglview"
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "MembraneCurvature._version.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["membrane_curvature*"]
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[project.urls]
+Documentation = "https://membrane-curvature.readthedocs.io/en/latest/"
+Changelog = "https://github.com/MDAnalysis/membrane-curvature/blob/main/CHANGELOG.rst"
