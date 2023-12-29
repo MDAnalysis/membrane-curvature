@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "MembraneCurvature"
-version = "1.0.0"
+dynamic = ["version"]
 license = {file = "LICENSE"}
 description = "MDAnalysis tool to calculate membrane curvature from MD simulations."
 authors = [
