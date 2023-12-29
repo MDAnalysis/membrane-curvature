@@ -60,12 +60,6 @@ docs = [
 [tool.setuptools.packages.find]
 include = ["membrane_curvature*"]
 
-[tool.black]
-line-length = 88
-
-[tool.isort]
-profile = "black"
-
 [project.urls]
 Documentation = "https://membrane-curvature.readthedocs.io/en/latest/"
 Changelog = "https://github.com/MDAnalysis/membrane-curvature/blob/main/CHANGELOG.rst"
