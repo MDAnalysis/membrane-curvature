@@ -64,7 +64,6 @@ jobs:
       # conda setup requires this special shell
       shell: bash -l {0}
       run: |
-        pip install importlib-metadata
         pytest -v --cov=membrane_curvature --cov-report=xml --color=yes membrane_curvature/tests/
 
     - name: CodeCov
