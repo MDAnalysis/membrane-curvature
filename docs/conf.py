@@ -16,20 +16,19 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-
+import datetime
 
 # -- Project information -----------------------------------------------------
 
 project = 'membrane_curvature'
-copyright = ("2021, Estefania Barreto-Ojeda. Project structure based on the "
-             "Computational Molecular Science Python Cookiecutter version 1.5")
-author = 'Estefania Barreto-Ojeda'
-
+now = datetime.datetime.now()
+copyright = f"2021-{now.year}, Estefania Barreto-Ojeda. Project structure based on the" \
+             "Computational Molecular Science Python Cookiecutter version 1.5"
+author = 'Estefania Barreto-Ojeda. '
 # The short X.Y version
-version = ''
+version = __import__('membrane_curvature').__version__
 # The full version, including alpha/beta/rc tags
-release = ''
-
+release = version
 
 # -- General configuration ---------------------------------------------------
 
@@ -102,7 +101,8 @@ html_theme = 'mdanalysis_sphinx_theme'
 #
 extra_nav_links = {}
 extra_nav_links["MDAnalysis"] = "http://mdanalysis.org"
-
+extra_nav_links["User guide"] = "http://userguide.mdanalysis.org"
+extra_nav_links["MDAKits"] = "https://mdakits.mdanalysis.org/"
 
 html_theme_options = {
     "mda_official": True,

@@ -1,4 +1,4 @@
-name: docs
+name: mc_docs
 channels:
   - conda-forge
   - defaults
