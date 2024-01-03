@@ -8,11 +8,15 @@ dependencies:
   - pip
   - numpy
   - MDAnalysis
+  - MDAnalysisData
+  - networkx # LeafletFinder dependency
+  - tidynamics # MSD dependency
   - ipython
   - MDAnalysisTests
   - mdanalysis-sphinx-theme>=1.3.0
     # Pip-only installs
   - pip:
-    - nbsphinx
+    - myst-nb
+    - pickleshare # ipython savefigs
     - ipywidgets
     - nglview
