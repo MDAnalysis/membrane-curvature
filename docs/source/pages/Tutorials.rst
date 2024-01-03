@@ -10,9 +10,11 @@ nice visualizatons covering different types of MD systems!
 
 You can find the list of available tutorials below:
 
+Membrane-only systems
+^^^^^^^^^^^^^^^^^^^^^^^
+
 .. toctree::
    :maxdepth: 1
-   :caption: Membrane-only systems
 
    Curvature_membrane-only_systems.ipynb
 
@@ -24,9 +26,11 @@ Martini_ force field [Marrink2007]_.
     :align: center
     :width: 300
 
+Membrane-protein systems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. toctree::
    :maxdepth: 1
-   :caption: Membrane-protein systems 
 
    Curvature_membrane_protein_nopr_all_atom.ipynb
 

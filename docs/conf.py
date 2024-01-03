@@ -52,7 +52,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
     'mdanalysis_sphinx_theme',
-    'nbsphinx'
+    'myst_nb'
 ]
 
 autosectionlabel_prefix_document = True
@@ -68,7 +68,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.ipynb']
 
 # The master toctree document.
 master_doc = 'index'
