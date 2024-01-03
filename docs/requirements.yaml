@@ -17,6 +17,7 @@ dependencies:
     # Pip-only installs
   - pip:
     - myst-nb
+    - ipykernel
     - pickleshare # ipython savefigs
     - ipywidgets
     - nglview
