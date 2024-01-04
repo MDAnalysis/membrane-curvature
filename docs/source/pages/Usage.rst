@@ -134,7 +134,7 @@ After you have preprocessed the trajectory, a typical usage of membrane curvatur
 More information on how to visualize the results of the MDAnalysis Membrane 
 Curvature tool can be found in the :ref:`visualization` page.
 
-.. _`blog post`: https://ojeda-e.github.io/blog/Considerations-curvature-MD-simulations-PartI/
+.. _`blog post`: https://ojeda-e.com/blog/2021/07/22/Considerations-curvature-MD-simulations-PartI.html
 
 .. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 

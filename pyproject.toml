@@ -51,7 +51,7 @@ tests = [
 docs = [
     "ipython",
     "MDAnalysisTests",
-    "sphinx_rtd_theme",
+    "mdanalysis-sphinx-theme",
     "nbsphinx",
     "ipywidgets",
     "nglview"
