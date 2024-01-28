@@ -35,11 +35,11 @@ jobs:
   pypi_push:
     environment:
       name: deploy
-      url: https://pypi.org/p/membrane_curvature
+      url: https://pypi.org/p/membrane-curvature
     permissions:
       id-token: write
     if: |
-      github.repository == 'MDAnalysis/membrane_curvature' &&
+      github.repository == 'MDAnalysis/membrane-curvature' &&
       (github.event_name == 'release' && github.event.action == 'published')
     name: Build, upload and test pure Python wheels to PyPi
     runs-on: ubuntu-latest
