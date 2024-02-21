@@ -67,9 +67,9 @@ def gaussian_curvature(Z, *varargs):
 
     """
 
-    Zy, Zx = np.gradient(Z, *varargs)
-    Zxy, Zxx = np.gradient(Zx, *varargs)
-    Zyy, _ = np.gradient(Zy, *varargs)
+    Zx, Zy = np.gradient(Z, *varargs)
+    Zxx, Zxy = np.gradient(Zx, *varargs)
+    _, Zyy = np.gradient(Zy, *varargs)
 
     K = (Zxx * Zyy - (Zxy**2)) / (1 + (Zx**2) + (Zy**2)) ** 2
 
@@ -97,9 +97,9 @@ def mean_curvature(Z, *varargs):
 
     """
 
-    Zy, Zx = np.gradient(Z, *varargs)
-    Zxy, Zxx = np.gradient(Zx, *varargs)
-    Zyy, _ = np.gradient(Zy, *varargs)
+    Zx, Zy, = np.gradient(Z, *varargs)
+    Zxx, Zxy = np.gradient(Zx, *varargs)
+    _, Zyy = np.gradient(Zy, *varargs)
 
     H = (1 + Zx**2) * Zyy + (1 + Zy**2) * Zxx - 2 * Zx * Zy * Zxy
     H = H / (2 * (1 + Zx**2 + Zy**2) ** (1.5))

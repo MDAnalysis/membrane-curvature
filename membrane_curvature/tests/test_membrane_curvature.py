@@ -499,27 +499,27 @@ class TestMembraneCurvature(object):
     # test mean curvature
     def test_analysis_mean_wrap(self, curvature_unwrapped_universe, dummy_surface):
         avg_mean = curvature_unwrapped_universe.results.average_mean
-        expected_mean = mean_curvature(dummy_surface, curvature_unwrapped_universe.dy, curvature_unwrapped_universe.dx)
+        expected_mean = mean_curvature(dummy_surface, curvature_unwrapped_universe.dx, curvature_unwrapped_universe.dy)
         assert_almost_equal(avg_mean, expected_mean)
 
     def test_analysis_mean_wrap_xy(self, curvature_unwrapped_universe, dummy_surface):
         avg_mean = curvature_unwrapped_universe.results.average_mean
-        expected_mean = mean_curvature(dummy_surface, curvature_unwrapped_universe.dy, curvature_unwrapped_universe.dx)
+        expected_mean = mean_curvature(dummy_surface, curvature_unwrapped_universe.dx, curvature_unwrapped_universe.dy)
         assert_almost_equal(avg_mean, expected_mean)
 
     # test gaussian
     def test_analysis_gaussian_wrap(self, curvature_unwrapped_universe, dummy_surface):
         avg_gaussian = curvature_unwrapped_universe.results.average_gaussian
         expected_gaussian = gaussian_curvature(dummy_surface, 
-                                               curvature_unwrapped_universe.dy,
-                                               curvature_unwrapped_universe.dx)
+                                               curvature_unwrapped_universe.dx,
+                                               curvature_unwrapped_universe.dy)
         assert_almost_equal(avg_gaussian, expected_gaussian)
 
     def test_analysis_mean_gaussian_wrap_xy(self, curvature_unwrapped_universe, dummy_surface):
         avg_gaussian = curvature_unwrapped_universe.results.average_gaussian
         expected_gaussian = gaussian_curvature(dummy_surface,
-                                               curvature_unwrapped_universe.dy,
-                                               curvature_unwrapped_universe.dx)
+                                               curvature_unwrapped_universe.dx,
+                                               curvature_unwrapped_universe.dy)
         assert_almost_equal(avg_gaussian, expected_gaussian)
 
     # test using dummy Universe with atoms out of boounds

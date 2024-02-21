@@ -186,10 +186,10 @@ class MembraneCurvature(AnalysisBase):
                                                                   x_range=self.x_range,
                                                                   y_range=self.y_range)
         self.results.mean[self._frame_index] = mean_curvature(
-            self.results.z_surface[self._frame_index], self.dy, self.dx
+            self.results.z_surface[self._frame_index], self.dx, self.dy
         )
         self.results.gaussian[self._frame_index] = gaussian_curvature(
-            self.results.z_surface[self._frame_index], self.dy, self.dx
+            self.results.z_surface[self._frame_index], self.dx, self.dy
         )
 
     def _conclude(self):
