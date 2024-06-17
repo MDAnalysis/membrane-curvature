@@ -1,5 +1,4 @@
 r"""
-.. role:: raw-math(raw) :format: latex html
 
 --------------------
 Surface

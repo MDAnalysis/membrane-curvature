@@ -1,4 +1,4 @@
-name: docs
+name: mc_docs
 channels:
   - conda-forge
   - defaults
@@ -8,11 +8,16 @@ dependencies:
   - pip
   - numpy
   - MDAnalysis
+  - MDAnalysisData
+  - networkx # LeafletFinder dependency
+  - tidynamics # MSD dependency
   - ipython
   - MDAnalysisTests
-  - sphinx_rtd_theme
+  - mdanalysis-sphinx-theme>=1.3.0
     # Pip-only installs
   - pip:
-    - nbsphinx
+    - myst-nb
+    - ipykernel
+    - pickleshare # ipython savefigs
     - ipywidgets
     - nglview

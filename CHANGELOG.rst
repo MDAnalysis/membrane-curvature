@@ -1,6 +1,16 @@
 Membranecurvature CHANGELOG
 =============================
 
+1.1.1 (09-01-2024)
+------------------
+* Add automated deployment workflow (PR #124)
+
+1.1.0 (04-01-2024)
+------------------
+* Switch to mdanalysis-sphinx-theme and update docs (PR #122).
+* Comply with PEP518 (PR #119).
+* Drop support for Python 3.8 (PR #112).
+
 1.0.0 (03-11-2022)
 -------------------
 

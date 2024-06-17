@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools", "versioningit"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "membrane_curvature"
+dynamic = ["version"]
+license = {file = "LICENSE"}
+description = "MDAnalysis tool to calculate membrane curvature from MD simulations."
+authors = [
+    {name = "Estefania Barreto-Ojeda", email = "estefania@ojeda-e.com"},
+]
+maintainers = [
+    {name = "Estefania Barreto-Ojeda", email = "estefania@ojeda-e.com"},
+]
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = [
+    "python", "biophysics", "molecular-dynamics",
+    "molecular-simulation", "analysis",
+    "trajectory-analysis",
+]
+dependencies = [
+    'numpy>=1.20.0',
+    'mdanalysis>=2.0.0'
+    ]
+
+classifiers = [
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX',
+        'Topic :: Scientific/Engineering ',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12'
+]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "ipython",
+    "MDAnalysisTests"
+]
+docs = [
+    "ipython",
+    "MDAnalysisTests",
+    "mdanalysis-sphinx-theme",
+    "nbsphinx",
+    "ipywidgets",
+    "nglview"
+]
+
+[tool.setuptools.packages.find]
+include = ["membrane_curvature*"]
+
+[project.urls]
+Documentation = "https://membrane-curvature.readthedocs.io/en/latest/"
+Changelog = "https://github.com/MDAnalysis/membrane-curvature/blob/main/CHANGELOG.rst"
+
+[tool.versioningit]
+default-version = "1+unknown"
+
+[tool.versioningit.vcs]
+method = "git"
+# the below line expects tags to look like '1.0.2'.
+# if prefixing with a v, e.g. 'v1.0.2', change it to ["v*"]
+match = ["*"]
+
+[tool.versioningit.format]
+distance = "{base_version}+{distance}.{vcs}{rev}"
+dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
+distance-dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
+
+[tool.coverage.run]
+omit = [
+    # Omit the tests
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+]
+
+[tool.yapf]
+COLUMN_LIMIT = 80
+INDENT_WIDTH = 4
+USE_TABS = false
