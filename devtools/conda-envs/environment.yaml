@@ -4,5 +4,4 @@ channels:
 dependencies:
   - python
   - pip
-  - numpy
   - MDAnalysis>=2.0.0
