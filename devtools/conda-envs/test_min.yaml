@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python
   - pip
-  - numpy==1.20.0
+  - numpy==1.21.0
   - MDAnalysis==2.0.0
   - sphinx
      # Testing
