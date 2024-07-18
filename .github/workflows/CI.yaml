@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macOS-latest, ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         env_file: [env, ]
         include:
           - name: minimum_requirements
@@ -81,7 +81,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        latest-python : ["3.9", "3.10", "3.11", "3.12"]
+        latest-python : ["3.10", "3.11", "3.12"]
     
     steps:
     - uses: actions/checkout@v4
