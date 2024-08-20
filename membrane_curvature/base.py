@@ -135,6 +135,8 @@ class MembraneCurvature(AnalysisBase):
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
         self.y_range = y_range if y_range else (0, universe.dimensions[1])
+        self.dx = (self.x_range[1] - self.x_range[0]) / n_x_bins 
+        self.dy = (self.y_range[1] - self.y_range[0]) / n_y_bins
 
         # Raise if selection doesn't exist
         if len(self.ag) == 0:
@@ -183,8 +185,12 @@ class MembraneCurvature(AnalysisBase):
                                                                   n_y_bins=self.n_y_bins,
                                                                   x_range=self.x_range,
                                                                   y_range=self.y_range)
-        self.results.mean[self._frame_index] = mean_curvature(self.results.z_surface[self._frame_index])
-        self.results.gaussian[self._frame_index] = gaussian_curvature(self.results.z_surface[self._frame_index])
+        self.results.mean[self._frame_index] = mean_curvature(
+            self.results.z_surface[self._frame_index], self.dx, self.dy
+        )
+        self.results.gaussian[self._frame_index] = gaussian_curvature(
+            self.results.z_surface[self._frame_index], self.dx, self.dy
+        )
 
     def _conclude(self):
         self.results.average_z_surface = np.nanmean(self.results.z_surface, axis=0)
