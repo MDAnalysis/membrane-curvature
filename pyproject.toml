@@ -21,9 +21,9 @@ keywords = [
     "trajectory-analysis",
 ]
 dependencies = [
-    'numpy>=1.20.0',
+    'numpy>=1.21.0',
     'mdanalysis>=2.0.0'
-    ]
+]
 
 classifiers = [
         'Development Status :: 5 - Production/Stable',

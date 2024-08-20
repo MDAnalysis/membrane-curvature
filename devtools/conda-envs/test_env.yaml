@@ -1,17 +1,12 @@
 name: test
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python
   - pip
-  - numpy
   - sphinx
+  - MDAnalysis>=2.0.0
      # Testing
   - pytest
   - pytest-cov
   - codecov
-
-    # Pip-only installs
-  - pip:
-    - MDAnalysis>=2.0.0
