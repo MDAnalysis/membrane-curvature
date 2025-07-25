@@ -123,7 +123,7 @@ Copyright (c) 2021-2022, Estefania Barreto-Ojeda
 [MDAnalysis]: https://www.mdanalysis.org
 [NumPy]: https://numpy.org
 [SciPy]: https://www.scipy.org
-[code_of_conduct]: https://www.mdanalysis.org/pages/conduct/
+[code_of_conduct]: https://www.mdanalysis.org/conduct/
 [Usage]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
 [License]: https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE
 [documentation]: https://membrane-curvature.readthedocs.io/en/latest/index.html#
