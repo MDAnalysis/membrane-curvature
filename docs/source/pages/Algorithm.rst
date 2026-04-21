@@ -48,6 +48,16 @@ For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference,
 MembraneCurvature assigns an index in the grid, according to their respective 
 `x` and `y` coordinates. i.e. ``(x, y) ↦ [l, m]``. 
 
+The physical spacing associated with each grid cell is derived from the box size
+``(L_x and L_y)`` and the number of bins (``n_x_bins`` and ``n_y_bins``):
+
+.. math::
+
+   dx = \frac{L_x}{n_x\_bins}, \qquad dy = \frac{L_y}{n_y\_bins}
+
+These spacings are used in derivative calculations so that curvature is computed
+in physical units.
+
 .. note::
   Unless the user provides a different input, MembraneCurvature will determine
   the dimensions of the grid based on the size of the box on the first frame via
@@ -64,11 +74,22 @@ is stored in an array assigned to each ``[l, m]`` index.
 
 .. _derive-surface-curvature:
 
-3. Derive surface and calculate curvature
-------------------------------------------
+3. Derive surface and calculate surface derivatives
+---------------------------------------------------
 
-Once the surface formed by the atoms of reference is derived, values of mean (`H`)
-and Gaussian (`K`) curvature are calculated according to their respective equations.
+Once the surface formed by the atoms of reference is derived, mean (`H`) and
+Gaussian (`K`) curvature are calculated from its spatial derivatives. These
+derivatives are evaluated using the actual grid spacing (``dx``, ``dy``), so that changes
+in height are measured per unit distance in real space rather than per grid index.
+This makes curvature values physically meaningful and reduces their sensitivity
+to the chosen grid resolution.
+
+.. note::
+   Curvature is computed from surface derivatives evaluated using the grid spacing
+   (``dx``, ``dy``), ensuring results are expressed in physical units and are less
+   sensitive to grid resolution. Because the derivatives are computed numerically,
+   very coarse grids may still affect curvature estimates due to finite-difference
+   discretization error.
 
 For every frame of the trajectory, the surface derived from the 
 :class:`~MDAnalysis.core.groups.AtomGroup` is
