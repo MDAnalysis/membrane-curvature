@@ -28,6 +28,14 @@ two principal curvatures. Therefore, the default units of :math:`K` are Å\ :sup
 In general, units of mean curvature are [length] :sup:`-1`,
 and units of Gaussian curvature are [length] :sup:`-2`.
 
+.. note::
+
+    When spacing is provided to :func:`numpy.gradient` (for example, ``dx`` and
+    ``dy`` from the simulation box and grid definition), curvature calculations are
+    performed in physical units and are less sensitive to grid bin count than with
+    implicit unit spacing. However, results are not exactly bin-independent because
+    finite-difference discretization error increases for coarse grids.
+
 .. warning::
 
     Numpy cannot calculate the gradient for arrays with inner array of

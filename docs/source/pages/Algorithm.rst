@@ -39,14 +39,33 @@ reference.
 2. Set grid
 -------------
 The dimensions of the grid are determined by the size of the simulation box
-contained in the :class:`~MDAnalysis.core.universe.Universe`. The grid comprises 
-``n_x_bins`` x ``n_y_bins`` number of bins.
+contained in the :class:`~MDAnalysis.core.universe.Universe`.
+The grid covers a rectangular domain in the membrane plane. By default that
+domain matches the `x` and `y` edges of the simulation box from MDAnalysis'
+:class:`~MDAnalysis.core.universe.Universe`.The grid comprises ``n_x_bins`` x 
+``n_y_bins`` bins along the `x` and `y` directions.
+
+For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference,
+MembraneCurvature assigns it to a grid cell based on its `x` and `y` coordinates.
+In practice, each coordinate pair ``(x, y)`` is mapped to a grid location
+``[l, m]`` corresponding to a bin in the discretized membrane surface.
 
 |grid|
 
-For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference, 
-MembraneCurvature assigns an index in the grid, according to their respective 
-`x` and `y` coordinates. i.e. ``(x, y) ↦ [l, m]``. 
+Here, :math:`L_x` and :math:`L_y` represent the size of the region covered by
+the grid along the `x` and `y` directions (i.e. the span of ``x_range`` and
+``y_range``). The spacing between grid points in each direction is then
+determined by dividing these lengths by the number of bins:
+
+.. math::
+
+   dx = \frac{L_x}{n_x\_bins}, \qquad dy = \frac{L_y}{n_y\_bins}
+
+These spacings are used in derivative calculations so that curvature is computed
+in physical units.
+
+Once the grid has been populated, the `z` coordinates of atoms assigned to each
+cell are collected to form a height field over the grid.
 
 .. note::
   Unless the user provides a different input, MembraneCurvature will determine
@@ -58,17 +77,24 @@ MembraneCurvature assigns an index in the grid, according to their respective
       grid_dimension_x = (0, universe.dimensions[0])
       grid_dimension_y = (0, universe.dimensions[1])
 
-Once the grid is populated according to the coordinates of the atoms in the
-AtomGroup of reference, the associated `z` coordinate of each atom in the AtomGroup 
-is stored in an array assigned to each ``[l, m]`` index.
-
 .. _derive-surface-curvature:
 
-3. Derive surface and calculate curvature
-------------------------------------------
+3. Derive surface and calculate surface derivatives
+---------------------------------------------------
 
-Once the surface formed by the atoms of reference is derived, values of mean (`H`)
-and Gaussian (`K`) curvature are calculated according to their respective equations.
+Once the surface formed by the atoms of reference is derived, mean (`H`) and
+Gaussian (`K`) curvature are calculated from its spatial derivatives. These
+derivatives are evaluated using the actual grid spacing (``dx``, ``dy``), so that changes
+in height are measured per unit distance in real space rather than per grid index.
+This makes curvature values physically meaningful and reduces their sensitivity
+to the chosen grid resolution.
+
+.. note::
+   Curvature is computed from surface derivatives evaluated using the grid spacing
+   (``dx``, ``dy``), ensuring results are expressed in physical units and are less
+   sensitive to grid resolution. Because the derivatives are computed numerically,
+   very coarse grids may still affect curvature estimates due to finite-difference
+   discretization error.
 
 For every frame of the trajectory, the surface derived from the 
 :class:`~MDAnalysis.core.groups.AtomGroup` is
@@ -97,11 +123,6 @@ mean, and Gaussian curvature are stored in the
 Each array has shape ``(n_x_bins, n_y_bins)``.
 
 |avg_frames|
-
-
-.. |grid_map| image:: ../_static/gridmap.png
-  :width: 400
-  :alt: GridMap
 
 .. |diagram| image:: ../_static/DiagramAlgorithm.png
   :width: 800
