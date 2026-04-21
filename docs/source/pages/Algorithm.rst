@@ -39,17 +39,23 @@ reference.
 2. Set grid
 -------------
 The dimensions of the grid are determined by the size of the simulation box
-contained in the :class:`~MDAnalysis.core.universe.Universe`. The grid comprises 
-``n_x_bins`` x ``n_y_bins`` number of bins.
+contained in the :class:`~MDAnalysis.core.universe.Universe`.
+The grid covers a rectangular domain in the membrane plane. By default that
+domain matches the `x` and `y` edges of the simulation box from MDAnalysis'
+:class:`~MDAnalysis.core.universe.Universe`.The grid comprises ``n_x_bins`` x 
+``n_y_bins`` bins along the `x` and `y` directions.
+
+For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference,
+MembraneCurvature assigns it to a grid cell based on its `x` and `y` coordinates.
+In practice, each coordinate pair ``(x, y)`` is mapped to a grid location
+``[l, m]`` corresponding to a bin in the discretized membrane surface.
 
 |grid|
 
-For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference, 
-MembraneCurvature assigns an index in the grid, according to their respective 
-`x` and `y` coordinates. i.e. ``(x, y) ↦ [l, m]``. 
-
-The physical spacing associated with each grid cell is derived from the box size
-``(L_x and L_y)`` and the number of bins (``n_x_bins`` and ``n_y_bins``):
+Here, :math:`L_x` and :math:`L_y` represent the size of the region covered by
+the grid along the `x` and `y` directions (i.e. the span of ``x_range`` and
+``y_range``). The spacing between grid points in each direction is then
+determined by dividing these lengths by the number of bins:
 
 .. math::
 
@@ -57,6 +63,9 @@ The physical spacing associated with each grid cell is derived from the box size
 
 These spacings are used in derivative calculations so that curvature is computed
 in physical units.
+
+Once the grid has been populated, the `z` coordinates of atoms assigned to each
+cell are collected to form a height field over the grid.
 
 .. note::
   Unless the user provides a different input, MembraneCurvature will determine
@@ -67,10 +76,6 @@ in physical units.
 
       grid_dimension_x = (0, universe.dimensions[0])
       grid_dimension_y = (0, universe.dimensions[1])
-
-Once the grid is populated according to the coordinates of the atoms in the
-AtomGroup of reference, the associated `z` coordinate of each atom in the AtomGroup 
-is stored in an array assigned to each ``[l, m]`` index.
 
 .. _derive-surface-curvature:
 
@@ -118,11 +123,6 @@ mean, and Gaussian curvature are stored in the
 Each array has shape ``(n_x_bins, n_y_bins)``.
 
 |avg_frames|
-
-
-.. |grid_map| image:: ../_static/gridmap.png
-  :width: 400
-  :alt: GridMap
 
 .. |diagram| image:: ../_static/DiagramAlgorithm.png
   :width: 800
