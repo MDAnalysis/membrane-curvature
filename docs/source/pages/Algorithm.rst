@@ -96,6 +96,12 @@ to the chosen grid resolution.
    very coarse grids may still affect curvature estimates due to finite-difference
    discretization error.
 
+Curvature is obtained in two steps: partial derivatives of the height field on the
+grid are estimated (for example with :func:`numpy.gradient` and box spacing), then
+mapped to mean curvature :math:`H` and Gaussian curvature :math:`K` using the
+Monge-gauge formulas in :func:`~membrane_curvature.curvature.mean_curvature_monge`
+and :func:`~membrane_curvature.curvature.gaussian_curvature_monge`.
+
 For every frame of the trajectory, the surface derived from the 
 :class:`~MDAnalysis.core.groups.AtomGroup` is
 calculated and stored in :attr:`~MembraneCurvature.results.z_surface`.
