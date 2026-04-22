@@ -79,15 +79,15 @@ def mean_curvature_monge(fx, fy, fxx, fyy, fxy):
     Parameters
     ----------
     fx : np.ndarray.
-        Values of :math:`\partial_x z` on the grid.
+        Values of :math:`\partial_x` on the grid.
     fy : np.ndarray.
-        Values of :math:`\partial_y z` on the grid.
+        Values of :math:`\partial_y` on the grid.
     fxx : np.ndarray.
-        Values of :math:`\partial_{xx} z` on the grid.
+        Values of :math:`\partial_{xx}` on the grid.
     fyy : np.ndarray.
-        Values of :math:`\partial_{yy} z` on the grid.
+        Values of :math:`\partial_{yy}` on the grid.
     fxy : np.ndarray.
-        Values of :math:`\partial_{xy} z` on the grid.
+        Values of :math:`\partial_{xy}` on the grid.
 
     Returns
     -------
@@ -113,15 +113,15 @@ def gaussian_curvature_monge(fx, fy, fxx, fyy, fxy):
     Parameters
     ----------
     fx : np.ndarray.
-        Values of :math:`\partial_x z` on the grid.
+        Values of :math:`\partial_x` on the grid.
     fy : np.ndarray.
-        Values of :math:`\partial_y z` on the grid.
+        Values of :math:`\partial_y` on the grid.
     fxx : np.ndarray.
-        Values of :math:`\partial_{xx} z` on the grid.
+        Values of :math:`\partial_{xx}` on the grid.
     fyy : np.ndarray.
-        Values of :math:`\partial_{yy} z` on the grid.
+        Values of :math:`\partial_{yy}` on the grid.
     fxy : np.ndarray.
-        Values of :math:`\partial_{xy} z` on the grid.
+        Values of :math:`\partial_{xy}` on the grid.
 
     Returns
     -------
