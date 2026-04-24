@@ -8,48 +8,199 @@ on:
     types:
       - published
 
+concurrency:
+  group: "${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
-  testpypi_push:
-    environment:
-      name: deploy
-      url: https://test.pypi.org/p/membrane-curvature
-    permissions:
-      id-token: write
+  build:
+    name: Build package
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract-version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package (binary wheel and source distribution package)
+        run: |
+          python -m build
+
+      - name: Check package
+        run: |
+          twine check dist/*
+
+      - name: Extract package version
+        id: extract-version
+        run: |
+          WHEEL_FILE=$(ls dist/*.whl)
+          VERSION=$(unzip -p "$WHEEL_FILE" "*.dist-info/METADATA" | sed -n 's/^Version: //p' | head -n1 | tr -d '\r')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Upload dist files
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-files
+          path: dist/
+          retention-days: 1
+
+  test-built-wheel:
+    name: Test built wheel (pytest)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Download dist files
+        uses: actions/download-artifact@v8
+        with:
+          name: dist-files
+          path: dist/
+
+      - name: Install package with test dependencies and tests
+        run: |
+          python -m pip install --upgrade pip
+          WHEEL_FILE=$(ls dist/*.whl)
+          pip install "$WHEEL_FILE"[tests]
+
+      - name: Test import
+        run: |
+          python -c "import membrane_curvature; print(f'Package {membrane_curvature.__version__} imported successfully')"
+
+      - name: Run basic tests
+        run: |
+          pytest --verbose --pyargs membrane_curvature
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    runs-on: ubuntu-latest
+    needs: [build, test-built-wheel]
     if: |
       github.repository == 'MDAnalysis/membrane-curvature' &&
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
-    name: Build, upload and test pure Python wheels to TestPyPi
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: testpypi_deploy
-        uses: MDAnalysis/pypi-deployment@main
-        with:
-          test_submission: true
-          tests: true
-          test_deps: 'pytest MDAnalysisTests'
-          package_name: 'membrane_curvature'
-
-  pypi_push:
     environment:
-      name: deploy
-      url: https://pypi.org/p/membrane-curvature
+      name: testpypi
+      url: https://test.pypi.org/p/membrane-curvature
     permissions:
-      id-token: write
+      id-token: write #OIDC token
+    steps:
+      - name: Download dist files
+        uses: actions/download-artifact@v8
+        with:
+          name: dist-files
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.14.0
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [build, test-built-wheel]
     if: |
       github.repository == 'MDAnalysis/membrane-curvature' &&
       (github.event_name == 'release' && github.event.action == 'published')
-    name: Build, upload and test pure Python wheels to PyPi
-    runs-on: ubuntu-latest
-
+    environment:
+      name: pypi
+      url: https://pypi.org/p/membrane-curvature
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
-      - uses: actions/checkout@v4
-
-      - name: pypi_deploy
-        uses: MDAnalysis/pypi-deployment@main
+      - name: Download dist files
+        uses: actions/download-artifact@v8
         with:
-          tests: true
-          test_deps: 'pytest MDAnalysisTests'
-          package_name: 'membrane_curvature'
+          name: dist-files
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.14.0
+
+  verify-testpypi-install:
+    name: Verify install from TestPyPI
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    needs: [build, publish-testpypi]
+    if: |
+      github.repository == 'MDAnalysis/membrane-curvature' &&
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Wait for version to be available on TestPyPI (30 seconds)
+        run: sleep 30
+
+      - name: Install from TestPyPI
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "membrane_curvature[tests]==${{ needs.build.outputs.version }}"
+
+      - name: Test import
+        run: |
+          python -c "import membrane_curvature; print(f'Package {membrane_curvature.__version__} imported successfully from TestPyPi')"
+
+      - name: Run basic tests
+        run: |
+          pytest --verbose --pyargs membrane_curvature
+
+  verify-pypi-install:
+    name: Verify install from PyPI
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    needs: [build, publish-pypi]
+    if: |
+      github.repository == 'MDAnalysis/membrane-curvature' &&
+      (github.event_name == 'release' && github.event.action == 'published')
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Checkout repository for actions
+        uses: actions/checkout@v6
+
+      - name: Wait for version to be available on PyPI (30 seconds)
+        run: sleep 30
+
+      - name: Install from PyPI
+        run: |
+          python -m pip install --upgrade pip
+          pip install "membrane_curvature[tests]==${{ needs.build.outputs.version }}"
+
+      - name: Test import
+        run: |
+          python -c "import membrane_curvature; print(f'Package {membrane_curvature.__version__} imported successfully from PyPi')"
+
+      - name: Run basic tests
+        run: |
+          pytest --verbose --pyargs membrane_curvature
