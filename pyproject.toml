@@ -54,7 +54,8 @@ docs = [
     "mdanalysis-sphinx-theme",
     "nbsphinx",
     "ipywidgets",
-    "nglview"
+    "nglview",
+    "myst-nb"
 ]
 
 [tool.setuptools.packages.find]
