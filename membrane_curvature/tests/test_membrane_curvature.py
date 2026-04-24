@@ -3,13 +3,14 @@ Unit and regression test for the membrane_curvature package.
 """
 
 import pytest
-from membrane_curvature.surface import normalized_grid, derive_surface, get_z_surface
+from membrane_curvature.binning_surface import normalized_grid, derive_surface, get_z_surface
 from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 import numpy as np
 from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
 from membrane_curvature.tests.datafiles import GRO_PO4_SMALL
 from membrane_curvature.base import MembraneCurvature
+from membrane_curvature.curvature import fourier_curvature
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
@@ -851,9 +852,52 @@ class TestMembraneCurvature(object):
     def curvature_unwrapped_universe_xy(self, universe_dummy_wrap_xy):
         return MembraneCurvature(universe_dummy_wrap_xy, n_x_bins=3, n_y_bins=3).run()
 
+    @pytest.fixture()
+    def mc_fourier_dummy(self, universe_dummy_full):
+        u = universe_dummy_full
+        x_bin = y_bin = 4
+
+        mc = MembraneCurvature(
+            u,
+            select='all',
+            n_x_bins=x_bin,
+            n_y_bins=y_bin,
+            surface_method='fourier',
+            fourier_m=1,
+            fourier_n=1,
+        ).run()
+        return mc, u, x_bin, y_bin
+
     def test_invalid_selection(self, universe):
         with pytest.raises(ValueError, match=r'Invalid selection'):
             MembraneCurvature(universe, select='name P')
+
+    def test_invalid_surface_method(self, universe):
+        with pytest.raises(ValueError, match=r'surface_method must be one of'):
+            MembraneCurvature(
+                universe,
+                select='name PO4',
+                surface_method='unsupported',
+            )
+
+    @pytest.mark.parametrize('fourier_m, fourier_n', [(-1, 0), (0, -1), (-1, -1)])
+    def test_fourier_mode_indices_must_be_nonnegative(
+        self,
+        universe,
+        fourier_m,
+        fourier_n,
+    ):
+        with pytest.raises(
+            ValueError,
+            match=r'fourier_m and fourier_n must be non-negative',
+        ):
+            MembraneCurvature(
+                universe,
+                select='name PO4',
+                surface_method='fourier',
+                fourier_m=fourier_m,
+                fourier_n=fourier_n,
+            )
 
     def test_grid_bigger_than_simulation_box_x_dim(self, universe):
         regex = (
@@ -1243,3 +1287,41 @@ class TestMembraneCurvature(object):
         regex = r'exceed boundaries | coordinates falls'
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(u, select='all', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False).run()
+
+    # # Fourier method should fail when atoms << modes
+    def test_analysis_fourier_too_few_atoms(self, universe_dummy):
+        with pytest.raises(
+            ValueError,
+            match=r'needs at least|Suggested max modes',
+        ):
+            MembraneCurvature(
+                universe_dummy,
+                select='all',
+                surface_method='fourier',
+                fourier_m=2,
+                fourier_n=2,
+            )
+
+    @pytest.mark.parametrize(
+        'result_attr, ref_index',
+        [
+            ('z_surface', 0),
+            ('mean', 1),
+            ('gaussian', 2),
+        ],
+    )
+    def test_fourier_surface_and_curvature_fields(self, mc_fourier_dummy, result_attr, ref_index):
+        mc, u, x_bin, y_bin = mc_fourier_dummy
+        ref_fields = fourier_curvature(
+            u.atoms.positions,
+            (0, u.dimensions[0]),
+            (0, u.dimensions[1]),
+            x_bin,
+            y_bin,
+            1,
+            1,
+        )
+        assert_almost_equal(
+            getattr(mc.results, result_attr)[0],
+            ref_fields[ref_index],
+        )

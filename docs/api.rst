@@ -10,4 +10,5 @@ MembraneCurvature's API Documentation
    api/membrane_curvature
    api/curvature
    api/surface
+   api/fourier_surface
 

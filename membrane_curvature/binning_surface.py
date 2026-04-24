@@ -1,11 +1,12 @@
 r"""
 
 --------------------
-Surface
+Binning Surface
 --------------------
 
-Calculation of curvature requires a surface of reference. In MembraneCurvature,
-the surface of reference is defined by the `z` position of the `atoms` in `AtomGroup`.
+With `surface_method='binning'`, Membranecurvature forms a surface from
+the `z` position of the `atoms` in an `AtomGroup` of reference. This
+surface is then used as a reference to calculate curvature.
 
 
 Functions

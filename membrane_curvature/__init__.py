@@ -11,7 +11,7 @@ MDAkit for Membrane Curvature
 #
 
 # Add imports here
-from .surface import (
+from .binning_surface import (
     normalized_grid as normalized_grid,
     derive_surface as derive_surface,
     get_z_surface as get_z_surface,
