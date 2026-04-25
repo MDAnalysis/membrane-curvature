@@ -58,7 +58,6 @@ or via `pip`:
 pip install --upgrade MDAnalysisTests
 ```
 
-> ⚠️ In comparison to the previous version, `membrane-curvature==0.0.3` shows a significant improvement in performance, particularly notable for membrane-protein systems. Installing the last available version is highly encouraged. 
 
 Usage
 --------------
@@ -115,8 +114,6 @@ v3 , version 3 (see [LICENSE]).
 
 MembraneCurvature was developed as a [Google Summer of Code 2021][GSoC] 
 project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduct].
-
-Copyright (c) 2021-2022, Estefania Barreto-Ojeda
 
 
 [GSoC]: https://summerofcode.withgoogle.com/

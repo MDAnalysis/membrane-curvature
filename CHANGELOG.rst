@@ -1,6 +1,12 @@
 Membranecurvature CHANGELOG
 =============================
 
+1.1.2 (24-04-2026)
+------------------
+* Fixed deployment workflow with TestPyPI and PyPI (PR #137)
+* Dropped support for Python 3.9, 3.10; extended support to 3.13, 3.14 (PR #141)
+* Refactored curvature calculations with Monge gauge helpers (PR #140)
+
 1.1.1 (09-01-2024)
 ------------------
 * Add automated deployment workflow (PR #124)
