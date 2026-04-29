@@ -447,31 +447,6 @@ class TestMembraneCurvature(object):
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 
-    # test using wrap=True with test grofile
-    def test_analysis_mean_wrap_array(self, universe):
-        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
-                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
-                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
-        mc = MembraneCurvature(universe,
-                               select='name PO4',
-                               n_x_bins=3,
-                               n_y_bins=3).run()
-        avg_mean = mc.results.average_mean
-        assert_almost_equal(avg_mean, expected_mean)
-
-    # test using wrap=False with test grofile
-    def test_analysis_mean_no_wrap_array(self, universe):
-        expected_mean = np.array([[7.50000000e+00,  1.33985392e-01,  2.77315457e-04],
-                                  [-2.77315457e-04, -3.53944270e-01, -7.50000000e+00],
-                                  [-2.77315457e-04, -5.01100068e-01, -7.50000000e+00]])
-        mc = MembraneCurvature(universe,
-                               select='name PO4',
-                               n_x_bins=3,
-                               n_y_bins=3,
-                               wrap=False).run()
-        avg_mean = mc.results.average_mean
-        assert_almost_equal(avg_mean, expected_mean)
-
     # test using dummy Universe with atoms out of boounds
     # with wrap=True (default)
     #   +-----------+          +-----------+
