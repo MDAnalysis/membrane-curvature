@@ -18,7 +18,7 @@ __all__ = [
     "GRO_PO4",  # Gromacs file of PO4 beads in POPC POPE membrane with 914 lipids
     "XTC_PO4",  # Gromacs trajectory of GRO_PO4
     "GRO_MEMBRANE_PROTEIN",  # Gromacs file of POPC POPE CHOL membrane
-    "XTC_MEMBRANE_PROTEIN"  # Gromacs trajectory of 10 frames.
+    "XTC_MEMBRANE_PROTEIN",  # Gromacs trajectory of 10 frames.
     "XTC_MEMBPROT_FIT",  # Gromacs trajectory with rotational and translation fit
     "GRO_MEMBPROT_FIT"  # Gromacs coordinates to load trajectory with fit
 ]
