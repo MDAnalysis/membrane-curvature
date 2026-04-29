@@ -57,6 +57,9 @@ docs = [
     "nglview",
     "myst-nb"
 ]
+dev = [
+    "ruff",
+    "validate-pyproject[all]"]
 
 [tool.setuptools.packages.find]
 include = ["membrane_curvature*"]
@@ -94,3 +97,34 @@ exclude_also = [
 COLUMN_LIMIT = 80
 INDENT_WIDTH = 4
 USE_TABS = false
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = []
+exclude = [
+	".bzr",
+	".direnv",
+	".eggs",
+	".git",
+    ".ipynb_checkpoints",
+	".mypy_cache",
+	".ruff_cache",
+	".venv",
+	"__pypackages__",
+	"_build",
+	"build",
+	"dist",
+	"venv",
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["E501", "E712", "F841"]
+
+[tool.ruff.format]
+quote-style = "single"
+line-ending = "auto"

@@ -121,20 +121,20 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
     cell_x_floor = np.floor(x_coords * x_factor).astype(int)
     cell_y_floor = np.floor(y_coords * y_factor).astype(int)
 
-    for l, m, z in zip(cell_x_floor, cell_y_floor, z_coords):
+    for index_l, index_m, index_z in zip(cell_x_floor, cell_y_floor, z_coords):
 
         try:
             # negative coordinates
-            if l < 0 or m < 0:
-                negative_coord_warning.warn(l, m)
+            if index_l < 0 or index_m < 0:
+                negative_coord_warning.warn(index_l, index_m)
                 continue
 
-            grid_z_coordinates[l, m] += z
-            grid_norm_unit[l, m] += 1
+            grid_z_coordinates[index_l, index_m] += index_z
+            grid_norm_unit[index_l, index_m] += 1
 
         # too large positive coordinates
         except IndexError:
-            positive_coord_warning.warn(l, m, x_range[1], y_range[1])
+            positive_coord_warning.warn(index_l, index_m, x_range[1], y_range[1])
 
     z_surface = normalized_grid(grid_z_coordinates, grid_norm_unit)
 
