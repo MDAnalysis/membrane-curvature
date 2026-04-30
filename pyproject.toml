@@ -59,7 +59,9 @@ docs = [
 ]
 dev = [
     "ruff",
-    "validate-pyproject[all]"]
+    "validate-pyproject[all]",
+    "pre-commit[all]"
+    ]
 
 [tool.setuptools.packages.find]
 include = ["membrane_curvature*"]
