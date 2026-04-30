@@ -20,7 +20,7 @@ Membranecurvature CHANGELOG
 1.0.0 (03-11-2022)
 -------------------
 
-* Dropped support for Python 3.6 and 3.7 (PR #103). 
+* Dropped support for Python 3.6 and 3.7 (PR #103).
 * Extended support to Python 3.10 (PR #94) and 3.11 (PR #103).
 * Fixed plots in documentation pages and updated plots in tutorials (PR #89).
 * Fixed warning messages that affected performance (PR #95).
@@ -31,7 +31,7 @@ Membranecurvature CHANGELOG
 
 * Fixed bug sign mean curvature (PR #75).
 * Updated tutorial membrane only system (PR #78).
-* Added ipynb tutorial membrane-protein (all-atom). (PR #69) 
+* Added ipynb tutorial membrane-protein (all-atom). (PR #69)
 
 
 0.0.1 (21-09-2021)
