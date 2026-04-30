@@ -24,7 +24,7 @@ and Gaussian curvature :math:`K`, defined by:
    {(1+\partial_x^2+\partial_y^2)^2}.
 
 
-The Monge gauge formulas are implemented separately in the helpers 
+The Monge gauge formulas are implemented separately in the helpers
 :func:`mean_curvature_monge` and :func:`gaussian_curvature_monge`, which accept
 precomputed partial derivatives as arguments. This approach intends to separate the
 curvature algebra from the derivative estimation.
@@ -183,7 +183,10 @@ def mean_curvature(Z, *varargs):
 
     """
 
-    Zx, Zy, = np.gradient(Z, *varargs)
+    (
+        Zx,
+        Zy,
+    ) = np.gradient(Z, *varargs)
     Zxx, Zxy = np.gradient(Zx, *varargs)
     _, Zyy = np.gradient(Zy, *varargs)
 

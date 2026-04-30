@@ -14,7 +14,8 @@ MDAkit for Membrane Curvature
 from .surface import (
     normalized_grid as normalized_grid,
     derive_surface as derive_surface,
-    get_z_surface as get_z_surface)
+    get_z_surface as get_z_surface,
+)
 from .curvature import (
     mean_curvature as mean_curvature,
     gaussian_curvature as gaussian_curvature,
@@ -25,4 +26,5 @@ from .base import MembraneCurvature as MembraneCurvature
 
 # Handle version
 from importlib.metadata import version
-__version__ = version("membrane_curvature")
+
+__version__ = version('membrane_curvature')

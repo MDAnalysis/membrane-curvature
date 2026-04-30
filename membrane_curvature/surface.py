@@ -20,7 +20,7 @@ import MDAnalysis
 import logging
 
 MDAnalysis.start_logging()
-logger = logging.getLogger("MDAnalysis.MDAKit.membrane_curvature")
+logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
 
 
 class WarnOnce:
@@ -28,6 +28,7 @@ class WarnOnce:
     Class to warn atoms out of grid boundaries only once with full message.
     After the first ocurrance, message will be generic.
     """
+
     def __init__(self, msg, msg_multiple) -> None:
         self.msg = msg
         self.warned = False
@@ -69,20 +70,27 @@ def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
 
     """
     coordinates = atoms.positions
-    return get_z_surface(coordinates, n_x_bins=n_cells_x, n_y_bins=n_cells_y,
-                         x_range=(0, max_width_x), y_range=(0, max_width_y))
+    return get_z_surface(
+        coordinates, n_x_bins=n_cells_x, n_y_bins=n_cells_y, x_range=(0, max_width_x), y_range=(0, max_width_y)
+    )
 
 
 # messages for warnings, negative and positive coordinates.
-msg_exceeds = "More than one atom exceed boundaries of grid."
-negative_coord_warning = WarnOnce("Atom with negative coordinates falls "
-                                  "outside grid boundaries. Element "
-                                  "({},{}) in grid can't be assigned."
-                                  " Skipping atom.", msg_exceeds)
-positive_coord_warning = WarnOnce("Atom coordinates exceed size of grid "
-                                  "and element ({},{}) can't be assigned. "
-                                  "Maximum (x,y) coordinates must be < ({}, {}). "
-                                  "Skipping atom.", msg_exceeds)
+msg_exceeds = 'More than one atom exceed boundaries of grid.'
+negative_coord_warning = WarnOnce(
+    'Atom with negative coordinates falls '
+    'outside grid boundaries. Element '
+    "({},{}) in grid can't be assigned."
+    ' Skipping atom.',
+    msg_exceeds,
+)
+positive_coord_warning = WarnOnce(
+    'Atom coordinates exceed size of grid '
+    "and element ({},{}) can't be assigned. "
+    'Maximum (x,y) coordinates must be < ({}, {}). '
+    'Skipping atom.',
+    msg_exceeds,
+)
 
 
 def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_range=(0, 100)):
@@ -91,16 +99,16 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
 
     Parameters
     ----------
-    coordinates : numpy.ndarray 
+    coordinates : numpy.ndarray
         Coordinates of AtomGroup. Numpy array of shape=(n_atoms, 3).
     n_x_bins : int.
-        Number of bins in grid in the `x` dimension. 
+        Number of bins in grid in the `x` dimension.
     n_y_bins : int.
-        Number of bins in grid in the `y` dimension. 
+        Number of bins in grid in the `y` dimension.
     x_range : tuple of (float, float)
         Range of coordinates (min, max) in the `x` dimension with shape=(2,).
     y_range : tuple of (float, float)
-        Range of coordinates (min, max) in the `y` dimension with shape=(2,). 
+        Range of coordinates (min, max) in the `y` dimension with shape=(2,).
 
     Returns
     -------
@@ -122,7 +130,6 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
     cell_y_floor = np.floor(y_coords * y_factor).astype(int)
 
     for index_l, index_m, index_z in zip(cell_x_floor, cell_y_floor, z_coords):
-
         try:
             # negative coordinates
             if index_l < 0 or index_m < 0:

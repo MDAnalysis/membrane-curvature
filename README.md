@@ -9,8 +9,8 @@ Membrane Curvature
 
 ![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
 
-MembraneCurvature is an [MDAnalysis] tool to calculate membrane curvature from 
-Molecular Dynamics simulations. 
+MembraneCurvature is an [MDAnalysis] tool to calculate membrane curvature from
+Molecular Dynamics simulations.
 
 > **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
 
@@ -97,7 +97,7 @@ To plot results from MembraneCurvature please check the [Visualization] page.
 Documentation
 ---------------
 
-To help you get the most out MembraneCurvature, we have [documentation] available 
+To help you get the most out MembraneCurvature, we have [documentation] available
 where you can find:
 
 - The standard [API] documentation.
@@ -137,7 +137,7 @@ Source code included in this project is available in the GitHub repository
 https://github.com/MDAnalysis/membrane-curvature under the GNU Public License
 v3 , version 3 (see [LICENSE]).
 
-MembraneCurvature was developed as a [Google Summer of Code 2021][GSoC] 
+MembraneCurvature was developed as a [Google Summer of Code 2021][GSoC]
 project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduct].
 
 
