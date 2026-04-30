@@ -4,6 +4,7 @@ Membrane Curvature
 [![GitHub Actions Status](https://github.com/MDAnalysis/membrane-curvature/workflows/CI/badge.svg)](https://github.com/MDAnalysis/membrane-curvature/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main/graph/badge.svg)](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main)
 [![docs](https://readthedocs.org/projects/membrane-curvature/badge/?version=latest)](https://membrane-curvature.readthedocs.io/en/latest/)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![PyPI](https://img.shields.io/pypi/v/membrane-curvature?color=lightgray)
 
 ![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
@@ -105,6 +106,30 @@ where you can find:
 - Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
 
 
+Contributing
+---------------
+
+Contributions are very welcome.
+
+This repository uses [pre-commit] hooks to run quick checks
+before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] linting/formatting.
+Using these hooks is highly encouraged because it helps catch common issues early and
+keeps pull requests easier to review.
+
+To set up hooks locally, with pip:
+
+```bash
+pip install .[dev]
+pre-commit install
+```
+
+Or with `uv`:
+
+```bash
+uv sync --extra dev
+uv run pre-commit install
+```
+
 License
 ---------------
 
@@ -129,3 +154,5 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [API]: https://membrane-curvature.readthedocs.io/en/latest/api/membrane_curvature.html
 [MDAnalysisTests]: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 [UserGuide]: https://userguide.mdanalysis.org/2.0.0-dev0/installation.html
+[pre-commit]: https://pre-commit.com
+[ruff]: https://docs.astral.sh/ruff/
