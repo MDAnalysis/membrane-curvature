@@ -60,7 +60,7 @@ docs = [
 dev = [
     "ruff",
     "validate-pyproject[all]",
-    "pre-commit[all]"
+    "pre-commit"
     ]
 
 [tool.setuptools.packages.find]
