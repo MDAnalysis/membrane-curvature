@@ -56,7 +56,7 @@ jobs:
         ulimit -a
 
     # More info on options: https://github.com/conda-incubator/setup-miniconda
-    # An environment for the minimum versions 
+    # An environment for the minimum versions
     - name: setup micromamba
       uses: mamba-org/setup-micromamba@v1
       with:

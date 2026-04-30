@@ -46,7 +46,7 @@ an appropriate immediate response, you may contact the ombudspersons (who will i
 themselves at the event) or other event staff/meetup organizers. If you would prefer not to
 do that, please [submit a report](how-to-report) to NumFOCUS, but please note it may not be
 possible for the [NumFOCUS Code of Conduct Working Group](#who-will-receive-your-report) to
-respond immediately. 
+respond immediately.
 
 Ombudspeople and event staff/meetup organizers will be happy to help participants contact
 venue security or local law enforcement, provide escorts, or otherwise assist those
@@ -55,7 +55,7 @@ experiencing harassment to feel safe for the duration of the event/meetup.
 ## WHO WILL RECEIVE YOUR REPORT
 Your report will be received and handled by the NumFOCUS Code of Conduct Working Group; trained,
 and experienced contributors with diverse backgrounds. The group is making decisions independently
-from the MDAnalysis project, PyData, NumFOCUS or any other organization. 
+from the MDAnalysis project, PyData, NumFOCUS or any other organization.
 
 You can learn more about the current group members, as well as the reporting procedure [HERE][NF-conduct].
 
@@ -84,7 +84,7 @@ we fully support their [*Diversity & Inclusion in Scientific Computing*](https:/
 Original text courtesy of [*NumFOCUS*](https://numfocus.org/code-of-conduct), modified by MDAnalysis.
 
 All content on this page is licensed under a [*Creative Commons Attribution*](http://creativecommons.org/licenses/by/3.0/)
-license. 
+license.
 
 [NF]: https://numfocus.org/
 [NF-conduct]: https://numfocus.org/code-of-conduct
