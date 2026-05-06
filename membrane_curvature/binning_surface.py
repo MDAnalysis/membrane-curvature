@@ -12,6 +12,8 @@ surface is then used as a reference to calculate curvature.
 Functions
 ---------
 
+.. versionchannged:: 2.0.0
+   Renamed module from ``surface`` to ``binning_surface``.
 
 """
 

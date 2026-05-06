@@ -319,7 +319,7 @@ def test_eval_surface_matches_point_values(eval_fourier_surface_common_inputs):
         eval_fourier_surface_common_inputs.A00,
         eval_fourier_surface_common_inputs.coeffs,
         derivatives=False,
-    )
+    )[0]
 
     expected_surface = np.array([[9.5, 9.5], [8.5, 8.5]], dtype=np.float64)
     assert_almost_equal(z_surface, expected_surface)
@@ -402,8 +402,9 @@ def test_eval_surface_derivatives_flag(eval_fourier_surface_common_inputs, deriv
         assert fyy.shape == inputs.X_rel.shape
         assert fxy.shape == inputs.X_rel.shape
     else:
-        assert isinstance(out, np.ndarray)
-        assert out.shape == inputs.X_rel.shape
+        assert isinstance(out, tuple)
+        assert len(out) == 1
+        assert out[0].shape == inputs.X_rel.shape
 
 
 def test_fourier_height_from_atoms_calls_eval_without_derivatives(dummy_fourier_universe):

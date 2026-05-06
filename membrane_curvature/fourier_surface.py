@@ -468,7 +468,7 @@ def _eval_fourier_surface(
     coeffs: dict[tuple[int, int], tuple[float, float]],
     *,
     derivatives: bool,
-) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray] | tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     r"""
     Evaluate the fitted Fourier sum on a relative-coordinate grid (steps 5-6).
 
@@ -492,15 +492,13 @@ def _eval_fourier_surface(
     coeffs : dict[tuple[int, int], tuple[float, float]]
         Mode amplitudes ``(A, B)`` from :func:`_fourier_fit_from_atoms` / :func:`_unpack_coefficients`.
     derivatives : bool
-        If ``False``, return only ``Z``. If ``True``, return ``Z`` and five derivative grids
-        ``fx``, ``fy``, ``fxx``, ``fyy``, ``fxy``.
+        If ``False``, return ``(Z,)``. If ``True``, return ``(Z, fx, fy, fxx, fyy, fxy)``.
 
     Returns
     -------
-    ndarray or tuple of ndarray
-        If ``derivatives`` is ``False``, the height field ``Z`` with the same shape as
-        ``X_rel``. If ``derivatives`` is ``True``, ``(Z, fx, fy, fxx, fyy, fxy)`` with each
-        array matching the shape of ``X_rel``.
+    tuple of ndarray
+        If ``derivatives`` is ``False``, the 1-tuple ``(Z,)`` where ``Z`` matches the shape of
+        ``X_rel``. If ``derivatives`` is ``True``, the 6-tuple with each grid matching ``X_rel``.
     """
     twopi = 2.0 * np.pi
     X_rel = np.asarray(X_rel, dtype=np.float64)
@@ -532,7 +530,7 @@ def _eval_fourier_surface(
 
     if derivatives:
         return Z, fx, fy, fxx, fyy, fxy
-    return Z
+    return (Z,)
 
 
 def _bin_centre_mesh(Lx: float, Ly: float, n_x_bins: int, n_y_bins: int) -> tuple[np.ndarray, np.ndarray]:
@@ -615,7 +613,7 @@ def fourier_height_from_atoms(
         rcond=rcond,
     )
     X_rel, Y_rel = _bin_centre_mesh(Lx, Ly, n_x_bins, n_y_bins)
-    return _eval_fourier_surface(X_rel, Y_rel, Lx, Ly, A00, coeffs, derivatives=False)
+    return _eval_fourier_surface(X_rel, Y_rel, Lx, Ly, A00, coeffs, derivatives=False)[0]
 
 
 def fourier_height_derivatives_from_atoms(

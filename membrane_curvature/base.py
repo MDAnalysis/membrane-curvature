@@ -188,6 +188,9 @@ class MembraneCurvature(AnalysisBase):
             n_atom = len(self.ag)
             if n_atom < n_param:
                 max_square_mode = max(int((np.sqrt(n_atom) - 1) // 2), 0)
+                # If too few atoms for the passed modes fourier_m / fourier_n, raise error.
+                # The message suggests the maximum fourier_m / fourier_n given the number
+                # of atoms in the selection n_atom = len(self.ag)
                 raise ValueError(
                     f"surface_method='fourier' needs at least {n_param} atoms in the selection "
                     f'(fourier_m={self.fourier_m}, fourier_n={self.fourier_n}), got {n_atom}. '
