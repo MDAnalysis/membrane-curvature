@@ -5,6 +5,7 @@ Membrane Curvature
 [![codecov](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main/graph/badge.svg)](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main)
 [![docs](https://readthedocs.org/projects/membrane-curvature/badge/?version=latest)](https://membrane-curvature.readthedocs.io/en/latest/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
 ![PyPI](https://img.shields.io/pypi/v/membrane-curvature?color=lightgray)
 
 ![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
