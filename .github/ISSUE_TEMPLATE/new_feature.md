@@ -21,9 +21,10 @@ If applicable, please describe the current behavior as well.
 
 <!-- Provide an example of how the user experience would change or how the new feature would be used. -->
 
-## Describe alternatives you've considered ##
+## Describe alternatives you've considered
+
 <!-- A description of any alternative solutions or features you've considered or possible solutions that you've seen elsewhere. -->
 
 
-## Additional context ##
+## Additional context
 <!-- Add any other context or screenshots about the feature request here. -->
