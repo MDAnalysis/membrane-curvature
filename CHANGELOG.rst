@@ -1,6 +1,8 @@
 Membranecurvature CHANGELOG
 =============================
 
+* Added maintenance tools (ruff PR #147, pre-commit hooks PR #151, ty PR #155)
+
 1.1.2 (24-04-2026)
 ------------------
 * Fixed deployment workflow with TestPyPI and PyPI (PR #137)
