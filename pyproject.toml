@@ -60,7 +60,8 @@ docs = [
 dev = [
     "ruff",
     "validate-pyproject[all]",
-    "pre-commit"
+    "pre-commit",
+    "ty"
     ]
 
 [tool.setuptools.packages.find]
@@ -130,3 +131,10 @@ fixable = ["ALL"]
 [tool.ruff.format]
 quote-style = "single"
 line-ending = "auto"
+
+[tool.ty.rules]
+unused-ignore-comment = "ignore"
+
+[tool.ty.src]
+include = ["membrane_curvature"]
+exclude = ["**/docs/**", "**/tests/**"]
