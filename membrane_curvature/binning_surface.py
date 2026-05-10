@@ -12,7 +12,7 @@ surface is then used as a reference to calculate curvature.
 Functions
 ---------
 
-.. versionchannged:: 2.0.0
+.. versionchanged:: 2.0.0
    Renamed module from ``surface`` to ``binning_surface``.
 
 """
@@ -29,7 +29,7 @@ logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
 class WarnOnce:
     """
     Class to warn atoms out of grid boundaries only once with full message.
-    After the first ocurrance, message will be generic.
+    After the first ocurrence, message will be generic.
     """
 
     def __init__(self, msg, msg_multiple) -> None:

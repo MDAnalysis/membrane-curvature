@@ -128,6 +128,7 @@ Functions
 """
 
 import warnings
+from typing import Literal, overload
 
 import numpy as np
 
@@ -457,6 +458,32 @@ def _harmonic_height_and_phi_derivatives(
     h_phi = -A * sin_phase + B * cos_phase
     h_phiphi = -A * cos_phase - B * sin_phase
     return h, h_phi, h_phiphi
+
+
+@overload
+def _eval_fourier_surface(
+    X_rel: np.ndarray,
+    Y_rel: np.ndarray,
+    Lx: float,
+    Ly: float,
+    A00: float,
+    coeffs: dict[tuple[int, int], tuple[float, float]],
+    *,
+    derivatives: Literal[False],
+) -> tuple[np.ndarray]: ...
+
+
+@overload
+def _eval_fourier_surface(
+    X_rel: np.ndarray,
+    Y_rel: np.ndarray,
+    Lx: float,
+    Ly: float,
+    A00: float,
+    coeffs: dict[tuple[int, int], tuple[float, float]],
+    *,
+    derivatives: Literal[True],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]: ...
 
 
 def _eval_fourier_surface(
