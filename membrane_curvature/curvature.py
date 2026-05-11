@@ -181,7 +181,6 @@ def fourier_curvature(
     UserWarning
         If the Fourier least-squares system is rank-deficient or underdetermined.
     """
-    positions = np.asarray(positions, dtype=np.float64)
     Z, fx, fy, fxx, fyy, fxy = fourier_height_derivatives_from_atoms(
         positions,
         x_range,
@@ -195,9 +194,6 @@ def fourier_curvature(
     H = mean_curvature_monge(fx, fy, fxx, fyy, fxy)
     K = gaussian_curvature_monge(fx, fy, fxx, fyy, fxy)
     return Z, H, K
-
-
-z_mean_gaussian_from_atom_fourier = fourier_curvature
 
 
 def gaussian_curvature(Z, *varargs):

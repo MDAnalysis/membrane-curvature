@@ -22,6 +22,7 @@ from .curvature import (
     fourier_curvature,
 )
 from .fourier_surface import n_fourier_parameters
+from .fourier_validators import validate_positive_bin_counts
 
 import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisBase
@@ -118,10 +119,20 @@ class MembraneCurvature(AnalysisBase):
     The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
     the derived surface averaged over the `n_frames` of the trajectory.
 
-    The attributes :attr:`~MembraneCurvature.results.average_mean_curvature` and
-    :attr:`~MembraneCurvature.results.average_gaussian_curvature` contain the
-    computed values of mean and Gaussian curvature averaged over the `n_frames`
-    of the trajectory.
+    The attributes :attr:`~MembraneCurvature.results.average_mean` and
+    :attr:`~MembraneCurvature.results.average_gaussian` contain the computed
+    values of mean and Gaussian curvature averaged over the `n_frames` of the
+    trajectory.
+
+    Raises
+    ------
+    ValueError
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`),
+        if the selection is empty, if ``surface_method`` is not one of
+        ``'binning'`` or ``'fourier'``, or, when ``surface_method='fourier'``,
+        if ``fourier_m`` / ``fourier_n`` are negative or the selection has fewer
+        atoms than Fourier parameters.
 
     Example
     -----------
@@ -166,7 +177,13 @@ class MembraneCurvature(AnalysisBase):
 
         super().__init__(universe.universe.trajectory, **kwargs)
         self.ag = universe.select_atoms(select)
+        # Validate selection up front so an empty AtomGroup produces a clear
+        # message before any downstream check (bin counts, surface method,
+        # Fourier-parameter sizing) can mask it.
+        if len(self.ag) == 0:
+            raise ValueError('Invalid selection. Empty AtomGroup.')
         self.wrap = wrap
+        validate_positive_bin_counts(n_x_bins, n_y_bins)
         self.n_x_bins = n_x_bins
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
@@ -197,10 +214,6 @@ class MembraneCurvature(AnalysisBase):
                     f'Suggested max modes for {n_atom} atoms is '
                     f'fourier_m = fourier_n = {max_square_mode}.'
                 )
-
-        # Raise if selection doesn't exist
-        if len(self.ag) == 0:
-            raise ValueError('Invalid selection. Empty AtomGroup.')
 
         # Only checks the first frame. NPT simulations not properly covered here.
         # Warning message if range doesn't cover entire dimensions of simulation box

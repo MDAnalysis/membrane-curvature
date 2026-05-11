@@ -880,13 +880,26 @@ class TestMembraneCurvature(object):
                 surface_method='unsupported',
             )
 
-    @pytest.mark.parametrize('fourier_m, fourier_n', [(-1, 0), (0, -1), (-1, -1)])
-    def test_fourier_mode_indices_must_be_nonnegative(
-        self,
-        universe,
-        fourier_m,
-        fourier_n,
-    ):
+    @pytest.mark.parametrize(
+        'n_x_bins,n_y_bins',
+        [(0, 10), (10, 0), (-1, 10), (10, -1)],
+    )
+    def test_nonpositive_grid_bins(self, universe, n_x_bins, n_y_bins):
+        with pytest.raises(ValueError, match=r'n_x_bins and n_y_bins must be positive'):
+            MembraneCurvature(
+                universe,
+                select='name PO4',
+                n_x_bins=n_x_bins,
+                n_y_bins=n_y_bins,
+            )
+
+    def test_fourier_mode_indices_must_be_nonnegative(self, universe):
+        """Smoke test for the base-class non-negative check.
+
+        Per-index parametrization for the underlying ``fourier_mode_list``
+        check lives in
+        ``test_fourier_surface.test_fourier_fit_negative_mode_indices``.
+        """
         with pytest.raises(
             ValueError,
             match=r'fourier_m and fourier_n must be non-negative',
@@ -895,8 +908,8 @@ class TestMembraneCurvature(object):
                 universe,
                 select='name PO4',
                 surface_method='fourier',
-                fourier_m=fourier_m,
-                fourier_n=fourier_n,
+                fourier_m=-1,
+                fourier_n=0,
             )
 
     def test_grid_bigger_than_simulation_box_x_dim(self, universe):
@@ -1288,7 +1301,7 @@ class TestMembraneCurvature(object):
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(u, select='all', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False).run()
 
-    # # Fourier method should fail when atoms << modes
+    # Fourier method should fail when atoms << modes
     def test_analysis_fourier_too_few_atoms(self, universe_dummy):
         with pytest.raises(
             ValueError,

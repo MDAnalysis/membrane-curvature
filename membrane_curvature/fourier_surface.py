@@ -71,8 +71,9 @@ A diagram of a non-redundant Fourier mode grid looks like::
           0     1   2   3  ...  M
           ^           ^
           |           |
-      m_zero_modes  m_positive_modes
-      (n=1..N only) (all n, -N..N)
+     modes_with_     modes_with_
+     m_equal_zero    m_positive
+     (n=1..N only)   (all n, -N..N)
 
 where the ✓ symbol denotes that the wave includes 2 parameters each:
 :math:`cos`, and :math:`sin` coefficients, and where the x symbols
@@ -132,6 +133,13 @@ from typing import Literal, overload
 
 import numpy as np
 
+from .fourier_validators import (
+    _coerce_positions,
+    validate_positions,
+    validate_positive_bin_counts,
+    validate_positive_domain_widths,
+)
+
 
 # Step 1: non-redundant Fourier modes
 def fourier_mode_list(M: int, N: int) -> list[tuple[int, int]]:
@@ -162,13 +170,14 @@ def fourier_mode_list(M: int, N: int) -> list[tuple[int, int]]:
     if M < 0 or N < 0:
         raise ValueError('M and N must be non-negative')
 
-    # m > 0: no symmetry, keep all n
-    m_positive_modes = [(m, n) for m in range(1, M + 1) for n in range(-N, N + 1)]
+    # Modes where m > 0: no conjugate symmetry to exploit, so keep all n in -N..N.
+    modes_with_m_positive = [(m, n) for m in range(1, M + 1) for n in range(-N, N + 1)]
 
-    # m = 0: drop n < 0 for non-redundant, n = 0 (stored as A00)
-    m_zero_modes = [(0, n) for n in range(1, N + 1)]
+    # Modes where m == 0: F(0, -n) = F(0, n)^* makes n < 0 redundant, and
+    # n == 0 is the mean term A00 (handled separately), so keep only n in 1..N.
+    modes_with_m_equal_zero = [(0, n) for n in range(1, N + 1)]
 
-    return m_positive_modes + m_zero_modes
+    return modes_with_m_positive + modes_with_m_equal_zero
 
 
 def n_fourier_parameters(M: int, N: int) -> int:
@@ -353,7 +362,8 @@ def _fourier_fit_from_atoms(
     Parameters
     ----------
     positions : ndarray, shape (n_atoms, 3)
-        Atom coordinates; column 2 is height :math:`z`.
+        Atom coordinates; the third column (``positions[:, 2]``) is the
+        height :math:`z`.
     x_range, y_range : tuple of float
         ``(min, max)`` extents of the periodic domain.
     M, N : int
@@ -372,17 +382,28 @@ def _fourier_fit_from_atoms(
     coeffs : dict[tuple[int, int], tuple[float, float]]
         Mapping ``(m, n) -> (A, B)`` cosine and sine coefficients per mode.
 
+    Raises
+    ------
+    ValueError
+        If ``positions`` cannot be converted to a float64 NumPy array, or
+        has the wrong shape
+        (see :func:`~membrane_curvature.fourier_validators.validate_positions`);
+        if ``x_range`` / ``y_range`` have non-positive width
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_domain_widths`);
+        or if ``M`` / ``N`` are negative (see :func:`fourier_mode_list`).
+
     Warns
     -----
     UserWarning
         If the design matrix is rank-deficient or underdetermined (same condition as
         :func:`fourier_height_from_atoms` and :func:`fourier_height_derivatives_from_atoms`).
     """
+    positions = _coerce_positions(positions)
+    validate_positions(positions)
+    validate_positive_domain_widths(x_range, y_range)
     x0, y0 = x_range[0], y_range[0]
     Lx = float(x_range[1] - x_range[0])
     Ly = float(y_range[1] - y_range[0])
-    if Lx <= 0 or Ly <= 0:
-        raise ValueError('x_range and y_range must have positive width')
 
     modes = fourier_mode_list(M, N)
     n_atom = len(positions)
@@ -526,7 +547,27 @@ def _eval_fourier_surface(
     tuple of ndarray
         If ``derivatives`` is ``False``, the 1-tuple ``(Z,)`` where ``Z`` matches the shape of
         ``X_rel``. If ``derivatives`` is ``True``, the 6-tuple with each grid matching ``X_rel``.
+
+    Notes
+    -----
+    The ``derivatives=False`` branch returns ``(Z,)`` — a 1-tuple, not a bare
+    ``ndarray`` — to keep a single return type (``tuple[ndarray, ...]``)
+    regardless of the flag. Callers therefore unwrap with ``[0]``. This is an
+    intentional ergonomic compromise; see the in-body TODO for the candidate
+    refactors.
     """
+    # TODO: the 1-tuple return when derivatives=False is awkward (callers do
+    # [0] to unwrap). Future refactor options, in preference order:
+    #   (a) return a bare ndarray for derivatives=False and a 6-tuple for
+    #       derivatives=True; the existing @overload pair already expresses
+    #       this union and removes the [0] unwrap at every call site;
+    #   (b) split into two functions (no flag, no overloads, no union),
+    #       e.g. _eval_fourier_height and _eval_fourier_height_with_derivatives;
+    #   (c) return a NamedTuple/dataclass for field-name access (Z, fx, fy,
+    #       fxx, fyy, fxy) while still supporting tuple unpacking.
+    # A plain dict was considered and rejected: it loses unpacking ergonomics
+    # and gives string-key typos at runtime in exchange for marginal call-site
+    # readability.
     twopi = 2.0 * np.pi
     X_rel = np.asarray(X_rel, dtype=np.float64)
     Y_rel = np.asarray(Y_rel, dtype=np.float64)
@@ -584,7 +625,28 @@ def _bin_centre_mesh(Lx: float, Ly: float, n_x_bins: int, n_y_bins: int) -> tupl
         Mesh of relative :math:`x` coordinates, shape ``(n_x_bins, n_y_bins)``.
     Y_rel : ndarray
         Mesh of relative :math:`y` coordinates, same shape as ``X_rel``.
+
+    Raises
+    ------
+    ValueError
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer. The public
+        entry points
+        (:func:`fourier_height_from_atoms`,
+        :func:`fourier_height_derivatives_from_atoms`,
+        :class:`~membrane_curvature.base.MembraneCurvature`) already validate
+        via :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`.
     """
+    # Note: the wrapper stays here (not in fourier_validators) because the
+    # message names this specific helper. Validators are caller-agnostic; this
+    # caller-specific context belongs with the caller!
+    try:
+        validate_positive_bin_counts(n_x_bins, n_y_bins)
+    except ValueError as exc:
+        raise ValueError(
+            '_bin_centre_mesh requires positive bin counts; reached with '
+            f'n_x_bins={n_x_bins}, n_y_bins={n_y_bins}. '
+            'Callers must validate via validate_positive_bin_counts first.'
+        ) from exc
     xc = (np.arange(n_x_bins, dtype=np.float64) + 0.5) * Lx / n_x_bins
     yc = (np.arange(n_y_bins, dtype=np.float64) + 0.5) * Ly / n_y_bins
     X_rel, Y_rel = np.meshgrid(xc, yc, indexing='ij')
@@ -611,7 +673,8 @@ def fourier_height_from_atoms(
     Parameters
     ----------
     positions : ndarray, shape (n_atoms, 3)
-        Atom coordinates in the same length unit as the box; column 2 is height.
+        Atom coordinates in the same length unit as the box; the third
+        column (``positions[:, 2]``) is the height :math:`z`.
     x_range, y_range : tuple of float
         ``(min, max)`` domain extents.
     n_x_bins, n_y_bins : int
@@ -626,13 +689,26 @@ def fourier_height_from_atoms(
     Z : ndarray, shape (n_x_bins, n_y_bins)
         Fitted surface height.
 
+    Raises
+    ------
+    ValueError
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`);
+        if ``positions`` cannot be converted to a float64 array or has the
+        wrong shape
+        (see :func:`~membrane_curvature.fourier_validators.validate_positions`);
+        if ``x_range`` / ``y_range`` have non-positive width
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_domain_widths`);
+        or if ``M`` / ``N`` are negative.
+
     Warns
     -----
     UserWarning
         If the least-squares system is rank-deficient or underdetermined.
     """
+    validate_positive_bin_counts(n_x_bins, n_y_bins)
     Lx, Ly, A00, coeffs = _fourier_fit_from_atoms(
-        np.asarray(positions, dtype=np.float64),
+        positions,
         x_range,
         y_range,
         M,
@@ -662,7 +738,8 @@ def fourier_height_derivatives_from_atoms(
     Parameters
     ----------
     positions : ndarray, shape (n_atoms, 3)
-        Atom coordinates in the same length unit as the box; column 2 is height.
+        Atom coordinates; the third column (``positions[:, 2]``) is
+        the height :math:`z`.
     x_range, y_range : tuple of float
         ``(min, max)`` domain extents.
     n_x_bins, n_y_bins : int
@@ -677,13 +754,26 @@ def fourier_height_derivatives_from_atoms(
     Z, fx, fy, fxx, fyy, fxy : ndarray
         Each array has shape ``(n_x_bins, n_y_bins)``.
 
+    Raises
+    ------
+    ValueError
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`);
+        if ``positions`` cannot be converted to a float64 array or has the
+        wrong shape
+        (see :func:`~membrane_curvature.fourier_validators.validate_positions`);
+        if ``x_range`` / ``y_range`` have non-positive width
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_domain_widths`);
+        or if ``M`` / ``N`` are negative.
+
     Warns
     -----
     UserWarning
         If the least-squares system is rank-deficient or underdetermined.
     """
+    validate_positive_bin_counts(n_x_bins, n_y_bins)
     Lx, Ly, A00, coeffs = _fourier_fit_from_atoms(
-        np.asarray(positions, dtype=np.float64),
+        positions,
         x_range,
         y_range,
         M,

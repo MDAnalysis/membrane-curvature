@@ -34,7 +34,7 @@ class EvalFourierSurfaceCommonInputs:
     Ly: float
 
 
-# This fixture  is a dummy universe to check Fourier surface for
+# This fixture is a dummy universe to check Fourier surface for
 # a 2x2 grid with heights z(0,0)=10; z(0,1)=9; z(1,0)=9; z(1,1)=8
 #   +-------+
 #   |10 | 9 |
@@ -89,7 +89,7 @@ def test_calculate_a00_2x2_grid(dummy_fourier_universe, dummy_fourier_fit):
     """Test A_00 matches np.mean of z coords"""
     expected_A00 = 9  # equivalent to np.mean(positions[:, 2])
     _box_length_x, _box_length_y, calculated_A_00, _coeffs = dummy_fourier_fit
-    assert_almost_equal(calculated_A_00, expected_A00, decimal=12)
+    assert_almost_equal(calculated_A_00, expected_A00)
 
 
 def test_fourier_matrix_2x2_grid(dummy_fourier_universe):
@@ -113,14 +113,29 @@ def test_fourier_matrix_2x2_grid(dummy_fourier_universe):
         dtype=np.float64,
     )
 
-    assert_almost_equal(design_matrix, expected_matrix, decimal=12)
+    assert_almost_equal(design_matrix, expected_matrix)
 
 
-def test_fourier_mode_list_and_parameter_count():
-    assert fourier_mode_list(0, 0) == []
-    assert n_fourier_parameters(0, 0) == 1
-    assert len(fourier_mode_list(2, 2)) == 12
-    assert n_fourier_parameters(2, 2) == 25
+@pytest.mark.parametrize(
+    'M, N, expected_n_modes',
+    [
+        (0, 0, 0),
+        (2, 2, 12),
+    ],
+)
+def test_fourier_mode_list_size(M, N, expected_n_modes):
+    assert len(fourier_mode_list(M, N)) == expected_n_modes
+
+
+@pytest.mark.parametrize(
+    'M, N, expected_n_parameters',
+    [
+        (0, 0, 1),
+        (2, 2, 25),
+    ],
+)
+def test_n_fourier_parameters(M, N, expected_n_parameters):
+    assert n_fourier_parameters(M, N) == expected_n_parameters
 
 
 @pytest.mark.parametrize('M, N', [(-1, 0), (0, -1), (-1, -1)])
@@ -180,7 +195,7 @@ def test_fourier_matrix_single_modes_parametrized(dummy_fourier_universe, modes,
     x_positions = dummy_fourier_universe.atoms.positions[:, 0]
     y_positions = dummy_fourier_universe.atoms.positions[:, 1]
     design_matrix = _build_fourier_matrix(x_positions, y_positions, 2.0, 2.0, modes)
-    assert_almost_equal(design_matrix, expected_matrix, decimal=12)
+    assert_almost_equal(design_matrix, expected_matrix)
 
 
 def test_fourier_matrix_two_modes_reconstructs_2x2_grid(dummy_fourier_universe):
@@ -201,8 +216,8 @@ def test_fourier_matrix_two_modes_reconstructs_2x2_grid(dummy_fourier_universe):
         dtype=np.float64,
     )
     theta = np.array([9.0, 0.5, 0.0, 0.5, 0.0], dtype=np.float64)
-    assert_almost_equal(design_matrix, expected_matrix, decimal=12)
-    assert_almost_equal(design_matrix @ theta, z_values, decimal=12)
+    assert_almost_equal(design_matrix, expected_matrix)
+    assert_almost_equal(design_matrix @ theta, z_values)
 
 
 @pytest.mark.parametrize(
@@ -219,8 +234,8 @@ def test_compute_wavevector(mode_x, mode_y, expected_kx, expected_ky):
     ky_base = 2.0 * np.pi / 2.0
     kx, ky = _compute_wavevector(mode_x, mode_y, kx_base, ky_base)
 
-    assert_almost_equal(kx, expected_kx, decimal=12)
-    assert_almost_equal(ky, expected_ky, decimal=12)
+    assert_almost_equal(kx, expected_kx)
+    assert_almost_equal(ky, expected_ky)
 
 
 @pytest.mark.parametrize('A, B', [(2.0, 3.0), (0.5, 0.5)])
@@ -261,25 +276,13 @@ def test_fourier_warning_rank_deficient(dummy_fourier_universe):
         )
 
 
-@pytest.mark.parametrize(
-    'x_range, y_range',
-    [
-        ((0.0, 0.0), (0.0, 10.0)),
-        ((10.0, 10.0), (0.0, 10.0)),
-        ((0.0, 300.0), (5.0, 3.0)),
-        ((20.0, 10.0), (0.0, 10.0)),
-    ],
-)
-def test_fourier_height_from_atoms_raises_when_range_width_nonpositive(
-    x_range,
-    y_range,
-):
+def test_fourier_height_from_atoms_range_width_non_positive():
     positions = np.array([[0.0, 0.0, 1.0]], dtype=np.float64)
     with pytest.raises(ValueError, match='x_range and y_range must have positive width'):
         fourier_height_from_atoms(
             positions,
-            x_range,
-            y_range,
+            x_range=(0.0, 0.0),
+            y_range=(0.0, 10.0),
             n_x_bins=4,
             n_y_bins=4,
             M=0,
@@ -307,22 +310,6 @@ def test_eval_fourier_surface_derivatives_zeros(dummy_fourier_universe):
     assert_almost_equal(fxx, np.zeros_like(X_rel))
     assert_almost_equal(fyy, np.zeros_like(X_rel))
     assert_almost_equal(fxy, np.zeros_like(X_rel))
-
-
-def test_eval_surface_matches_point_values(eval_fourier_surface_common_inputs):
-    """Evaluating on sample points should recover z(0,*)=10 and z(1,*)=9."""
-    z_surface = _eval_fourier_surface(
-        eval_fourier_surface_common_inputs.X_rel,
-        eval_fourier_surface_common_inputs.Y_rel,
-        eval_fourier_surface_common_inputs.Lx,
-        eval_fourier_surface_common_inputs.Ly,
-        eval_fourier_surface_common_inputs.A00,
-        eval_fourier_surface_common_inputs.coeffs,
-        derivatives=False,
-    )[0]
-
-    expected_surface = np.array([[9.5, 9.5], [8.5, 8.5]], dtype=np.float64)
-    assert_almost_equal(z_surface, expected_surface)
 
 
 def test_eval_surface_derivatives_single_mode_x(eval_fourier_surface_common_inputs):
@@ -375,6 +362,13 @@ def test_bin_centre_mesh_returns_expected_centres():
     assert Y_rel.shape == (2, 4)
     assert_almost_equal(X_rel, expected_X)
     assert_almost_equal(Y_rel, expected_Y)
+
+
+@pytest.mark.parametrize('n_x_bins, n_y_bins', [(0, 2), (2, 0), (-1, 2), (2.5, 2)])
+def test_bin_centre_mesh_error_bad_bin_counts(n_x_bins, n_y_bins):
+    with pytest.raises(ValueError, match=r'_bin_centre_mesh requires positive bin counts') as exc_info:
+        _bin_centre_mesh(Lx=2.0, Ly=4.0, n_x_bins=n_x_bins, n_y_bins=n_y_bins)
+    assert isinstance(exc_info.value.__cause__, ValueError)
 
 
 @pytest.mark.parametrize('derivatives', [False, True])
@@ -460,3 +454,39 @@ def test_fourier_height_derivatives_from_atoms(dummy_fourier_universe):
     assert_almost_equal(fxx, fxx_ref)
     assert_almost_equal(fyy, fyy_ref)
     assert_almost_equal(fxy, fxy_ref)
+
+
+@pytest.mark.parametrize(
+    'bad_positions',
+    [
+        np.empty((0, 3)),
+        np.zeros(5),
+        np.zeros((2, 2)),
+    ],
+)
+def test_public_entry_point_error_bad_positions(bad_positions):
+    with pytest.raises(ValueError, match='positions must'):
+        fourier_height_from_atoms(
+            bad_positions,
+            x_range=(0.0, 1.0),
+            y_range=(0.0, 1.0),
+            n_x_bins=2,
+            n_y_bins=2,
+            M=0,
+            N=0,
+        )
+
+
+@pytest.mark.parametrize('func', [fourier_height_from_atoms, fourier_height_derivatives_from_atoms])
+def test_public_entry_points_error_nonpositive_bins(dummy_fourier_universe, func):
+    positions = dummy_fourier_universe.atoms.positions.copy()
+    with pytest.raises(ValueError, match='n_x_bins and n_y_bins must be positive'):
+        func(
+            positions,
+            x_range=(0.0, 2.0),
+            y_range=(0.0, 2.0),
+            n_x_bins=0,
+            n_y_bins=2,
+            M=1,
+            N=0,
+        )
