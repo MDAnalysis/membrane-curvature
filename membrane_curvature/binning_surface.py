@@ -158,8 +158,6 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
     Parameters
     ----------
 
-    z_ref: np.array
-        Empty array of `(l,m)`
     grid_z_coordinates: np.array
         Array of size `(l,m)` with `z` coordinates stored in unit cell.
     grid_norm_unit: np.array
