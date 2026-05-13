@@ -384,11 +384,11 @@ Each array has shape ``(n_x_bins, n_y_bins)``.
   :width: 600
   :alt: Grid
 
-.. |fourier_modes| image:: ../_static/fourier_modes.png
+.. |fourier_modes| image:: ../_static/Fourier_modes.png
   :width: 800
   :alt: FourierModes
 
-.. |fourier_matrix| image:: ../_static/fourier_matrix.png
+.. |fourier_matrix| image:: ../_static/Fourier_matrix.png
   :width: 800
   :alt: FourierMatrix
 
