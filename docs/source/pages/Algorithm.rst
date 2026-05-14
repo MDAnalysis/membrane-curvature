@@ -77,6 +77,8 @@ beyond the grid dimensions.
 
 In the next section, we describe the details of the binning method.
 
+.. _set-grid:
+
 2.1.1. Set grid
 ^^^^^^^^^^^^^^^
 The dimensions of the grid are determined by the size of the simulation box
@@ -117,8 +119,8 @@ cell are collected to form a height field over the grid.
 Coordinates are converted to integer bin indices via scale factors
 
 .. math::
-   x\_factor = \frac{n\_x\_bins}{x_{max} - x_{min}}, \qquad
-   y\_factor = \frac{n\_y\_bins}{y_{max} - y_{min}}
+   x\_factor = \frac{n\_x\_bins}{x_{\max} - x_{\min}}, \qquad
+   y\_factor = \frac{n\_y\_bins}{y_{\max} - y_{\min}}
 
 and then floored ``(index = floor(x * x_factor))``. Atoms with negative computed
 indices are skipped and trigger a one-time detailed warning; atoms whose
@@ -149,6 +151,26 @@ simulation box with periods :math:`L_x` and :math:`L_y`, so the fitted
 surface is consistent with periodic boundary conditions in :math:`x` and
 :math:`y`.
 
+The Fourier expansion used as a basis function is given by:
+
+.. math::
+
+   z(x, y) = A_{00} + \sum_{m=1}^{M}\sum_{n=1}^{N}\left[
+     A_{mn}\cos\!\big(k_x m x + k_y n y\big)
+     +\,B_{mn}\sin\!\big(k_x m x + k_y n y\big)
+   \right].
+
+Here, :math:`k_x` and :math:`k_y` are the fundamental wavevector components:
+
+.. math::
+
+  k_x = \frac{2\pi}{L_x}, \qquad k_y = \frac{2\pi}{L_y}
+
+therefore the phase for the mode ``(m,n)`` is
+
+.. math ::
+  (k_x m x + k_y n y).
+
 The Fourier surface algorithm implemented in MembraneCurvature follows
 the standard Fourier descriptor and Fourier surface-model approaches for
 geometric shape modeling in [CAG2009]_ [JMG1988]_.
@@ -162,7 +184,10 @@ geometric shape modeling in [CAG2009]_ [JMG1988]_.
 The full Fourier surface workflow comprises six steps, where the first four steps build and
 solve a linear model that reconstructs the height field from plane-wave basis
 functions. The final two steps evaluate the fitted surface and its derivatives
-analytically on a grid of bin centres.
+analytically on a grid of bin centres. In the following sections, we describe the
+overall workflow implemented in MembraneCurvature. For details on each step and
+the associated functions, see the API documentation in
+:mod:`~membrane_curvature.fourier_surface`.
 
 2.2.1 Choose Fourier modes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -176,7 +201,7 @@ mean term.
 
 2.2.2 Compute wavevectors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Compute the wavevector components (:math:`k_x`, :math:`k_y`) for each mode
+We then compute the wavevector components (:math:`k_x`, :math:`k_y`) for each mode
 using :func:`~membrane_curvature.fourier_surface._compute_wavevector`. These
 set the phase :math:`\phi = k_x x + k_y y` that appears in each cosine/sine
 basis function.
@@ -190,26 +215,86 @@ basis function.
   increase them only while curvature improves systematically rather than
   starts adding noise.
 
-2.2.4 Build design matrix
+.. _build-design-matrix:
+
+2.2.3 Build design matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Build the design matrix with :func:`~membrane_curvature.fourier_surface._build_fourier_matrix`.
-Each row corresponds to an atom position and columns are the constant offset
-followed by ``cos(k·r)``, ``sin(k·r)`` pairs for every retained mode; the
-design matrix encodes the linear relation between Fourier coefficients and
-observed heights.
+We then build the design matrix with :func:`~membrane_curvature.fourier_surface._build_fourier_matrix`.
+Each row of the design matrix corresponds to an atom position and columns are the constant offset
+followed by :math:`\cos(\mathbf{k}\cdot\mathbf{r})`, :math:`\sin(\mathbf{k}\cdot\mathbf{r})`
+pairs for every retained mode. This matrix encodes the linear relation between the
+Fourier coefficients and the observed heights.
+
+The design matrix :math:`\mathbf{\Phi}` is a matrix of shape :math:`(N, P)` where
+:math:`N` is the number of atoms in the :class:`~MDAnalysis.core.groups.AtomGroup`
+of reference, and :math:`P` is the number of parameters. :math:`P` is defined
+as :math:`P = 1 + 2\,n_{\text{modes}}` where :math:`n_{\text{modes}}` is the number of
+the k retained Fourier modes. 
+
+We can conceptualize :math:`\mathbf{\Phi}` as a matrix with rows corresponding to atom positions
+and columns corresponding to the basis functions (cosine and sine of the wavevector :math:`k`)
+evaluated at each atom position, so that the fitted heights satisfy the linear system of equations
+:math:`\mathbf{z} \approx \mathbf{\Phi}\,\boldsymbol{\theta}`, from which we can solve
+for the Fourier coefficients by solving a least-squares system.
+
+A single row :math:`i` of :math:`\mathbf{\Phi}` for an atom at
+:math:`\mathbf{r}_i=(x_i,y_i)` has the form:
+
+.. math::
+
+   \begin{aligned}
+   \mathbf{\Phi}_{i,:} = \big[\, & 1, \\
+   & \cos\big(\phi_{m_1,n_1}(\mathbf{r}_i)\big),\;
+     \sin\big(\phi_{m_1,n_1}(\mathbf{r}_i)\big), \\
+   & \ldots, \\
+   & \cos\big(\phi_{m_{k},n_{k}}(\mathbf{r}_i)\big),\;
+     \sin\big(\phi_{m_{k},n_{k}}(\mathbf{r}_i)\big)
+   \,\big]
+   \end{aligned}
+
+With this formulation, we can solve for the Fourier coefficients by solving a least-squares system:
+
+.. math::
+
+  \mathbf{z} \approx \mathbf{\Phi}\,\boldsymbol{\theta}
+
+where :math:`\boldsymbol{\theta}` is the vector of Fourier coefficients. These coefficients are
+the ones we use to reconstruct the height field and calculate the derivatives.
 
 |fourier_matrix|
 
-2.2.5 Solve least-squares system
+Note that the column ordering follows the mode list returned by
+:func:`~membrane_curvature.fourier_surface.fourier_mode_list`. For each retained
+mode ``(m,n)`` the design matrix contains a cosine column then a sine column,
+so columns appear as ``1, cos_{(m1,n1)}, sin_{(m1,n1)}, cos_{(m2,n2)}, sin_{(m2,n2)}, ...``.
+
+.. important::
+
+  **In summary:**
+
+  The design matrix :math:`\mathbf{\Phi}` has shape :math:`(N, P)` where rows (:math:`N`) are atoms
+  and columns (:math:`P`) are the basis functions. :math:`N` is the number of atoms in the
+  :class:`~MDAnalysis.core.groups.AtomGroup` of reference. :math:`P` is the total number of parameters:
+  
+  .. math::
+    P = 1 + 2\,n_{\text{modes}}
+
+  which is the sum of one constant column (the mean term :math:`A_{00}`) plus two columns
+  for each retained Fourier mode (one for cosine and one for sine).
+
+
+2.2.4 Solve least-squares system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Solve the least-squares system for the Fourier coefficients using
+We then solve the least-squares system for the Fourier coefficients using
 :func:`~membrane_curvature.fourier_surface._fourier_fit_from_atoms` (which
-calls :func:`numpy.linalg.lstsq`). Split the solution into the mean term and
+calls :func:`numpy.linalg.lstsq`). 
+This function solves the least-squares system for the Fourier coefficients and splits the solution vector into the mean term and
 the per-mode amplitudes with :func:`~membrane_curvature.fourier_surface._unpack_coefficients`.
 The returned coefficients are then used to evaluate the fitted height and its
-analytic derivatives on the bin-centre mesh.
+analytic derivatives on the bin-centre mesh via :func:`~membrane_curvature.fourier_surface._eval_fourier_surface`.
 
-The Fourier coefficients are obtained by linear least squares
+The Fourier coefficients are obtained by linear least squares. The coefficients are obtained
+by minimizing the residual sum of squares between the observed heights and the fitted heights:
 
 .. math::
 
@@ -220,8 +305,7 @@ The Fourier coefficients are obtained by linear least squares
 via :func:`numpy.linalg.lstsq`. Because the model is linear in
 :math:`\boldsymbol{\theta}`, no nonlinear optimisation is required.
 If the effective rank of :math:`\mathbf{\Phi}` is smaller than :math:`P`,
-a ``UserWarning`` is emitted; see :ref:`practical-considerations` for
-guidance on choosing ``fourier_m`` and ``fourier_n``.
+a ``UserWarning`` is emitted.
 
 .. _derive-surface-curvature:
 
@@ -271,6 +355,24 @@ and :math:`\partial_{yy}`, and the mixed derivative :math:`\partial_{xy}`.
 
 |surf_fourier|
 
+.. important::
+  
+  **There is a key difference between the binning and Fourier methods when it comes to calculating the derivatives!**
+  
+  - With the binning method, the derivatives are estimated numerically from
+    the discrete height field using :func:`numpy.gradient` with the physical
+    spacings :math:`\Delta x` and :math:`\Delta y`, so that curvature values are in physical units.
+
+  - With the Fourier method, the derivatives are evaluated analytically from the fitted Fourier
+    series, so they are not subject to finite-difference discretization error. Curvature accuracy
+    is instead governed by the Fourier series truncation.
+  
+  **Therefore, the two methods differ in what limits curvature accuracy:**
+  binning is sensitive to **finite-difference error** on the height grid (often worse when the grid is coarse),
+  while the Fourier pipeline is sensitive to **how well the truncated series fits the atom data**; its
+  derivatives are exact for that fitted surface at any output grid resolution, so refining the bin grid
+  alone does not remove truncation or sampling limitations.
+  
 3.2a. Binning + finite differences (``surface_method='binning'``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -327,9 +429,9 @@ arrays using the Monge-gauge formula
 
 .. math::
 
-   H = \frac{(1+f_x^2)\,f_{yy} + (1+f_y^2)\,f_{xx}
-             - 2\,f_x f_y f_{xy}}
-            {2\,(1+f_x^2+f_y^2)^{3/2}}
+   H = \frac{(1+\partial_x^2)\,\partial_{yy} + (1+\partial_y^2)\,\partial_{xx}
+             - 2\,\partial_x \partial_y \partial_{xy}}
+            {2\,(1+\partial_x^2+\partial_y^2)^{3/2}}
 
 via :func:`~membrane_curvature.curvature.mean_curvature_monge`.
 
@@ -346,8 +448,8 @@ arrays using
 
 .. math::
 
-   K = \frac{f_{xx}\,f_{yy} - f_{xy}^2}
-            {(1+f_x^2+f_y^2)^{2}}
+   K = \frac{\partial_{xx}\,\partial_{yy} - \partial_{xy}^2}
+            {(1+\partial_x^2+\partial_y^2)^{2}}
 
 via :func:`~membrane_curvature.curvature.gaussian_curvature_monge`.
 
@@ -400,16 +502,16 @@ Each array has shape ``(n_x_bins, n_y_bins)``.
   :alt: FourierModes
 
 .. |fourier_matrix| image:: ../_static/Fourier_matrix.png
-  :width: 800
+  :width: 700
   :alt: FourierMatrix
 
 .. |derive_surfaces_comparison| image:: ../_static/derive_surfaces_comparison.png
-  :width: 800
+  :width: 600
   :alt: DeriveSurfacesComparison
 
 .. |surf_fourier| image:: ../_static/DeriveSurfCurv_Fourier.png
   :width: 800
-  :alt: CurvDiaagram
+  :alt: SurfCurvFourier
 
 .. |avg_frames| image:: ../_static/AvgFrames.png
   :width: 800
