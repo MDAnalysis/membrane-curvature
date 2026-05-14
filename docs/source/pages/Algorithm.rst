@@ -149,9 +149,20 @@ simulation box with periods :math:`L_x` and :math:`L_y`, so the fitted
 surface is consistent with periodic boundary conditions in :math:`x` and
 :math:`y`.
 
-The full workflow comprises six steps, where the first four steps build and
+The Fourier surface algorithm implemented in MembraneCurvature follows
+the standard Fourier descriptor and Fourier surface-model approaches for
+geometric shape modeling in [CAG2009]_ [JMG1988]_.
+
+.. [CAG2009] Rhouma et al., *Fourier method for large scale surface modeling and registration*,
+   Computers & Graphics (2009), doi: `10.1016/j.cag.2009.03.002`_.
+
+.. [JMG1988] *Description of molecular surface shape using Fourier descriptors*,
+   Journal of Molecular Graphics (1988), doi: `10.1016/0263-7855(88)85008-2`_.
+
+The full Fourier surface workflow comprises six steps, where the first four steps build and
 solve a linear model that reconstructs the height field from plane-wave basis
-functions.
+functions. The final two steps evaluate the fitted surface and its derivatives
+analytically on a grid of bin centres.
 
 2.2.1 Choose Fourier modes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -403,3 +414,6 @@ Each array has shape ``(n_x_bins, n_y_bins)``.
 .. |avg_frames| image:: ../_static/AvgFrames.png
   :width: 800
   :alt: avgFrames
+
+.. _`10.1016/j.cag.2009.03.002`: https://doi.org/10.1016/j.cag.2009.03.002
+.. _`10.1016/0263-7855(88)85008-2`: https://doi.org/10.1016/0263-7855(88)85008-2
