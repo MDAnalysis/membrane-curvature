@@ -9,5 +9,7 @@ MembraneCurvature's API Documentation
 
    api/membrane_curvature
    api/curvature
-   api/surface
+   api/binning_surface
+   api/fourier_surface
+   api/fourier_validators
 

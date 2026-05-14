@@ -1,16 +1,19 @@
 r"""
 
 --------------------
-Surface
+Binning Surface
 --------------------
 
-Calculation of curvature requires a surface of reference. In MembraneCurvature,
-the surface of reference is defined by the `z` position of the `atoms` in `AtomGroup`.
+With `surface_method='binning'`, Membranecurvature forms a surface from
+the `z` position of the `atoms` in an `AtomGroup` of reference. This
+surface is then used as a reference to calculate curvature.
 
 
 Functions
 ---------
 
+.. versionchanged:: 2.0.0
+   Renamed module from ``surface`` to ``binning_surface``.
 
 """
 
@@ -26,7 +29,7 @@ logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
 class WarnOnce:
     """
     Class to warn atoms out of grid boundaries only once with full message.
-    After the first ocurrance, message will be generic.
+    After the first ocurrence, message will be generic.
     """
 
     def __init__(self, msg, msg_multiple) -> None:
@@ -155,8 +158,6 @@ def normalized_grid(grid_z_coordinates, grid_norm_unit):
     Parameters
     ----------
 
-    z_ref: np.array
-        Empty array of `(l,m)`
     grid_z_coordinates: np.array
         Array of size `(l,m)` with `z` coordinates stored in unit cell.
     grid_norm_unit: np.array

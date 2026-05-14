@@ -190,7 +190,8 @@ texinfo_documents = [
 intersphinx_mapping = {'Python': ('https://docs.python.org/3', None),
                        'MDAnalysis': ('https://docs.mdanalysis.org/stable/', None),
                        'Matplotlib': ('https://matplotlib.org/stable', None),
-                       'SciPy': ('https://docs.scipy.org/doc/scipy/', None)}
+                       'SciPy': ('https://docs.scipy.org/doc/scipy/', None),
+                       'NumPy': ('https://numpy.org/doc/stable/', None),}
 
 nbsphinx_prolog = r"""
 .. raw:: html

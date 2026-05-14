@@ -15,8 +15,14 @@ in units of Å :sup:`-2`.
 
 import numpy as np
 import warnings
-from .surface import get_z_surface
-from .curvature import mean_curvature, gaussian_curvature
+from .binning_surface import get_z_surface
+from .curvature import (
+    mean_curvature,
+    gaussian_curvature,
+    fourier_curvature,
+)
+from .fourier_surface import n_fourier_parameters
+from .fourier_validators import validate_positive_bin_counts
 
 import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisBase
@@ -49,6 +55,19 @@ class MembraneCurvature(AnalysisBase):
         Range of coordinates (min, max) in the x dimension.
     y_range : tuple of (float, float), optional, default: (0, `universe.dimensions[1]`)
         Range of coordinates (min, max) in the y dimension.
+    surface_method : {'binning', 'fourier'}, optional
+        ``binning`` (default) bins atoms and uses :func:`numpy.gradient` for
+        derivatives. ``fourier`` fits a periodic Fourier sum to atom positions
+        each frame and evaluates Monge-gauge curvature from analytic derivatives
+        on the same bin grid (bin centers); see :mod:`membrane_curvature.fourier_surface`.
+    fourier_m : int, optional
+        Maximum Fourier mode index in ``x`` when ``surface_method='fourier'``.
+        Default ``2``.
+    fourier_n : int, optional
+        Maximum Fourier mode index in ``y`` when ``surface_method='fourier'``.
+        Default ``2``.
+    fourier_lstsq_rcond : float, optional
+        ``rcond`` passed to :func:`numpy.linalg.lstsq` when ``surface_method='fourier'``.
 
     Attributes
     ----------
@@ -86,6 +105,13 @@ class MembraneCurvature(AnalysisBase):
     For more details on when to use `wrap=True`, check the :ref:`usage`
     page.
 
+    Fourier mode count: with ``surface_method='fourier'``, the number of fitted
+    scalar parameters is :func:`~membrane_curvature.fourier_surface.n_fourier_parameters`
+    ``(fourier_m, fourier_n)``. The selection must contain at least that many
+    atoms each frame. Use ``fourier_m = fourier_n = 2`` unless you need shorter
+    wavelengths; keep the atom count well above the parameter count, and raise
+    ``fourier_m`` / ``fourier_n`` only while curvature improves systematically,
+    not when it begins to track noise (see :doc:`api/fourier_surface`).
 
     The derived surface and calculated curvatures are available in the
     :attr:`results` attributes.
@@ -93,10 +119,20 @@ class MembraneCurvature(AnalysisBase):
     The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
     the derived surface averaged over the `n_frames` of the trajectory.
 
-    The attributes :attr:`~MembraneCurvature.results.average_mean_curvature` and
-    :attr:`~MembraneCurvature.results.average_gaussian_curvature` contain the
-    computed values of mean and Gaussian curvature averaged over the `n_frames`
-    of the trajectory.
+    The attributes :attr:`~MembraneCurvature.results.average_mean` and
+    :attr:`~MembraneCurvature.results.average_gaussian` contain the computed
+    values of mean and Gaussian curvature averaged over the `n_frames` of the
+    trajectory.
+
+    Raises
+    ------
+    ValueError
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`),
+        if the selection is empty, if ``surface_method`` is not one of
+        ``'binning'`` or ``'fourier'``, or, when ``surface_method='fourier'``,
+        if ``fourier_m`` / ``fourier_n`` are negative or the selection has fewer
+        atoms than Fourier parameters.
 
     Example
     -----------
@@ -124,12 +160,30 @@ class MembraneCurvature(AnalysisBase):
     """
 
     def __init__(
-        self, universe, select='all', n_x_bins=100, n_y_bins=100, x_range=None, y_range=None, wrap=True, **kwargs
+        self,
+        universe,
+        select='all',
+        n_x_bins=100,
+        n_y_bins=100,
+        x_range=None,
+        y_range=None,
+        wrap=True,
+        surface_method='binning',
+        fourier_m=2,
+        fourier_n=2,
+        fourier_lstsq_rcond=None,
+        **kwargs,
     ):
 
         super().__init__(universe.universe.trajectory, **kwargs)
         self.ag = universe.select_atoms(select)
+        # Validate selection up front so an empty AtomGroup produces a clear
+        # message before any downstream check (bin counts, surface method,
+        # Fourier-parameter sizing) can mask it.
+        if len(self.ag) == 0:
+            raise ValueError('Invalid selection. Empty AtomGroup.')
         self.wrap = wrap
+        validate_positive_bin_counts(n_x_bins, n_y_bins)
         self.n_x_bins = n_x_bins
         self.n_y_bins = n_y_bins
         self.x_range = x_range if x_range else (0, universe.dimensions[0])
@@ -137,9 +191,29 @@ class MembraneCurvature(AnalysisBase):
         self.dx = (self.x_range[1] - self.x_range[0]) / n_x_bins
         self.dy = (self.y_range[1] - self.y_range[0]) / n_y_bins
 
-        # Raise if selection doesn't exist
-        if len(self.ag) == 0:
-            raise ValueError('Invalid selection. Empty AtomGroup.')
+        valid_methods = ('binning', 'fourier')
+        if surface_method not in valid_methods:
+            raise ValueError(f'surface_method must be one of {valid_methods}, got {surface_method!r}')
+        self.surface_method = surface_method
+        self.fourier_m = int(fourier_m)
+        self.fourier_n = int(fourier_n)
+        self.fourier_lstsq_rcond = fourier_lstsq_rcond
+        if self.surface_method == 'fourier':
+            if self.fourier_m < 0 or self.fourier_n < 0:
+                raise ValueError('fourier_m and fourier_n must be non-negative')
+            n_param = n_fourier_parameters(self.fourier_m, self.fourier_n)
+            n_atom = len(self.ag)
+            if n_atom < n_param:
+                max_square_mode = max(int((np.sqrt(n_atom) - 1) // 2), 0)
+                # If too few atoms for the passed modes fourier_m / fourier_n, raise error.
+                # The message suggests the maximum fourier_m / fourier_n given the number
+                # of atoms in the selection n_atom = len(self.ag)
+                raise ValueError(
+                    f"surface_method='fourier' needs at least {n_param} atoms in the selection "
+                    f'(fourier_m={self.fourier_m}, fourier_n={self.fourier_n}), got {n_atom}. '
+                    f'Suggested max modes for {n_atom} atoms is '
+                    f'fourier_m = fourier_n = {max_square_mode}.'
+                )
 
         # Only checks the first frame. NPT simulations not properly covered here.
         # Warning message if range doesn't cover entire dimensions of simulation box
@@ -176,20 +250,34 @@ class MembraneCurvature(AnalysisBase):
         # Apply wrapping coordinates
         if self.wrap:
             self.ag.wrap()
-        # Populate a slice with np.arrays of surface, mean, and gaussian per frame
-        self.results.z_surface[self._frame_index] = get_z_surface(
-            self.ag.positions,
-            n_x_bins=self.n_x_bins,
-            n_y_bins=self.n_y_bins,
-            x_range=self.x_range,
-            y_range=self.y_range,
-        )
-        self.results.mean[self._frame_index] = mean_curvature(
-            self.results.z_surface[self._frame_index], self.dx, self.dy
-        )
-        self.results.gaussian[self._frame_index] = gaussian_curvature(
-            self.results.z_surface[self._frame_index], self.dx, self.dy
-        )
+        if self.surface_method == 'binning':
+            self.results.z_surface[self._frame_index] = get_z_surface(
+                self.ag.positions,
+                n_x_bins=self.n_x_bins,
+                n_y_bins=self.n_y_bins,
+                x_range=self.x_range,
+                y_range=self.y_range,
+            )
+            self.results.mean[self._frame_index] = mean_curvature(
+                self.results.z_surface[self._frame_index], self.dx, self.dy
+            )
+            self.results.gaussian[self._frame_index] = gaussian_curvature(
+                self.results.z_surface[self._frame_index], self.dx, self.dy
+            )
+        else:
+            z_f, mean_f, gauss_f = fourier_curvature(
+                self.ag.positions,
+                self.x_range,
+                self.y_range,
+                self.n_x_bins,
+                self.n_y_bins,
+                self.fourier_m,
+                self.fourier_n,
+                rcond=self.fourier_lstsq_rcond,
+            )
+            self.results.z_surface[self._frame_index] = z_f
+            self.results.mean[self._frame_index] = mean_f
+            self.results.gaussian[self._frame_index] = gauss_f
 
     def _conclude(self):
         self.results.average_z_surface = np.nanmean(self.results.z_surface, axis=0)

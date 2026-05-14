@@ -57,6 +57,13 @@ and units of Gaussian curvature are [length] :sup:`-2`.
     In general, to calculate a numerical gradients shape of arrays must be >=(`edge_order` +
     1).
 
+For a periodic **Fourier** fit to atom heights, use
+:func:`~membrane_curvature.fourier_surface.fourier_height_from_atoms` or
+:func:`~membrane_curvature.fourier_surface.fourier_height_derivatives_from_atoms`
+(surface only in :mod:`~membrane_curvature.fourier_surface`), then
+:func:`fourier_curvature` for Monge :math:`H` and :math:`K`
+in one call.
+
 
 Functions
 ---------
@@ -65,9 +72,11 @@ Functions
 
 import numpy as np
 
+from .fourier_surface import fourier_height_derivatives_from_atoms
+
 
 def mean_curvature_monge(fx, fy, fxx, fyy, fxy):
-    """
+    r"""
     Helper to calculate mean curvature :math:`H` from partial derivatives of :math:`z = f(x, y)`.
 
     Same expression as in :func:`mean_curvature` once first derivatives
@@ -101,7 +110,7 @@ def mean_curvature_monge(fx, fy, fxx, fyy, fxy):
 
 
 def gaussian_curvature_monge(fx, fy, fxx, fyy, fxy):
-    """
+    r"""
     Helper to calculate Gaussian curvature :math:`K` from partial derivatives of :math:`z = f(x, y)`.
 
     Same expression as in :func:`gaussian_curvature` once first derivatives
@@ -130,6 +139,61 @@ def gaussian_curvature_monge(fx, fy, fxx, fyy, fxy):
 
     """
     return (fxx * fyy - (fxy**2)) / (1 + (fx**2) + (fy**2)) ** 2
+
+
+def fourier_curvature(
+    positions,
+    x_range,
+    y_range,
+    n_x_bins,
+    n_y_bins,
+    M,
+    N,
+    rcond=None,
+):
+    """
+    Bin-centre height and Monge mean / Gaussian curvature from a Fourier fit to atoms.
+
+    Runs :func:`~membrane_curvature.fourier_surface.fourier_height_derivatives_from_atoms`
+    once, then :func:`mean_curvature_monge` and :func:`gaussian_curvature_monge`.
+
+    Parameters
+    ----------
+    positions : ndarray, shape (n_atoms, 3)
+        Atom coordinates in the same length unit as the box (typically Å).
+    x_range, y_range : tuple of float
+        ``(min, max)`` domain extents.
+    n_x_bins, n_y_bins : int
+        Output grid size at bin centres.
+    M, N : int
+        Maximum Fourier mode indices; see
+        :func:`~membrane_curvature.fourier_surface.fourier_mode_list`.
+    rcond : float or None, optional
+        Passed to :func:`numpy.linalg.lstsq`.
+
+    Returns
+    -------
+    z_surface, mean_H, gaussian_K : ndarray
+        Each array has shape ``(n_x_bins, n_y_bins)``.
+
+    Warns
+    -----
+    UserWarning
+        If the Fourier least-squares system is rank-deficient or underdetermined.
+    """
+    Z, fx, fy, fxx, fyy, fxy = fourier_height_derivatives_from_atoms(
+        positions,
+        x_range,
+        y_range,
+        n_x_bins,
+        n_y_bins,
+        M,
+        N,
+        rcond=rcond,
+    )
+    H = mean_curvature_monge(fx, fy, fxx, fyy, fxy)
+    K = gaussian_curvature_monge(fx, fy, fxx, fyy, fxy)
+    return Z, H, K
 
 
 def gaussian_curvature(Z, *varargs):
