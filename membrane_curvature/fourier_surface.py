@@ -413,6 +413,8 @@ def _fourier_fit_from_atoms(
     z_at = positions[:, 2]
 
     design = _build_fourier_matrix(x_rel, y_rel, Lx, Ly, modes)
+    # TODO: Consider using SVD instead since it has no problem dealing with rank deficiency.
+    # Check issue #161
     theta, _residuals, rank, _singular_values = np.linalg.lstsq(design, z_at, rcond=rcond)
     n_columns = int(design.shape[1])
     if rank < n_columns:
