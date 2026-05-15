@@ -54,8 +54,8 @@ Two surface-derivation methods are available, selected via the
 - :ref:`fourier_method` (``surface_method='fourier'``)
 
   A truncated 2D Fourier series is fitted to atom heights by linear
-  least squares each frame. Partial derivatives are evaluated analytically
-  from the fitted series on the same bin-centre grid, avoiding
+  least squares at each frame. Partial derivatives are evaluated analytically
+  from the fitted series on the same grid as the binning method, avoiding
   finite-difference discretization error.
   See :mod:`~membrane_curvature.fourier_surface` for details.
 
@@ -85,8 +85,9 @@ The dimensions of the grid are determined by the size of the simulation box
 contained in the :class:`~MDAnalysis.core.universe.Universe`.
 The grid covers a rectangular domain in the membrane plane. By default that
 domain matches the `x` and `y` edges of the simulation box from MDAnalysis'
-:class:`~MDAnalysis.core.universe.Universe`.The grid comprises ``n_x_bins`` x 
-``n_y_bins`` bins along the `x` and `y` directions.
+:class:`~MDAnalysis.core.universe.Universe`. The grid comprises ``n_x_bins x n_y_bins``
+bins along the `x` and `y` directions. Note that the user can define the number of
+bins via the ``n_x_bins`` and ``n_y_bins`` arguments.
 
 For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference,
 MembraneCurvature assigns it to a grid cell based on its `x` and `y` coordinates.
@@ -119,19 +120,29 @@ cell are collected to form a height field over the grid.
 Coordinates are converted to integer bin indices via scale factors
 
 .. math::
-   x\_factor = \frac{n\_x\_bins}{x_{\max} - x_{\min}}, \qquad
-   y\_factor = \frac{n\_y\_bins}{y_{\max} - y_{\min}}
+   x\_factor = \frac{n\_{x\_bins}}{x_{\max} - x_{\min}}, \qquad
+   y\_factor = \frac{n\_{y\_bins}}{y_{\max} - y_{\min}}.
 
-and then floored ``(index = floor(x * x_factor))``. Atoms with negative computed
-indices are skipped and trigger a one-time detailed warning; atoms whose
-indices exceed the grid bounds are also skipped and generate a warning. The
-module uses a WarnOnce helper so the full diagnostic is shown on first
-occurrence and a short message on subsequent occurrences.
+We histogram the atoms of reference into a 2D grid by mapping each atom at
+:math:`x` and :math:`y` coordinates to an integer bin index. The scale factor
+converts coordinates in length units into bin units so that flooring yields an integer
+index:
 
-Empty bins (zero samples) are represented as ``NaN`` in the returned
+.. math::
+
+   \mathrm{index} = \left\lfloor (x - x_{\min})\,x\_factor \right\rfloor,
+
+and similarly for :math:`y`. 
+
+Atoms that map outside the valid bin range
+(negative indices or indices ≥ ``n_x_bins``/``n_y_bins``) are skipped and
+trigger a one-time detailed warning. The function uses a WarnOnce helper so the full diagnostic
+is shown on first occurrence and a short message on subsequent occurrences.
+
+Empty bins (zero samples) are represented as :data:`numpy.nan` in the returned
 ``(n_x_bins, n_y_bins)`` array: the implementation replaces zero counts
-with ``NaN`` and divides summed z-values by the per-bin counts. As a result,
-trajectory averages use ``numpy.nanmean`` and therefore ignore empty bins.
+with :data:`numpy.nan` and divides summed z-values by the per-bin counts. As a result,
+trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
 
 .. note::
   
@@ -206,7 +217,26 @@ using :func:`~membrane_curvature.fourier_surface._compute_wavevector`. These
 set the phase :math:`\phi = k_x x + k_y y` that appears in each cosine/sine
 basis function.
 
+MembraneCurvature builds the non-redundant mode list via :func:`~membrane_curvature.fourier_surface.fourier_mode_list(M, N)`
+and computes the total parameter count with :func:`~membrane_curvature.fourier_surface.n_fourier_parameters(M, N)`.
+MembraneCurvature then validates that the :class:`~MDAnalysis.core.groups.AtomGroup` of reference
+contains at least that many atoms and raises a :class:`ValueError` if the selection is too small.
+
+
 .. warning::
+
+  The explanation above is for the users to understand how MembraneCurvature builds the mode list and parameter count internally.
+
+  **Do not pass the mode list** :func:`~membrane_curvature.fourier_surface.fourier_mode_list(M, N)`
+  **or parameter count** :func:`~membrane_curvature.fourier_surface.n_fourier_parameters(M, N)`
+  **directly! MembraneCurvature builds them internally.**
+
+  **Users choose the Fourier truncation via the constructor arguments** ``fourier_m`` **and** ``fourier_n``
+  By passing the maximum mode indices, MembraneCurvature builds the actual mode list and computes the total
+  parameter count.
+
+
+.. important::
   
   Because the derivatives are analytic, the Fourier method is not subject
   to finite-difference discretization error from the bin grid. Curvature
@@ -214,6 +244,8 @@ basis function.
   ``fourier_m = fourier_n = 2`` unless you need shorter wavelengths, and
   increase them only while curvature improves systematically rather than
   starts adding noise.
+
+
 
 .. _build-design-matrix:
 
@@ -425,7 +457,7 @@ associated functions.
 ^^^^^^^^^^^^^^^^^^^^
 
 Mean curvature :math:`H` is calculated from the five partial derivative
-arrays using the Monge-gauge formula
+arrays using the Monge-gauge formula:
 
 .. math::
 
@@ -444,7 +476,7 @@ The result has units Å :sup:`-1` and is stored in
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Gaussian curvature :math:`K` is calculated from the same derivative
-arrays using
+arrays using:
 
 .. math::
 
@@ -454,8 +486,8 @@ arrays using
 via :func:`~membrane_curvature.curvature.gaussian_curvature_monge`.
 
 
-Similarly, the calculation of mean and Gaussian curvature is performed
-in every frame and the result has units Å :sup:`-2` and is stored in
+As for the calculation of mean curvature, Gaussian curvature is calculated for
+every frame and the result has units Å :sup:`-2` and is stored in
 :attr:`MembraneCurvature.results.gaussian_curvature` for each frame.
 
 
