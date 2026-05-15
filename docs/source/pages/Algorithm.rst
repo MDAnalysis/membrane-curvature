@@ -241,9 +241,9 @@ contains at least that many atoms and raises a :class:`ValueError` if the select
   Because the derivatives are analytic, the Fourier method is not subject
   to finite-difference discretization error from the bin grid. Curvature
   still depends on the Fourier series truncation: use
-  ``fourier_m = fourier_n = 2`` unless you need shorter wavelengths, and
-  increase them only while curvature improves systematically rather than
-  starts adding noise.
+  ``fourier_m = fourier_n = 2`` unless shorter wavelengths are required, and
+  increase these values only while curvature improves systematically rather than
+  becoming dominated by noise.
 
 
 
