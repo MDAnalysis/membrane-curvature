@@ -3,12 +3,10 @@
 Usage
 =========================================================
 
-In this page, you find information on how to use MembraneCurvature.
-
-First, we offer a practical guide on the two surface derivation methods (binning and Fourier)
-available in MembraneCurvature.
-Then, we offer examples of how to use MembraneCurvature to derive curvature profiles in three
-types of systems. See the following sections for more details.
+This page includes a practical guide to using MembraneCurvature with the surface
+derivation method of choice (binning or Fourier).
+It also includes examples showing how curvature can be calculated for three different
+simulation systems.
 
 :ref:`surface-methods`
 
@@ -24,8 +22,8 @@ types of systems. See the following sections for more details.
 
 .. warning::
    Examples included in this page show how to use MembraneCurvature
-   using data files from `MDAnalysisTests`_. In order to run the examples
-   here provided, `MDAnalysisTests`_ must be installed.
+   using data files from `MDAnalysisTests`_. To run these examples,
+   `MDAnalysisTests`_ must be installed.
 
 .. _surface-methods:
 
@@ -44,9 +42,9 @@ There are two methods available to derive the surface:
   physical bin spacing.
 
 - **Fourier** (``surface_method='fourier'``) fits a truncated periodic 2D Fourier sum
-  to atom heights by linear least squares each frame, evaluates the fitted surface at
-  bin centres, and obtains partial derivatives analytically from that sum (no
-  finite-difference step on the grid). Optional arguments ``fourier_m``, ``fourier_n``,
+  to atom heights by linear least squares at each frame, evaluates the fitted surface,
+  and obtains partial derivatives analytically from that sum (no finite-difference 
+  on the grid). Optional arguments ``fourier_m``, ``fourier_n``,
   tune the truncation for the Fourier fit and the least-squares solve.
 
 .. warning::
@@ -92,13 +90,12 @@ leaflet only using the :attr:`~select` parameter and apply coordinate wrapping.
 
     universe = mda.Universe(Martini_membrane_gro)
 
-    curvature_upper_leaflet = MembraneCurvature(
-        universe,
-        select='resid 1-225 and name PO4',
-        surface_method='binning',
-        n_x_bins=8,
-        n_y_bins=8,
-        wrap=True,
+    curvature_upper_leaflet = MembraneCurvature(universe,
+                                                select='resid 1-225 and name PO4',
+                                                surface_method='binning',
+                                                n_x_bins=8,
+                                                n_y_bins=8,
+                                                wrap=True,
     ).run()
 
     mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
@@ -118,13 +115,12 @@ Alternatively, set ``surface_method='fourier'``. The defaults ``fourier_m=2`` an
 
     universe = mda.Universe(Martini_membrane_gro)
 
-    curvature_upper_leaflet = MembraneCurvature(
-        universe,
-        select='resid 1-225 and name PO4',
-        surface_method='fourier',
-        fourier_m=2,
-        fourier_n=2,
-        wrap=True,
+    curvature_upper_leaflet = MembraneCurvature(universe,
+                                                select='resid 1-225 and name PO4',
+                                                surface_method='fourier',
+                                                fourier_m=2,
+                                                fourier_n=2,
+                                                wrap=True,
     ).run()
   
     mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
@@ -132,7 +128,7 @@ Alternatively, set ``surface_method='fourier'``. The defaults ``fourier_m=2`` an
     gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
 
-You can find more complex examples in the notebooks available in the :ref:`tutorials` page.
+You can find more detailed examples in the notebooks available in the :ref:`tutorials` page.
 
 
 .. _membrane-protein:
@@ -140,6 +136,13 @@ You can find more complex examples in the notebooks available in the :ref:`tutor
 2.2 Membrane-protein systems
 ----------------------------
 
+.. tip::
+        To improve sampling when passing raw trajectories:
+
+        - In systems of membrane-only or membrane-protein with position restraints,
+          set ``wrap=True`` to translate the atoms of the AtomGroup back in the unit cell.
+        - In membrane-protein systems with no position restraints, set ``wrap=False`` and
+          preprocess the trajectory with rotational/translational fit.
 
 .. _membrane-protein-pr:
 
@@ -173,14 +176,6 @@ We can calculate membrane curvature using the binning surface method by setting
    avg_mean_curvature_upper_leaflet = curvature_upper_leaflet.results.average_mean
    # extract Gaussian curvature
    avg_gaussian_curvature_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
-
-.. tip::
-        To improve sampling when passing raw trajectories:
-
-        - In systems of membrane-only or membrane-protein with position restraints,
-          set ``wrap=True`` to translate the atoms of the AtomGroup back in the unit cell.
-        - In membrane-protein systems with no position restraints, set ``wrap=False`` and
-          preprocess the trajectory with rotational/translational fit.
 
 **Fourier surface method**
 
@@ -218,9 +213,10 @@ If the goal is to assess membrane curvature induced by the protein, the
 preprocessed trajectory should have the protein centered in the simulation box 
 with translational and rotational fit.
 
-In `Gromacs`_, the trajectory would be preprocessed with:
+for example, in `Gromacs`_, the trajectory would be preprocessed with:
 
 .. code-block:: bash
+
         gmx trjconv -pbc whole -ur compact -c
         gmx trjconv -fit rot+transxy
 
@@ -285,7 +281,7 @@ Alternatively, set ``surface_method='fourier'``. The defaults ``fourier_m=2`` an
 More information on how to visualize the results of the MDAnalysis Membrane 
 Curvature tool can be found in the :ref:`visualization` page.
 
-.. _`blog post`: https://ojeda-e.com/blog/2021/07/22/Considerations-curvature-MD-simulations-PartI.html
+.. _`blog post`: https://ojeda-e.com/blog/#membrane-curvature-from-md-simulations-considerations-part-i
 
 .. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 
