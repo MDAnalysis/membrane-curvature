@@ -172,9 +172,9 @@ We can calculate membrane curvature using the binning surface method by setting
                                                n_x_bins=2,
                                                n_y_bins=2,
                                                wrap=True).run()
-   # extract mean curvature
+
    avg_mean_curvature_upper_leaflet = curvature_upper_leaflet.results.average_mean
-   # extract Gaussian curvature
+
    avg_gaussian_curvature_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
 **Fourier surface method**
@@ -218,7 +218,8 @@ for example, in `Gromacs`_, the trajectory would be preprocessed with:
 .. code-block:: bash
 
         gmx trjconv -pbc whole -ur compact -c
-        gmx trjconv -fit rot+transxy
+        gmx trjconv -fit rot+trans
+        gmx trjconv -fit transxy
 
 After you have preprocessed the trajectory, use ``wrap=False`` (the trajectory is
 already fitted and centered).
@@ -257,7 +258,11 @@ We can calculate membrane curvature using the binning surface method by setting
 **Fourier surface method**
 
 Alternatively, set ``surface_method='fourier'``. The defaults ``fourier_m=2`` and
-``fourier_n=2`` are recommended unless you need shorter wavelengths:
+``fourier_n=2`` are recommended unless you need shorter wavelengths. In that case,
+pass ``fourier_m=<your_number>`` and ``fourier_n=<your_number>`` to the MembraneCurvature
+constructor.
+
+For the example below, we omit ``fourier_m`` and ``fourier_n`` to use their default values:
 
 .. code-block:: python
 
@@ -271,10 +276,10 @@ Alternatively, set ``surface_method='fourier'``. The defaults ``fourier_m=2`` an
                                                 select='resid 2583-3042',
                                                 wrap=False,
                                                 surface_method='fourier',
-                                                # omit fourier_m, fourier_n to use default values
                                                 ).run()
 
     avg_mean_curvature = curvature_lower_leaflet.results.average_mean
+
     avg_gaussian_curvature = curvature_lower_leaflet.results.average_gaussian
 
 
