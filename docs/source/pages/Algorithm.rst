@@ -125,7 +125,7 @@ Coordinates are converted to integer bin indices via scale factors
 
 We histogram the atoms of reference into a 2D grid by mapping each atom at
 :math:`x` and :math:`y` coordinates to an integer bin index. The scale factor
-converts coordinates in length units into bin units so that flooring yields an integer
+converts coordinates from length units into bin units so that flooring yields an integer
 index:
 
 .. math::
@@ -229,7 +229,7 @@ contains at least that many atoms and raises a :class:`ValueError` if the select
 
   **Do not pass the mode list** :func:`~membrane_curvature.fourier_surface.fourier_mode_list(M, N)`
   **or parameter count** :func:`~membrane_curvature.fourier_surface.n_fourier_parameters(M, N)`
-  **directly! MembraneCurvature builds them internally.**
+  **directly. MembraneCurvature builds them internally.**
 
   **Users choose the Fourier truncation via the constructor arguments** ``fourier_m`` **and** ``fourier_n``
   By passing the maximum mode indices, MembraneCurvature builds the actual mode list and computes the total
