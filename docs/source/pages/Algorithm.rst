@@ -182,14 +182,16 @@ therefore the phase for the mode ``(m,n)`` is
 .. math ::
   (k_x m x + k_y n y).
 
-The Fourier surface algorithm implemented in MembraneCurvature follows
-the standard Fourier descriptor and Fourier surface-model approaches for
-geometric shape modeling in [CAG2009]_ [JMG1988]_.
+The Fourier method in MembraneCurvature is conceptually related to Fourier
+surface modeling [CAG2009]_ and molecular Fourier shape descriptors [JMG1988]_,
+but it is not a direct implementation of either paper. The least-squares
+height-field fit used in MembraneCurvature is tailored to the AtomGroup of
+reference given their cordinates.
 
-.. [CAG2009] Rhouma et al., *Fourier method for large scale surface modeling and registration*,
+.. [CAG2009] Shen et al., *Fourier method for large-scale surface modeling and registration*,
    Computers & Graphics (2009), doi: `10.1016/j.cag.2009.03.002`_.
 
-.. [JMG1988] *Description of molecular surface shape using Fourier descriptors*,
+.. [JMG1988] Leicester et al., *Description of molecular surface shape using Fourier descriptors*,
    Journal of Molecular Graphics (1988), doi: `10.1016/0263-7855(88)85008-2`_.
 
 The full Fourier surface workflow comprises six steps, where the first four steps build and
