@@ -58,7 +58,8 @@ docs = [
     "ipywidgets",
     # pinning to latest working version of nglview in ipynb
     "nglview==4.0.0", # see https://github.com/nglviewer/nglview/issues/1172
-    "myst-nb"
+    "myst-nb",
+    "tidynamics",
 ]
 dev = [
     "ruff",
