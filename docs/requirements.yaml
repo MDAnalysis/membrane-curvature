@@ -20,4 +20,5 @@ dependencies:
     - ipykernel
     - pickleshare # ipython savefigs
     - ipywidgets
-    - nglview
+    - widgetsnbextension
+    - nglview==4.0.0
