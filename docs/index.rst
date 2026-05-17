@@ -126,7 +126,7 @@ License v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
 .. _`MDAnalysis Tests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 .. _`Installation Quick Start`: https://www.mdanalysis.org/pages/installation_quick_start/#installation-quick-start
 .. _`conda`: https://conda.io/en/latest/
-.. |MDAnalysis_version| replace:: 1.1.1
+.. |MDAnalysis_version| replace:: 2.4.0
 
 Indices and tables
 ==================

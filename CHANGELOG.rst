@@ -1,6 +1,8 @@
 Membranecurvature CHANGELOG
 =============================
 
+* Updated documentation to reflect Fourier surface method (Algorithm page PR #160)
+* Added surface_method='fourier'; derives surface from atoms of reference using a truncated Fourier series (PR #146)
 * Added maintenance tools (ruff PR #147, pre-commit hooks PR #151, ty PR #155)
 
 1.1.2 (24-04-2026)
