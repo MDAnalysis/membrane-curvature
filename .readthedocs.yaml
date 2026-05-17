@@ -9,9 +9,6 @@ build:
   os: ubuntu-22.04
   tools:
     python: "mambaforge-22.9"
-  jobs:
-    - post_install:
-      - python -m ipykernel install --user --name membrane-curvature
 
 python:
   install:
