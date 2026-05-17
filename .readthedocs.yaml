@@ -9,6 +9,8 @@ build:
   os: ubuntu-22.04
   tools:
     python: "mambaforge-22.9"
+  post_install:
+      - python -m ipykernel install --name mc_docs --display-name "mc_docs"
 
 python:
   install:
