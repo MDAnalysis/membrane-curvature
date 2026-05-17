@@ -58,7 +58,6 @@ extensions = [
     'myst_nb'
 ]
 
-nb_kernel_rgx_aliases = {"membrane-curvature": "python 3"}
 autosectionlabel_prefix_document = True
 autosummary_generate = True
 napoleon_google_docstring = False
