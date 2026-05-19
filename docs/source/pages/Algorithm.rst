@@ -379,8 +379,8 @@ For every frame of the trajectory, the surface derived from the
 :class:`~MDAnalysis.core.groups.AtomGroup` is
 calculated and stored in :attr:`~MembraneCurvature.results.z_surface`.
 Similarly, the calculation of mean and Gaussian curvature is performed in every
-frame and stored in :attr:`MembraneCurvature.results.mean_curvature` and
-:attr:`MembraneCurvature.results.gaussian_curvature`, respectively.
+frame and stored in :attr:`MembraneCurvature.results.mean` and
+:attr:`MembraneCurvature.results.gaussian`, respectively.
 
 The following sections describe the details of the two methods used
 to derive the surface and calculate its derivatives.
@@ -462,6 +462,28 @@ For details on the binning method, see API documentation in
 :mod:`~membrane_curvature.binning_surface` that describes every
 associated functions.
 
+.. _binning-fft-filter:
+
+3.5. Optional FFT filter on the time-averaged height (binning only)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When ``surface_method='binning'`` and ``fft_filter`` is not ``None``, filtering
+runs **once** after all frames are processed. Note that the FFT filter is **not**
+applied to per-frame :attr:`~MembraneCurvature.results.z_surface`, ``results.mean``, or
+``results.gaussian``.
+
+The order of operations is:
+
+1. :attr:`~MembraneCurvature.results.z_surface` — temporal mean over frames
+   (``nanmean`` along the frame axis).
+1. Brick-wall filter in reciprocal space on that average (see
+   :mod:`~membrane_curvature.fft_filtering`), controlled by ``fft_filter``
+   (``'auto'``, ``{'q': (q_low, q_high)}``, or disabled with ``None``).
+1. :attr:`~MembraneCurvature.results.average_mean` and
+   :attr:`~MembraneCurvature.results.average_gaussian` — Monge-gauge curvature
+   from the filtered average height.
+
+
 3.2b. Fourier fit + analytic derivatives (``surface_method='fourier'``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -499,7 +521,7 @@ arrays using the Monge-gauge formula:
 via :func:`~membrane_curvature.curvature.mean_curvature_monge`.
 
 The result has units Å :sup:`-1` and is stored in
-:attr:`MembraneCurvature.results.mean_curvature` for each frame.
+:attr:`MembraneCurvature.results.mean` for each frame.
 
 .. _gaussian-curvature:
 
@@ -519,7 +541,7 @@ via :func:`~membrane_curvature.curvature.gaussian_curvature_monge`.
 
 As for the calculation of mean curvature, Gaussian curvature is calculated for
 every frame and the result has units Å :sup:`-2` and is stored in
-:attr:`MembraneCurvature.results.gaussian_curvature` for each frame.
+:attr:`MembraneCurvature.results.gaussian` for each frame.
 
 
 .. warning::

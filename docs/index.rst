@@ -31,9 +31,9 @@ This is an example on how to use MembraneCurvature:
       u = mda.Universe(coordinates, trajectory)
       mc = MembraneCurvature(u).run()
 
-      surface =  mc.results.average_z_surface
-      mean_curvature =  mc.results.average_mean_curvature
-      gaussian_curvature = mc.results.average_gaussian_curvature
+      surface = mc.results.average_z_surface
+      mean_curvature = mc.results.average_mean
+      gaussian_curvature = mc.results.average_gaussian
 
 
 You can find more details on how to use MembraneCurvature in the `Usage`_ page.
