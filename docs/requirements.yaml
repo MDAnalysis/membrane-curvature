@@ -14,6 +14,8 @@ dependencies:
   - ipython
   - MDAnalysisTests
   - mdanalysis-sphinx-theme>=1.3.0
+  - sphinx
+  - sphinx-math-dollar
     # Pip-only installs
   - pip:
     - myst-nb

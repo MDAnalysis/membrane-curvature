@@ -54,6 +54,7 @@ docs = [
     "networkx",
     "widgetsnbextension",
     "mdanalysis-sphinx-theme",
+    "sphinx-math-dollar",
     "nbsphinx",
     "ipywidgets",
     # pinning to latest working version of nglview in ipynb
