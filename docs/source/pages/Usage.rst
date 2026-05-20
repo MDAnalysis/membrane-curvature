@@ -36,16 +36,16 @@ Gaussian curvature.
 
 There are two methods available to derive the surface:
 
-- **Binning** (``surface_method='binning'``, the default) assigns atoms to a
-  regular ``n_x_bins`` x ``n_y_bins`` grid, stores the mean :math:`z` per cell,
-  and estimates partial derivatives with :func:`numpy.gradient` using the
-  physical bin spacing.
-
-- **Fourier** (``surface_method='fourier'``) fits a truncated periodic 2D Fourier sum
+- **Fourier** (``surface_method='fourier'``, default method) fits a truncated periodic 2D Fourier sum
   to atom heights by linear least squares at each frame, evaluates the fitted surface,
   and obtains partial derivatives analytically from that sum (no finite-difference 
   on the grid). Optional arguments ``fourier_m``, ``fourier_n``,
   tune the truncation for the Fourier fit and the least-squares solve.
+
+- **Binning** (``surface_method='binning'``) assigns atoms to a
+  regular ``n_x_bins`` x ``n_y_bins`` grid, stores the mean :math:`z` per cell,
+  and estimates partial derivatives with :func:`numpy.gradient` using the
+  physical bin spacing.
 
 .. warning::
 
@@ -55,8 +55,8 @@ There are two methods available to derive the surface:
 
 For copy-paste examples of both methods see:
 
-- :ref:`membrane-only`: binning,  then Fourier on the Martini bilayer.
-- :ref:`membrane-protein-pr`: binning, then Fourier on the membrane-protein trajectory.
+- :ref:`membrane-only`: Fourier (default), then binning on the Martini bilayer.
+- :ref:`membrane-protein-pr`: Fourier (default), then binning on the membrane-protein trajectory.
 
 
 .. _examples-usage:
@@ -80,7 +80,51 @@ comprises a lipid bilayer of DPPC:CHOL using the Martini force field. Since we
 have a bilayer, we select atoms of phospholipid head groups in the upper
 leaflet only using the :attr:`~select` parameter and apply coordinate wrapping.
 
-**Binning (default)**
+**Fourier surface method (default)**
+
+We can calculate membrane curvature using the Fourier surface method by either
+setting ``surface_method='fourier'`` with ``fourier_m=2``, ``fourier_n=2``, or
+omitting ``surface_method``, ``fourier_m``, and ``fourier_n`` to rely on the defaults
+(default ``fourier_m=2``, ``fourier_n=2``):
+
+.. code-block:: python
+
+    import MDAnalysis as mda
+    from membrane_curvature.base import MembraneCurvature
+    from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+    universe = mda.Universe(Martini_membrane_gro)
+
+    curvature_upper_leaflet = MembraneCurvature(universe,
+                                                select='resid 1-225 and name PO4',
+                                                ).run()
+
+    mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
+
+    gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
+
+Note the code to calculate curvature for the upper leaflet with Fourier (default method)
+is equivalent to:
+
+.. code-block:: python
+
+    curvature_upper_leaflet = MembraneCurvature(universe,
+                                                select='resid 1-225 and name PO4',
+                                                surface_method='fourier',
+                                                fourier_m=2,
+                                                fourier_n=2,
+                                                ).run()
+
+.. tip::
+
+  When using the Fourier method, ``wrap=True`` is not required because it is applied
+  internally. 🙂
+
+**Binning surface method**
+
+Alternatively, set ``surface_method='binning'`` and provide the values for
+the binning grid ``n_x_bins`` and ``n_y_bins``. Note that you need to apply
+coordinate wrapping with ``wrap=True``:
 
 .. code-block:: python
 
@@ -95,33 +139,8 @@ leaflet only using the :attr:`~select` parameter and apply coordinate wrapping.
                                                 surface_method='binning',
                                                 n_x_bins=8,
                                                 n_y_bins=8,
-                                                wrap=True,
-    ).run()
-
-    mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
-
-    gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
-
-**Fourier surface method**
-
-Alternatively, set ``surface_method='fourier'``. The defaults ``fourier_m=2`` and
-``fourier_n=2`` are recommended:
-
-.. code-block:: python
-
-    import MDAnalysis as mda
-    from membrane_curvature.base import MembraneCurvature
-    from MDAnalysis.tests.datafiles import Martini_membrane_gro
-
-    universe = mda.Universe(Martini_membrane_gro)
-
-    curvature_upper_leaflet = MembraneCurvature(universe,
-                                                select='resid 1-225 and name PO4',
-                                                surface_method='fourier',
-                                                fourier_m=2,
-                                                fourier_n=2,
-                                                wrap=True,
-    ).run()
+                                                wrap=True
+                                                ).run()
   
     mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
 
@@ -144,6 +163,9 @@ You can find more detailed examples in the notebooks available in the :ref:`tuto
         - In membrane-protein systems with no position restraints, set ``wrap=False`` and
           preprocess the trajectory with rotational/translational fit.
 
+        Some points to keep in mind when calculating membrane curvature in membrane-only and
+        membrane-protein systems with position restraints are addressed in this `blog post`_. 
+
 .. _membrane-protein-pr:
 
 2.2.1 Membrane-protein systems, protein with position restraints
@@ -151,13 +173,11 @@ You can find more detailed examples in the notebooks available in the :ref:`tuto
 
 In this example, we have a simulation box comprising a copy of the Yiip
 transporter, embedded in a lipid bilayer of POPE:POPG. Similar to the example
-for membrane-only, we select the atoms for the upper leaflet and apply
-coordinate wrapping. 
+for membrane-only, we select the atoms for the upper leaflet to run the analysis.
 
-**Binning surface method**
+**Fourier surface method (default)**
 
-We can calculate membrane curvature using the binning surface method by setting
-``surface_method='binning'``:
+We can calculate membrane curvature using the default values with:
 
 .. code-block:: python
 
@@ -167,40 +187,38 @@ We can calculate membrane curvature using the binning surface method by setting
 
    universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
    curvature_upper_leaflet = MembraneCurvature(universe,
-                                               select='resid 297-517 and name P', 
-                                               surface_method='binning',
-                                               n_x_bins=2,
-                                               n_y_bins=2,
-                                               wrap=True).run()
+                                               select='resid 297-517 and name P'
+                                               ).run()
 
    avg_mean_curvature_upper_leaflet = curvature_upper_leaflet.results.average_mean
 
    avg_gaussian_curvature_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
-**Fourier surface method**
+**Binning surface method**
 
-The same trajectory and selection can use the Fourier surface method by setting
-``surface_method='fourier'``, use the default values for
-``fourier_m`` and ``fourier_n``::
+The same trajectory and selection can use the binning method by setting
+``surface_method='binning'`` with the values for ``n_x_bins`` and ``n_y_bins`` 
+and apply coordinate wrapping with ``wrap=True``. 
 
-        import MDAnalysis as mda
-        from membrane_curvature.base import MembraneCurvature
-        from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT
+.. code-block:: python
 
-        universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
-        
-        curvature_upper_leaflet = MembraneCurvature(universe,
-                                               select='resid 297-517 and name P', 
-                                               surface_method='fourier', 
-                                               wrap=True).run()
+   import MDAnalysis as mda
+   from membrane_curvature.base import MembraneCurvature
+   from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT
 
-        avg_mean_curvature_upper_leaflet = curvature_upper_leaflet.results.average_mean
+   universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
+   curvature_upper_leaflet = MembraneCurvature(universe,
+                                               select='resid 297-517 and name P',
+                                               surface_method='binning',
+                                               n_x_bins=2,
+                                               n_y_bins=2,
+                                               wrap=True
+                                               ).run()
 
-        avg_gaussian_curvature_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
+   avg_mean_curvature_upper_leaflet = curvature_upper_leaflet.results.average_mean
 
+   avg_gaussian_curvature_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
-Some points to keep in mind when calculating membrane curvature in :ref:`membrane-only`
-and :ref:`membrane-protein-pr` are addressed in this `blog post`_. 
 
 .. _membrane-protein-no-pr:
 
@@ -224,10 +242,31 @@ for example, in `Gromacs`_, the trajectory would be preprocessed with:
 After you have preprocessed the trajectory, use ``wrap=False`` (the trajectory is
 already fitted and centered).
 
-**Binning (default)**
+**Fourier surface method (default)**
 
-We can calculate membrane curvature using the binning surface method by setting
-``surface_method='binning'``:
+With the default ``surface_method='fourier'`` and ``fourier_m=2``, ``fourier_n=2``.
+Omit ``surface_method``, ``fourier_m``, and ``fourier_n`` unless you need shorter wavelengths:
+
+.. code-block:: python
+
+    import MDAnalysis as mda
+    from membrane_curvature.base import MembraneCurvature
+    from membrane_curvature.tests.datafiles import XTC_MEMBPROT_FIT, GRO_MEMBPROT_FIT
+
+    universe = mda.Universe(GRO_MEMBPROT_FIT, XTC_MEMBPROT_FIT)
+
+    curvature_lower_leaflet = MembraneCurvature(universe,
+                                                select='resid 2583-3042'
+                                                ).run()
+
+    avg_mean_curvature = curvature_lower_leaflet.results.average_mean
+
+    avg_gaussian_curvature = curvature_lower_leaflet.results.average_gaussian
+
+**Binning surface method**
+
+Set ``surface_method='binning'`` with the values for ``n_x_bins`` and ``n_y_bins``, and in this
+case set ``wrap=False`` to avoid the warning message since the trajectory is already fitted and centered:
 
 .. code-block:: python
 
@@ -239,10 +278,10 @@ We can calculate membrane curvature using the binning surface method by setting
 
     curvature_lower_leaflet = MembraneCurvature(universe,
                                                 select='resid 2583-3042',
-                                                wrap=False,
                                                 surface_method='binning',
                                                 n_x_bins=10,
-                                                n_y_bins=10
+                                                n_y_bins=10,
+                                                wrap=False
                                                 ).run()
 
     avg_mean_curvature = curvature_lower_leaflet.results.average_mean
@@ -255,38 +294,11 @@ We can calculate membrane curvature using the binning surface method by setting
         you can ignore the warning message: 
         ``WARNING   `wrap == False` may result in inaccurate calculation of membrane curvature.`` 
 
-**Fourier surface method**
-
-Alternatively, set ``surface_method='fourier'``. The defaults ``fourier_m=2`` and
-``fourier_n=2`` are recommended unless you need shorter wavelengths. In that case,
-pass ``fourier_m=<your_number>`` and ``fourier_n=<your_number>`` to the MembraneCurvature
-constructor.
-
-For the example below, we omit ``fourier_m`` and ``fourier_n`` to use their default values:
-
-.. code-block:: python
-
-    import MDAnalysis as mda
-    from membrane_curvature.base import MembraneCurvature
-    from membrane_curvature.tests.datafiles import XTC_MEMBPROT_FIT, GRO_MEMBPROT_FIT
-
-    universe = mda.Universe(GRO_MEMBPROT_FIT, XTC_MEMBPROT_FIT)
-
-    curvature_lower_leaflet = MembraneCurvature(universe,
-                                                select='resid 2583-3042',
-                                                wrap=False,
-                                                surface_method='fourier',
-                                                ).run()
-
-    avg_mean_curvature = curvature_lower_leaflet.results.average_mean
-
-    avg_gaussian_curvature = curvature_lower_leaflet.results.average_gaussian
-
 
 More information on how to visualize the results of the MDAnalysis Membrane 
 Curvature tool can be found in the :ref:`visualization` page.
 
-.. _`blog post`: https://ojeda-e.com/blog/#membrane-curvature-from-md-simulations-considerations-part-i
+.. _`blog post`: https://ojeda-e.com/blog/Considerations-curvature-MD-simulations-PartI
 
 .. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 
