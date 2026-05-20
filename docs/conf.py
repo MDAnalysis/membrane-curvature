@@ -46,6 +46,7 @@ release = version
 extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.autodoc',
+    'sphinx_math_dollar',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
@@ -58,6 +59,7 @@ extensions = [
     'myst_nb'
 ]
 
+nb_kernel_rgx_aliases = {"mc_docs": "python3"}
 autosectionlabel_prefix_document = True
 autosummary_generate = True
 napoleon_google_docstring = False
@@ -187,6 +189,12 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+# Enable $...$ / $$...$$ math in MyST-NB notebook markdown (off by default in myst-parser).
+myst_enable_extensions = [
+    'dollarmath',
+    'amsmath',
+]
+
 intersphinx_mapping = {'Python': ('https://docs.python.org/3', None),
                        'MDAnalysis': ('https://docs.mdanalysis.org/stable/', None),
                        'Matplotlib': ('https://matplotlib.org/stable', None),

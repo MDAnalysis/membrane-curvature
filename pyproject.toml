@@ -50,12 +50,17 @@ tests = [
 ]
 docs = [
     "ipython",
-    "MDAnalysisTests",
+    "MDAnalysisData",
+    "networkx",
+    "widgetsnbextension",
     "mdanalysis-sphinx-theme",
+    "sphinx-math-dollar",
     "nbsphinx",
     "ipywidgets",
-    "nglview",
-    "myst-nb"
+    # pinning to latest working version of nglview in ipynb
+    "nglview==4.0.0", # see https://github.com/nglviewer/nglview/issues/1172
+    "myst-nb",
+    "tidynamics",
 ]
 dev = [
     "ruff",
