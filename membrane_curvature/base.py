@@ -45,8 +45,10 @@ class MembraneCurvature(AnalysisBase):
     select : str or iterable of str, optional.
         The selection string of an atom selection to use as a
         reference to derive a surface.
-    wrap : bool, optional
-        Apply coordinate wrapping to pack atoms into the primary unit cell.
+    wrap : bool or None, optional
+        Apply coordinate wrapping with :meth:`~MDAnalysis.core.groups.AtomGroup.wrap`
+        Defaults to ``True`` for ``surface_method='binning'`` and must be omitted or
+        ``False`` for ``surface_method='fourier'``.
     n_x_bins : int, optional, default: '100'
         Number of bins in grid in the x dimension.
     n_y_bins : int, optional, default: '100'
@@ -75,11 +77,11 @@ class MembraneCurvature(AnalysisBase):
         Surface derived from atom selection in every frame.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.mean : ndarray
-        Mean curvature associated to the surface.
+        Mean curvature associated with the surface.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.gaussian : ndarray
-        Gaussian curvature associated to the surface.
-        Arrays of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
+        Gaussian curvature associated with the surface.
+        Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.average_z_surface : ndarray
         Average of the array elements in `z_surface`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
@@ -90,6 +92,16 @@ class MembraneCurvature(AnalysisBase):
         Average of the array elements in `gaussian_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
+    Raises
+    ------
+    ValueError
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
+        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`),
+        if the selection is empty, if ``surface_method`` is not one of
+        ``'binning'`` or ``'fourier'``, or, when ``surface_method='fourier'``,
+        if ``fourier_m`` / ``fourier_n`` are negative or the selection has fewer
+        atoms than Fourier parameters, or if ``wrap=True`` with
+        ``surface_method='fourier'``.
 
     See also
     --------
@@ -98,23 +110,28 @@ class MembraneCurvature(AnalysisBase):
 
     Notes
     -----
-    Use `wrap=True` to translates the atoms of your `mda.Universe` back
-    in the unit cell. Use `wrap=False` for processed trajectories where
-    rotational/translational fit is performed.
 
-    For more details on when to use `wrap=True`, check the :ref:`usage`
-    page.
+    **Fourier surface method (default)**
 
-    Fourier mode count: with ``surface_method='fourier'``, the number of fitted
-    scalar parameters is :func:`~membrane_curvature.fourier_surface.n_fourier_parameters`
-    ``(fourier_m, fourier_n)``. The selection must contain at least that many
-    atoms each frame. Use ``fourier_m = fourier_n = 2`` unless you need shorter
-    wavelengths; keep the atom count well above the parameter count, and raise
-    ``fourier_m`` / ``fourier_n`` only while curvature improves systematically,
-    not when it begins to track noise (see :doc:`api/fourier_surface`).
+    ``surface_method='fourier'`` uses ``fourier_m = fourier_n = 2`` as default.
+    Do not modify the default values unless you need shorter wavelengths.
+    Since the method performs periodic boundary conditions by itself, ``wrap`` defaults
+    to ``False`` and is not required.
 
-    The derived surface and calculated curvatures are available in the
-    :attr:`results` attributes.
+    **Binning mode**
+
+    The binning routine does not apply periodic wrapping itself; :class:`MembraneCurvature`
+    calls ``AtomGroup.wrap()`` when ``surface_method='binning'`` and ``wrap=True``.
+    When using binning, ``wrap`` defaults to ``True`` if not provided. Omit ``wrap`` or pass
+    ``wrap=True`` for raw trajectories so atoms are packed into the unit cell before
+    binning. Run with ``wrap=False`` for preprocessed trajectories that have already applied
+    periodic boundary conditions. For membrane-protein systems without position restraints,
+    preprocessing should include rotational and translational fitting around the protein.
+
+    For more details on when to use ``wrap=True``, check the :ref:`usage` page.
+
+    For any method of choice, the derived surface and calculated curvatures are available
+    in the :attr:`results` attributes.
 
     The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
     the derived surface averaged over the `n_frames` of the trajectory.
@@ -124,15 +141,39 @@ class MembraneCurvature(AnalysisBase):
     values of mean and Gaussian curvature averaged over the `n_frames` of the
     trajectory.
 
-    Raises
-    ------
-    ValueError
-        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
-        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`),
-        if the selection is empty, if ``surface_method`` is not one of
-        ``'binning'`` or ``'fourier'``, or, when ``surface_method='fourier'``,
-        if ``fourier_m`` / ``fourier_n`` are negative or the selection has fewer
-        atoms than Fourier parameters.
+    See also
+    --------
+    :class:`~MDAnalysis.transformations.wrap.wrap`
+        Wrap/unwrap the atoms of a given AtomGroup in the unit cell.
+
+    Notes
+    -----
+
+    **Fourier surface method (default)**
+
+    ``surface_method='fourier'`` uses ``fourier_m = fourier_n = 2`` as default.
+    Do not modify the default values unless you need shorter wavelengths.
+    Since method performs periodic boundary contidions by itself, ``wrap`` is not required.
+
+    **Binning mode**
+
+    ``surface_method='binning'`` does not apply periodic wrapping. Use ``wrap=True``
+    on raw trajectories so atoms fall inside the grid. Use ``wrap=False`` for
+    pre-processed trajectories where periodic boundary conditions have been applied.
+    In membrane-protein systems, pre-processing requires rotational and translational fits.
+
+    For more details on when to use ``wrap=True``, check the :ref:`usage` page.
+
+    For any method of choice, the derived surface and calculated curvatures are available
+    in the :attr:`results` attributes.
+
+    The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
+    the derived surface averaged over the `n_frames` of the trajectory.
+
+    The attributes :attr:`~MembraneCurvature.results.average_mean` and
+    :attr:`~MembraneCurvature.results.average_gaussian` contain the computed
+    values of mean and Gaussian curvature averaged over the `n_frames` of the
+    trajectory.
 
     Example
     -----------
@@ -167,7 +208,7 @@ class MembraneCurvature(AnalysisBase):
         n_y_bins=100,
         x_range=None,
         y_range=None,
-        wrap=True,
+        wrap=None,
         surface_method='fourier',
         fourier_m=2,
         fourier_n=2,
@@ -182,7 +223,6 @@ class MembraneCurvature(AnalysisBase):
         # Fourier-parameter sizing) can mask it.
         if len(self.ag) == 0:
             raise ValueError('Invalid selection. Empty AtomGroup.')
-        self.wrap = wrap
         validate_positive_bin_counts(n_x_bins, n_y_bins)
         self.n_x_bins = n_x_bins
         self.n_y_bins = n_y_bins
@@ -195,6 +235,12 @@ class MembraneCurvature(AnalysisBase):
         if surface_method not in valid_methods:
             raise ValueError(f'surface_method must be one of {valid_methods}, got {surface_method!r}')
         self.surface_method = surface_method
+        if self.surface_method == 'fourier':
+            if wrap is True:
+                raise ValueError("wrap=True is only valid when surface_method='binning'")
+            self.wrap = False
+        else:
+            self.wrap = True if wrap is None else wrap
         self.fourier_m = int(fourier_m)
         self.fourier_n = int(fourier_n)
         self.fourier_lstsq_rcond = fourier_lstsq_rcond
@@ -227,13 +273,13 @@ class MembraneCurvature(AnalysisBase):
                 warnings.warn(msg)
                 logger.warning(msg)
 
-        # Apply wrapping coordinates
-        if not self.wrap:
+        # Warn when binning without wrapping coordinates
+        if not self.wrap and self.surface_method == 'binning':
             # Warning
             msg = (
                 ' `wrap == False` may result in inaccurate calculation '
-                'of membrane curvature. Surfaces will be derived from '
-                'a reduced number of atoms. \n '
+                "of membrane curvature with `surface_method='binning'`. "
+                'Surfaces will be derived from a reduced number of atoms. \n '
                 ' Ignore this warning if your trajectory has '
                 ' rotational/translational fit rotations! '
             )
@@ -247,10 +293,11 @@ class MembraneCurvature(AnalysisBase):
         self.results.gaussian = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
 
     def _single_frame(self):
-        # Apply wrapping coordinates
-        if self.wrap:
-            self.ag.wrap()
         if self.surface_method == 'binning':
+            # Check wrap in binning method only
+            if self.wrap:
+                # Apply wrapping coordinates
+                self.ag.wrap()
             self.results.z_surface[self._frame_index] = get_z_surface(
                 self.ag.positions,
                 n_x_bins=self.n_x_bins,
