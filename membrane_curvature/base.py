@@ -56,10 +56,10 @@ class MembraneCurvature(AnalysisBase):
     y_range : tuple of (float, float), optional, default: (0, `universe.dimensions[1]`)
         Range of coordinates (min, max) in the y dimension.
     surface_method : {'binning', 'fourier'}, optional
-        ``binning`` (default) bins atoms and uses :func:`numpy.gradient` for
-        derivatives. ``fourier`` fits a periodic Fourier sum to atom positions
+        ``fourier`` (default) fits a periodic Fourier sum to atom positions at
         each frame and evaluates Monge-gauge curvature from analytic derivatives
         on the same bin grid (bin centers); see :mod:`membrane_curvature.fourier_surface`.
+        ``binning`` bins atoms and uses :func:`numpy.gradient` for derivatives.
     fourier_m : int, optional
         Maximum Fourier mode index in ``x`` when ``surface_method='fourier'``.
         Default ``2``.
@@ -168,7 +168,7 @@ class MembraneCurvature(AnalysisBase):
         x_range=None,
         y_range=None,
         wrap=True,
-        surface_method='binning',
+        surface_method='fourier',
         fourier_m=2,
         fourier_n=2,
         fourier_lstsq_rcond=None,

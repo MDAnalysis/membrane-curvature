@@ -43,15 +43,7 @@ Two surface-derivation methods are available, selected via the
 ``surface_method`` argument of
 :class:`~membrane_curvature.base.MembraneCurvature`.
 
-- :ref:`binning_method` (``surface_method='binning'``, default)
-
-  Atoms are assigned to bins on a regular grid and the height of each bin
-  is set to the mean :math:`z`-coordinate of its atoms. Partial derivatives
-  are estimated numerically from the discrete height field using
-  :func:`numpy.gradient` with the physical bin spacing.
-  See :mod:`~membrane_curvature.binning_surface` for details.
-
-- :ref:`fourier_method` (``surface_method='fourier'``)
+- :ref:`fourier_method` (``surface_method='fourier'``, default method)
 
   A truncated 2D Fourier series is fitted to atom heights by linear
   least squares at each frame. Partial derivatives are evaluated analytically
@@ -59,107 +51,26 @@ Two surface-derivation methods are available, selected via the
   finite-difference discretization error.
   See :mod:`~membrane_curvature.fourier_surface` for details.
 
-.. _binning_method:
+- :ref:`binning_method` (``surface_method='binning'``)
 
-2.1. Binning method
--------------------
+  Atoms are assigned to bins on a regular grid and the height of each bin
+  is set to the mean :math:`z`-coordinate of its atoms. Partial derivatives
+  are estimated numerically from the discrete height field using
+  :func:`numpy.gradient` with the physical bin spacing.
+  See :mod:`~membrane_curvature.binning_surface` for details.
 
-The binning method derives a surface by partitioning the simulation box into
-a regular ``n_x_bins`` x ``n_y_bins`` grid along the :math:`x` and
-:math:`y` directions. For each bin we compute the average :math:`z` coordinate
-of the atoms that fall inside the bin to form the discrete height field.
-
-The resulting discrete height field is then differentiated numerically
-using :func:`numpy.gradient` to obtain the partial derivatives required for
-curvature calculation. This is the default method
-(``surface_method='binning'``) and requires no additional parameters
-beyond the grid dimensions.
-
-In the next section, we describe the details of the binning method.
-
-.. _set-grid:
-
-2.1.1. Set grid
-^^^^^^^^^^^^^^^
-The dimensions of the grid are determined by the size of the simulation box
-contained in the :class:`~MDAnalysis.core.universe.Universe`.
-The grid covers a rectangular domain in the membrane plane. By default that
-domain matches the `x` and `y` edges of the simulation box from MDAnalysis'
-:class:`~MDAnalysis.core.universe.Universe`. The grid comprises ``n_x_bins x n_y_bins``
-bins along the `x` and `y` directions. Note that the user can define the number of
-bins via the ``n_x_bins`` and ``n_y_bins`` arguments.
-
-For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference,
-MembraneCurvature assigns it to a grid cell based on its `x` and `y` coordinates.
-In practice, each coordinate pair ``(x, y)`` is mapped to a grid location
-``[l, m]`` corresponding to a bin in the discretized membrane surface.
-
-|grid|
-
-Here, :math:`L_x` and :math:`L_y` denote the size of the simulation box in the 
-`x` and `y` directions, respectively, while the size of the region covered by
-the grid is represented by ``x_range`` and ``y_range``, along the `x` and `y`
-directions, respectively. The spacing between grid points in each direction is
-then determined by dividing these lengths by the number of bins.
-
-.. note::
-  Unless the user provides a different input, MembraneCurvature will determine
-  the dimensions of the grid based on the size of the box on the first frame via
-  :attr:`~MDAnalysis.core.universe.Universe.dimensions`.
-
-  .. code-block:: python
-
-      grid_dimension_x = (0, universe.dimensions[0])
-      grid_dimension_y = (0, universe.dimensions[1])
-
-2.1.2. Populate grid
-^^^^^^^^^^^^^^^^^^^^^
-Once the grid has been populated, the `z` coordinates of atoms assigned to each
-cell are collected to form a height field over the grid.
-
-Coordinates are converted to integer bin indices via scale factors
-
-.. math::
-   x\_factor = \frac{n\_{x\_bins}}{x_{\max} - x_{\min}}, \qquad
-   y\_factor = \frac{n\_{y\_bins}}{y_{\max} - y_{\min}}.
-
-We histogram the atoms of reference into a 2D grid by mapping each atom at
-:math:`x` and :math:`y` coordinates to an integer bin index. The scale factor
-converts coordinates from length units into bin units so that flooring yields an integer
-index:
-
-.. math::
-
-   \mathrm{index} = \left\lfloor (x - x_{\min})\,x\_factor \right\rfloor,
-
-and similarly for :math:`y`. 
-
-Atoms that map outside the valid bin range
-(negative indices or indices ≥ ``n_x_bins``/``n_y_bins``) are skipped and
-trigger a one-time detailed warning. The function uses a WarnOnce helper so the full diagnostic
-is shown on first occurrence and a short message on subsequent occurrences.
-
-Empty bins (zero samples) are represented as :data:`numpy.nan` in the returned
-``(n_x_bins, n_y_bins)`` array: the implementation replaces zero counts
-with :data:`numpy.nan` and divides summed z-values by the per-bin counts. As a result,
-trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
-
-.. note::
-  
-  The binning routine itself does not apply periodic wrapping;
-  the caller (for example :class:`~membrane_curvature.base.MembraneCurvature`)
-  applies ``AtomGroup.wrap()`` when ``wrap=True`` before building the surface.
-  Therefore whether atoms are wrapped into the primary box (and thus their
-  bin assignment) depends on the wrapping option supplied to the analysis.
 
 .. _fourier_method:
 
-2.2 Fourier method
+2.1 Fourier method
 --------------------
-The Fourier method fits a truncated, doubly periodic 2D Fourier series to
-the atom height values in each frame. The basis is periodic on the
-simulation box with periods :math:`L_x` and :math:`L_y`, so the fitted
-surface is consistent with periodic boundary conditions in :math:`x` and
+
+``surface_method='fourier'`` is the default method used in Membrane Curvature.
+The Fourier method fits a truncated periodic 2D Fourier series to atom heights
+by linear least squares at each frame. 
+The truncation is controlled by ``fourier_m`` and ``fourier_n`` (default ``2``).
+The basis is periodic on the simulation box with periods :math:`L_x` and :math:`L_y`,
+so the fitted surface is consistent with periodic boundary conditions in :math:`x` and
 :math:`y`.
 
 The Fourier expansion used as a basis function is given by:
@@ -202,7 +113,7 @@ overall workflow implemented in MembraneCurvature. For details on each step and
 the associated functions, see the API documentation in
 :mod:`~membrane_curvature.fourier_surface`.
 
-2.2.1 Choose Fourier modes
+2.1.1 Choose Fourier modes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The first step is to choose a non-redundant set of Fourier modes with
 :func:`~membrane_curvature.fourier_surface.fourier_mode_list` and determine the
@@ -212,7 +123,7 @@ mean term.
 
 |fourier_modes|
 
-2.2.2 Compute wavevectors
+2.1.2 Compute wavevectors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 We then compute the wavevector components (:math:`k_x`, :math:`k_y`) for each mode
 using :func:`~membrane_curvature.fourier_surface._compute_wavevector`. These
@@ -251,7 +162,7 @@ contains at least that many atoms and raises a :class:`ValueError` if the select
 
 .. _build-design-matrix:
 
-2.2.3 Build design matrix
+2.1.3 Build design matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 We then build the design matrix with :func:`~membrane_curvature.fourier_surface._build_fourier_matrix`.
 Each row of the design matrix corresponds to an atom position and columns are the constant offset
@@ -317,7 +228,7 @@ so columns appear as ``1, cos_{(m1,n1)}, sin_{(m1,n1)}, cos_{(m2,n2)}, sin_{(m2,
   for each retained Fourier mode (one for cosine and one for sine).
 
 
-2.2.4 Solve least-squares system
+2.1.4 Solve least-squares system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We then solve the least-squares system for the Fourier coefficients using
 :func:`~membrane_curvature.fourier_surface._fourier_fit_from_atoms` (which
@@ -340,6 +251,99 @@ via :func:`numpy.linalg.lstsq`. Because the model is linear in
 :math:`\boldsymbol{\theta}`, no nonlinear optimisation is required.
 If the effective rank of :math:`\mathbf{\Phi}` is smaller than :math:`P`,
 a ``UserWarning`` is emitted.
+
+
+.. _binning_method:
+
+2.2. Binning method
+-------------------
+
+The binning method derives a surface by partitioning the simulation box into
+a regular ``n_x_bins`` x ``n_y_bins`` grid along the :math:`x` and
+:math:`y` directions. For each bin we compute the average :math:`z` coordinate
+of the atoms that fall inside the bin to form the discrete height field.
+
+The resulting discrete height field is then differentiated numerically
+using :func:`numpy.gradient` to obtain the partial derivatives required for
+curvature calculation. Set ``surface_method='binning'`` explicitly to use
+this method; it requires no additional parameters beyond the grid dimensions.
+
+In the next section, we describe the details of the binning method.
+
+.. _set-grid:
+
+2.2.1. Set grid
+^^^^^^^^^^^^^^^
+The dimensions of the grid are determined by the size of the simulation box
+contained in the :class:`~MDAnalysis.core.universe.Universe`.
+The grid covers a rectangular domain in the membrane plane. By default that
+domain matches the `x` and `y` edges of the simulation box from MDAnalysis'
+:class:`~MDAnalysis.core.universe.Universe`. The grid comprises ``n_x_bins x n_y_bins``
+bins along the `x` and `y` directions. Note that the user can define the number of
+bins via the ``n_x_bins`` and ``n_y_bins`` arguments.
+
+For every atom in the :class:`~MDAnalysis.core.groups.AtomGroup` of reference,
+MembraneCurvature assigns it to a grid cell based on its `x` and `y` coordinates.
+In practice, each coordinate pair ``(x, y)`` is mapped to a grid location
+``[l, m]`` corresponding to a bin in the discretized membrane surface.
+
+|grid|
+
+Here, :math:`L_x` and :math:`L_y` denote the size of the simulation box in the 
+`x` and `y` directions, respectively, while the size of the region covered by
+the grid is represented by ``x_range`` and ``y_range``, along the `x` and `y`
+directions, respectively. The spacing between grid points in each direction is
+then determined by dividing these lengths by the number of bins.
+
+.. note::
+  Unless the user provides a different input, MembraneCurvature will determine
+  the dimensions of the grid based on the size of the box on the first frame via
+  :attr:`~MDAnalysis.core.universe.Universe.dimensions`.
+
+  .. code-block:: python
+
+      grid_dimension_x = (0, universe.dimensions[0])
+      grid_dimension_y = (0, universe.dimensions[1])
+
+2.2.2. Populate grid
+^^^^^^^^^^^^^^^^^^^^^
+Once the grid has been populated, the `z` coordinates of atoms assigned to each
+cell are collected to form a height field over the grid.
+
+Coordinates are converted to integer bin indices via scale factors
+
+.. math::
+   x\_factor = \frac{n\_{x\_bins}}{x_{\max} - x_{\min}}, \qquad
+   y\_factor = \frac{n\_{y\_bins}}{y_{\max} - y_{\min}}.
+
+We histogram the atoms of reference into a 2D grid by mapping each atom at
+:math:`x` and :math:`y` coordinates to an integer bin index. The scale factor
+converts coordinates from length units into bin units so that flooring yields an integer
+index:
+
+.. math::
+
+   \mathrm{index} = \left\lfloor (x - x_{\min})\,x\_factor \right\rfloor,
+
+and similarly for :math:`y`. 
+
+Atoms that map outside the valid bin range
+(negative indices or indices ≥ ``n_x_bins``/``n_y_bins``) are skipped and
+trigger a one-time detailed warning. The function uses a WarnOnce helper so the full diagnostic
+is shown on first occurrence and a short message on subsequent occurrences.
+
+Empty bins (zero samples) are represented as :data:`numpy.nan` in the returned
+``(n_x_bins, n_y_bins)`` array: the implementation replaces zero counts
+with :data:`numpy.nan` and divides summed z-values by the per-bin counts. As a result,
+trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
+
+.. note::
+  
+  The binning routine itself does not apply periodic wrapping;
+  the caller (for example :class:`~membrane_curvature.base.MembraneCurvature`)
+  applies ``AtomGroup.wrap()`` when ``wrap=True`` before building the surface.
+  Therefore whether atoms are wrapped into the primary box (and thus their
+  bin assignment) depends on the wrapping option supplied to the analysis.
 
 .. _derive-surface-curvature:
 
