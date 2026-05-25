@@ -68,8 +68,11 @@ class MembraneCurvature(AnalysisBase):
     fourier_n : int, optional
         Maximum Fourier mode index in ``y`` when ``surface_method='fourier'``.
         Default ``2``.
-    fourier_lstsq_rcond : float, optional
-        ``rcond`` passed to :func:`numpy.linalg.lstsq` when ``surface_method='fourier'``.
+    fourier_rcond : float, optional
+        Singular-value cutoff for the Fourier fit via truncated SVD
+        with :func:`~membrane_curvature.fourier_surface._solve_design_least_squares_svd`
+        when ``surface_method='fourier'``. The cutoff is interpreted as a
+        relative threshold on singular values.
 
     Attributes
     ----------
@@ -212,7 +215,7 @@ class MembraneCurvature(AnalysisBase):
         surface_method='fourier',
         fourier_m=2,
         fourier_n=2,
-        fourier_lstsq_rcond=None,
+        fourier_rcond=None,
         **kwargs,
     ):
 
@@ -243,7 +246,7 @@ class MembraneCurvature(AnalysisBase):
             self.wrap = True if wrap is None else wrap
         self.fourier_m = int(fourier_m)
         self.fourier_n = int(fourier_n)
-        self.fourier_lstsq_rcond = fourier_lstsq_rcond
+        self.fourier_rcond = fourier_rcond
         if self.surface_method == 'fourier':
             if self.fourier_m < 0 or self.fourier_n < 0:
                 raise ValueError('fourier_m and fourier_n must be non-negative')
@@ -320,7 +323,7 @@ class MembraneCurvature(AnalysisBase):
                 self.n_y_bins,
                 self.fourier_m,
                 self.fourier_n,
-                rcond=self.fourier_lstsq_rcond,
+                rcond=self.fourier_rcond,
             )
             self.results.z_surface[self._frame_index] = z_f
             self.results.mean[self._frame_index] = mean_f

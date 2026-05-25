@@ -231,8 +231,14 @@ so columns appear as ``1, cos_{(m1,n1)}, sin_{(m1,n1)}, cos_{(m2,n2)}, sin_{(m2,
 2.1.4 Solve least-squares system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We then solve the least-squares system for the Fourier coefficients using
-:func:`~membrane_curvature.fourier_surface._fourier_fit_from_atoms` (which
-calls :func:`numpy.linalg.lstsq`). 
+:func:`~membrane_curvature.fourier_surface._fourier_fit_from_atoms`, which
+calls :func:`~membrane_curvature.fourier_surface._solve_design_least_squares`.
+The latter function solves the linear least-squares system via truncated SVD.
+The ``rcond`` parameter follows the same singular-value cutoff convention as
+:func:`numpy.linalg.lstsq`. Please note that the implementation in MembraneCurvature
+does not call :func:`numpy.linalg.lstsq` but solves the linear least-squares system via
+truncated SVD.
+
 This function solves the least-squares system for the Fourier coefficients and splits the solution vector into the mean term and
 the per-mode amplitudes with :func:`~membrane_curvature.fourier_surface._unpack_coefficients`.
 The returned coefficients are then used to evaluate the fitted height and its
@@ -247,7 +253,8 @@ by minimizing the residual sum of squares between the observed heights and the f
    \operatorname{arg\,min}_{\boldsymbol{\theta}}
    \lVert \mathbf{\Phi}\,\boldsymbol{\theta} - \mathbf{z} \rVert_2^2
 
-via :func:`numpy.linalg.lstsq`. Because the model is linear in
+via truncated SVD (:func:`~membrane_curvature.fourier_surface._solve_design_least_squares`).
+Because the model is linear in
 :math:`\boldsymbol{\theta}`, no nonlinear optimisation is required.
 If the effective rank of :math:`\mathbf{\Phi}` is smaller than :math:`P`,
 a ``UserWarning`` is emitted.
@@ -332,10 +339,17 @@ Atoms that map outside the valid bin range
 trigger a one-time detailed warning. The function uses a WarnOnce helper so the full diagnostic
 is shown on first occurrence and a short message on subsequent occurrences.
 
+To populate the grid, :class:`~membrane_curvature.base.MembraneCurvature` wraps
+the coordinates of the :class:`~MDAnalysis.core.groups.AtomGroup` of reference
+using :meth:`~MDAnalysis.core.groups.AtomGroup.wrap` only when ``wrap=True`` is
+set (the default for ``surface_method='binning'``).
+
 Empty bins (zero samples) are represented as :data:`numpy.nan` in the returned
 ``(n_x_bins, n_y_bins)`` array: the implementation replaces zero counts
 with :data:`numpy.nan` and divides summed z-values by the per-bin counts. As a result,
 trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
+
+
 
 .. warning::
   

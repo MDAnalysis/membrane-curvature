@@ -16,6 +16,7 @@ from membrane_curvature.fourier_surface import (
     _harmonic_height_and_phi_derivatives,
     _eval_fourier_surface,
     _fourier_fit_from_atoms,
+    _solve_design_least_squares_svd,
     n_fourier_parameters,
     fourier_mode_list,
     fourier_height_from_atoms,
@@ -83,6 +84,23 @@ def eval_fourier_surface_common_inputs(dummy_fourier_universe):
         Lx=2.0,
         Ly=2.0,
     )
+
+
+@pytest.fixture()
+def dummy_two_mode_fourier_system(dummy_fourier_universe):
+    positions = dummy_fourier_universe.atoms.positions
+    x_positions = positions[:, 0]
+    y_positions = positions[:, 1]
+    z_values = positions[:, 2]
+    modes = [(1, 0), (0, 1)]
+    design_matrix = _build_fourier_matrix(
+        x_positions,
+        y_positions,
+        2.0,
+        2.0,
+        modes,
+    )
+    return design_matrix, z_values
 
 
 def test_calculate_a00_2x2_grid(dummy_fourier_universe, dummy_fourier_fit):
@@ -260,6 +278,34 @@ def test_harmonic_height_and_phi_derivatives(dummy_fourier_universe, A, B):
     assert_almost_equal(h, expected_h)
     assert_almost_equal(h_phi, expected_h_phi)
     assert_almost_equal(h_phiphi, expected_h_phiphi)
+
+
+def test_solve_design_least_squares_theta_matches_lstsq(dummy_two_mode_fourier_system):
+    design_matrix, z_values = dummy_two_mode_fourier_system
+    theta_svd, _, _ = _solve_design_least_squares_svd(design_matrix, z_values)
+    theta_lstsq, _, _, _ = np.linalg.lstsq(design_matrix, z_values, rcond=None)
+    assert_almost_equal(theta_svd, theta_lstsq)
+
+
+def test_solve_design_least_squares_rank_deficient_minimum_norm_solution():
+    design_matrix = np.array(
+        [
+            [1.0, 1.0],
+            [1.0, 1.0],
+            [1.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    targets = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+    expected_sum = float(np.mean(targets))
+
+    theta, rank, _singular_values = _solve_design_least_squares_svd(design_matrix, targets, rcond=None)
+    assert rank == 1
+    assert_almost_equal(theta[0] + theta[1], expected_sum)
+
+    # Minimum-norm solution has no component along the nullspace direction [1, -1].
+    assert_almost_equal(theta[0], theta[1])
+    assert_almost_equal(float(np.dot(np.array([1.0, -1.0], dtype=np.float64), theta)), 0.0)
 
 
 def test_fourier_warning_rank_deficient(dummy_fourier_universe):
