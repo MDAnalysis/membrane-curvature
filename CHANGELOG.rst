@@ -1,6 +1,8 @@
 Membranecurvature CHANGELOG
 =============================
 
+* Apply coordinate wrapping only for ``surface_method='binning'``, set ``wrap`` to ``None`` by default,
+  raise ValueError when ``surface_method='fourier'`` (PR #170).
 * Set `'fourier'` as default surface method. (PR #168)
 * Updated documentation to reflect Fourier surface method (Algorithm page PR #160, Usage PR #163, Tutorials PR #164, Visualization #171)
 * Added surface_method='fourier'; derives surface from atoms of reference using a truncated Fourier series (PR #146)
