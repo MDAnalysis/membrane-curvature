@@ -4,7 +4,7 @@ r"""
 Binning Surface
 --------------------
 
-With `surface_method='binning'`, Membranecurvature forms a surface from
+With `surface_method='binning'`, MembraneCurvature forms a surface from
 the `z` position of the `atoms` in an `AtomGroup` of reference. This
 surface is then used as a reference to calculate curvature.
 
@@ -29,7 +29,7 @@ logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
 class WarnOnce:
     """
     Class to warn atoms out of grid boundaries only once with full message.
-    After the first ocurrence, message will be generic.
+    After the first occurrence, message will be generic.
     """
 
     def __init__(self, msg, msg_multiple) -> None:
