@@ -117,8 +117,8 @@ is equivalent to:
 
 .. tip::
 
-  When using the Fourier method, ``wrap`` is not required. Periodic :math:`x`/:math:`y` folding
-  is handled inside the Fourier fit. 🙂
+  When using the Fourier method, ``wrap`` is not required. Periodic boundary conditions are handled
+  inside the Fourier fit. 🙂
   Use ``wrap=True`` only with ``surface_method='binning'`` to pack atoms into the primary unit cell
   on raw trajectories.
 
