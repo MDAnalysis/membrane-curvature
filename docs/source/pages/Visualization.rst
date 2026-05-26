@@ -63,6 +63,7 @@ For example, to visualize the results obtained in :ref:`membrane-only`, we can r
 
    In [2]: curvature_upper_leaflet = MembraneCurvature(universe,
       ...:                                             select='resid 1-225 and name PO4',
+      ...:                                             surface_method='binning',
       ...:                                             n_x_bins=8, 
       ...:                                             n_y_bins=8, 
       ...:                                             wrap=True).run()
@@ -71,6 +72,7 @@ For example, to visualize the results obtained in :ref:`membrane-only`, we can r
 
    In [4]: curvature_lower_leaflet = MembraneCurvature(universe,
       ...:                                             select='resid 226-450 and name PO4',
+      ...:                                             surface_method='binning',
       ...:                                             n_x_bins=8, 
       ...:                                             n_y_bins=8, 
       ...:                                             wrap=True).run()
@@ -89,6 +91,43 @@ For example, to visualize the results obtained in :ref:`membrane-only`, we can r
       ...:     ax.set_title('{} Leaflet'.format(lf))
       ...:     ax.axis('off')
 
+Alternatively, with the Fourier method and the default values for the fit, we can run:
+
+.. ipython::
+   :okwarning:
+   
+   In [0]: import MDAnalysis as mda
+      ...: from membrane_curvature.base import MembraneCurvature
+      ...: from MDAnalysis.tests.datafiles import Martini_membrane_gro
+      ...: import matplotlib.pyplot as plt
+   
+   In [1]: universe = mda.Universe(Martini_membrane_gro)
+
+   In [2]: curvature_upper_leaflet_fourier = MembraneCurvature(universe,
+      ...:                                                     select='resid 1-225 and name PO4',
+      ...:                                                     surface_method='fourier',
+      ...:                                                     ).run()
+
+   In [3]: mean_upper_leaflet_fourier = curvature_upper_leaflet_fourier.results.average_mean
+
+   In [4]: curvature_lower_leaflet_fourier = MembraneCurvature(universe,
+      ...:                                                     select='resid 226-450 and name PO4',
+      ...:                                                     surface_method='fourier',
+      ...:                                                     ).run()
+
+   In [5]: mean_lower_leaflet_fourier = curvature_lower_leaflet_fourier.results.average_mean
+   
+   In [6]: leaflets = ['Lower', 'Upper']
+
+   In [7]: curvatures_fourier = [mean_lower_leaflet_fourier, mean_upper_leaflet_fourier]
+   
+   @savefig mycurvature_fourier.png width=8in
+   In [8]: fig, [ax1, ax2] = plt.subplots(ncols=2, figsize=(6,3), dpi=200)
+      ...: for ax, mc, lf in zip((ax1, ax2), curvatures_fourier, leaflets):
+      ...:     ax.imshow(mc.T, origin='lower', interpolation='gaussian', cmap='seismic')
+      ...:     ax.set_aspect('equal')
+      ...:     ax.set_title('{} Leaflet'.format(lf))
+      ...:     ax.axis('off')
 
 .. _plt.contourf:
 
@@ -111,7 +150,7 @@ to perform an interpolation. We suggest using
    In [1]: leaflets = ['Lower', 'Upper']
 
    @savefig mycontours.png width=8in
-   In [2]: fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(5,3))
+   In [2]: fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(5,3), dpi=200)
       ...: for ax, mc, lf in zip((ax1, ax2), curvatures, leaflets):
       ...:     arr_ = ndimage.gaussian_filter(mc, sigma=1, order=0, mode='reflect')
       ...:     ax.contourf(arr_.T, 
@@ -121,4 +160,23 @@ to perform an interpolation. We suggest using
       ...:     ax.set_title('{} Leaflet'.format(lf))
       ...:     ax.axis('off')
 
+Or with the Fourier method:
+
+.. ipython::
+   :okwarning:
+   
+   In [0]: from scipy import ndimage
+
+   In [1]: leaflets = ['Lower', 'Upper']
+
+   @savefig mycontours_fourier.png width=8in
+   In [2]: fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(5,3), dpi=200)
+      ...: for ax, mc, lf in zip((ax1, ax2), curvatures_fourier, leaflets):
+      ...:     arr_ = ndimage.gaussian_filter(mc, sigma=1, order=0, mode='reflect')
+      ...:     ax.contourf(arr_.T, 
+      ...:                 cmap='bwr',
+      ...:                 levels=30)
+      ...:     ax.set_aspect('equal')
+      ...:     ax.set_title('{} Leaflet'.format(lf))
+      ...:     ax.axis('off')
 .. _Matplotlib: https://matplotlib.org

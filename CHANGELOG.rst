@@ -2,7 +2,7 @@ Membranecurvature CHANGELOG
 =============================
 
 * Set `'fourier'` as default surface method. (PR #168)
-* Updated documentation to reflect Fourier surface method (Algorithm page PR #160, Usage PR #163, Tutorials PR #164)
+* Updated documentation to reflect Fourier surface method (Algorithm page PR #160, Usage PR #163, Tutorials PR #164, Visualization #171)
 * Added surface_method='fourier'; derives surface from atoms of reference using a truncated Fourier series (PR #146)
 * Added maintenance tools (ruff PR #147, pre-commit hooks PR #151, ty PR #155)
 
