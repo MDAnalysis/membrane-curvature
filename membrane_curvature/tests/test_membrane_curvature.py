@@ -899,6 +899,22 @@ class TestMembraneCurvature(object):
         assert mc.fourier_m == 2
         assert mc.fourier_n == 2
 
+    def test_wrap_defaults_false_fourier(self, universe_fourier_defaults):
+        mc = MembraneCurvature(universe_fourier_defaults)
+        assert mc.wrap is False
+
+    def test_wrap_defaults_true_binning(self, universe):
+        mc = MembraneCurvature(universe, select='name PO4', surface_method='binning')
+        assert mc.wrap is True
+
+    def test_wrap_false_explicit_fourier(self, universe_fourier_defaults):
+        mc = MembraneCurvature(universe_fourier_defaults, wrap=False)
+        assert mc.wrap is False
+
+    def test_wrap_true_rejected_fourier(self, universe_fourier_defaults):
+        with pytest.raises(ValueError, match=r"wrap=True is only valid when surface_method='binning'"):
+            MembraneCurvature(universe_fourier_defaults, wrap=True)
+
     @pytest.mark.parametrize(
         'n_x_bins,n_y_bins',
         [(0, 10), (10, 0), (-1, 10), (10, -1)],
@@ -1017,7 +1033,7 @@ class TestMembraneCurvature(object):
         assert_almost_equal(avg_surface, expected_surface)
 
     # test using dummy Universe with atoms out of boounds
-    # with wrap=True (default)
+    # with wrap=True (default for binning)
     #   +-----------+          +-----------+
     #   |   | 8 | 9 | 7        | 7 | 8 | 9 |
     #   +-----------+          +-----------+

@@ -337,13 +337,21 @@ Empty bins (zero samples) are represented as :data:`numpy.nan` in the returned
 with :data:`numpy.nan` and divides summed z-values by the per-bin counts. As a result,
 trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
 
-.. note::
+.. warning::
   
   The binning routine itself does not apply periodic wrapping;
-  the caller (for example :class:`~membrane_curvature.base.MembraneCurvature`)
-  applies ``AtomGroup.wrap()`` when ``wrap=True`` before building the surface.
-  Therefore whether atoms are wrapped into the primary box (and thus their
-  bin assignment) depends on the wrapping option supplied to the analysis.
+  :class:`~membrane_curvature.base.MembraneCurvature` applies
+  ``AtomGroup.wrap()`` only when ``wrap=True`` is set. 
+  
+  - Set ``wrap=True`` to pack atoms back into the grid if you are calculating
+    curvature on a **raw trajectory**.
+  - Set ``wrap=False`` to omit atoms from the simulation box that fall outside
+    the grid when you are calculating curvature on:
+      - a trajectory (membrane only or membrane-protein with position restraints) that
+        already **pre-processed periodic boundary conditions**. 
+      - a membrane-protein system that already **pre-processes rotational and translational
+        fit for the protein**.
+
 
 .. _derive-surface-curvature:
 
