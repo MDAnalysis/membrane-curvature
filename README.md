@@ -17,8 +17,6 @@ Membrane Curvature
 MembraneCurvature is an [MDAnalysis] tool to calculate membrane curvature from
 Molecular Dynamics simulations.
 
-> **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
-
 Features
 --------------
 
@@ -174,6 +172,7 @@ pip install -e ".[dev]"
 pre-commit install
 ```
 
+> **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
 
 License
 ---------------
