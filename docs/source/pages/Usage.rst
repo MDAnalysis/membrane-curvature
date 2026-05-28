@@ -124,11 +124,11 @@ is equivalent to:
   Use ``wrap=True`` only with ``surface_method='binning'`` to pack atoms into the primary unit cell
   on raw trajectories.
 
-Advanced: Tuning the Fourier least-squares cutoff (``rcond``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Advanced: Tuning the Fourier least-squares cutoff (``fourier_rcond``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The Fourier surface is fit by solving a linear least-squares system with singular-value truncation `SVD`_.
-The optional cutoff ``rcond`` controls which singular values are treated as "effectively zero" and
+The optional cutoff ``fourier_rcond`` controls which singular values are treated as "effectively zero" and
 therefore removed from the solve. Smaller values keep more directions, and potentially noisier if
 the system is underdetermined. Larger values regularize more aggressively.
 
