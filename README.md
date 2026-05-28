@@ -160,18 +160,7 @@ before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] lint
 Using these hooks is highly encouraged because it helps catch common issues early and
 keeps pull requests easier to review.
 
-<<<<<<< Updated upstream
-To set up hooks locally, with pip:
-
-```bash
-pip install -e ".[dev]"
-pre-commit install
-```
-
-Or with [uv]:
-=======
 To set up hooks locally, with with [uv]:
->>>>>>> Stashed changes
 
 ```bash
 uv sync --extra dev
