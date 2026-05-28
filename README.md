@@ -6,7 +6,7 @@ Membrane Curvature
 [![docs](https://readthedocs.org/projects/membrane-curvature/badge/?version=latest)](https://membrane-curvature.readthedocs.io/en/latest/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
-[![License](https://img.shields.io/github/license/MDAnalysis/membrane-curvature?color=yellow)](https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/License-GPL--3.0-yellow.svg)](https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE)
 
 [![Python versions](https://img.shields.io/pypi/pyversions/membrane-curvature)](https://pypi.org/project/membrane-curvature/)
 [![PyPI](https://img.shields.io/pypi/v/membrane-curvature)](https://pypi.org/project/membrane-curvature/)
