@@ -1,6 +1,7 @@
 Membranecurvature CHANGELOG
 =============================
 
+* Refactored Fourier surface method to use singular-value decomposition (SVD) instead of least-squares (PR #177)
 * Apply coordinate wrapping only for ``surface_method='binning'``, set ``wrap`` to ``None`` by default,
   raise ValueError when ``surface_method='fourier'`` (PR #170).
 * Set `'fourier'` as default surface method. (PR #168)

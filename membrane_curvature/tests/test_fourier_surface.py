@@ -16,6 +16,7 @@ from membrane_curvature.fourier_surface import (
     _harmonic_height_and_phi_derivatives,
     _eval_fourier_surface,
     _fourier_fit_from_atoms,
+    _solve_design_least_squares_svd,
     n_fourier_parameters,
     fourier_mode_list,
     fourier_height_from_atoms,
@@ -83,6 +84,48 @@ def eval_fourier_surface_common_inputs(dummy_fourier_universe):
         Lx=2.0,
         Ly=2.0,
     )
+
+
+@pytest.fixture()
+def dummy_two_mode_fourier_system(dummy_fourier_universe):
+    positions = dummy_fourier_universe.atoms.positions
+    x_positions = positions[:, 0]
+    y_positions = positions[:, 1]
+    z_values = positions[:, 2]
+    modes = [(1, 0), (0, 1)]
+    design_matrix = _build_fourier_matrix(
+        x_positions,
+        y_positions,
+        2.0,
+        2.0,
+        modes,
+    )
+    return design_matrix, z_values
+
+
+@pytest.fixture()
+def full_rank_design_system():
+    """Full-rank design with a known exact least-squares solution."""
+    design_matrix = np.array(
+        [
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [1.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    theta_true = np.array([2.0, 3.0], dtype=np.float64)
+    targets = design_matrix @ theta_true
+    return design_matrix, targets, theta_true
+
+
+@pytest.fixture()
+def rank_deficient_design_system():
+    """Duplicate columns -> rank 1; minimum-norm solution splits mean(targets) equally."""
+    design_matrix = np.ones((3, 2), dtype=np.float64)
+    targets = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+    expected_theta = np.full(2, targets.mean() / 2.0)
+    return design_matrix, targets, expected_theta
 
 
 def test_calculate_a00_2x2_grid(dummy_fourier_universe, dummy_fourier_fit):
@@ -260,6 +303,94 @@ def test_harmonic_height_and_phi_derivatives(dummy_fourier_universe, A, B):
     assert_almost_equal(h, expected_h)
     assert_almost_equal(h_phi, expected_h_phi)
     assert_almost_equal(h_phiphi, expected_h_phiphi)
+
+
+def test_solve_design_least_squares_svd_targets_shape_mismatch(full_rank_design_system):
+    design_matrix, targets, _ = full_rank_design_system
+    with pytest.raises(ValueError, match='targets must have shape \\(design_matrix.shape\\[0\\],\\)'):
+        _solve_design_least_squares_svd(design_matrix, targets[:2])
+
+
+def test_solve_design_least_squares_svd_empty_design_matrix_returns_zeros():
+    design_matrix = np.zeros((0, 3), dtype=np.float64)
+    targets = np.zeros(0, dtype=np.float64)
+    theta, rank, singular_values = _solve_design_least_squares_svd(design_matrix, targets)
+    assert rank == 0
+    assert singular_values.size == 0
+    assert_almost_equal(theta, np.zeros(3))
+
+
+def test_solve_design_least_squares_svd_recovers_known_theta(full_rank_design_system):
+    design_matrix, targets, theta_true = full_rank_design_system
+    theta, rank, _ = _solve_design_least_squares_svd(design_matrix, targets)
+    assert rank == design_matrix.shape[1]
+    assert_almost_equal(theta, theta_true)
+
+
+def test_solve_design_least_squares_svd_exact_fit_zero_residual(full_rank_design_system):
+    design_matrix, targets, theta_true = full_rank_design_system
+    theta, _, _ = _solve_design_least_squares_svd(design_matrix, targets)
+    residual = design_matrix @ theta - targets
+    assert_almost_equal(residual, np.zeros_like(targets))
+    assert_almost_equal(theta, theta_true)
+
+
+def test_solve_design_least_squares_svd_singular_values_match_numpy(full_rank_design_system):
+    design_matrix, targets, _ = full_rank_design_system
+    _, _, singular_values = _solve_design_least_squares_svd(design_matrix, targets)
+    _, expected_singular_values, _ = np.linalg.svd(design_matrix, full_matrices=False)
+    assert_almost_equal(singular_values, expected_singular_values)
+
+
+def test_solve_design_least_squares_svd_rank_matches_truncation_mask(full_rank_design_system):
+    design_matrix, targets, _ = full_rank_design_system
+    rcond = 1e-12
+    _, rank, singular_values = _solve_design_least_squares_svd(
+        design_matrix,
+        targets,
+        rcond=rcond,
+    )
+    cutoff = rcond * singular_values[0]
+    expected_rank = int(np.count_nonzero(singular_values > cutoff))
+    assert rank == expected_rank
+
+
+def test_solve_design_least_squares_svd_coerces_inputs_to_float64(full_rank_design_system):
+    design_matrix, targets, theta_true = full_rank_design_system
+    design_int = design_matrix.astype(np.int64)
+    targets_int = targets.astype(np.int64)
+    theta, rank, singular_values = _solve_design_least_squares_svd(design_int, targets_int)
+    assert theta.dtype == np.float64
+    assert singular_values.dtype == np.float64
+    assert rank == design_matrix.shape[1]
+    assert_almost_equal(theta, theta_true)
+
+
+def test_solve_design_least_squares_svd_rank_deficient_minimum_norm(rank_deficient_design_system):
+    design_matrix, targets, expected_theta = rank_deficient_design_system
+    theta, rank, _ = _solve_design_least_squares_svd(design_matrix, targets, rcond=None)
+    assert rank == 1
+    assert rank < design_matrix.shape[1]
+    assert_almost_equal(theta, expected_theta)
+
+
+def test_solve_design_least_squares_svd_large_rcond_returns_zero_coefficients(rank_deficient_design_system):
+    design_matrix, targets, _ = rank_deficient_design_system
+    theta, rank, singular_values = _solve_design_least_squares_svd(
+        design_matrix,
+        targets,
+        rcond=1.0,
+    )
+    assert rank == 0
+    assert_almost_equal(theta, np.zeros(design_matrix.shape[1]))
+    assert singular_values.size > 0
+
+
+def test_solve_design_least_squares_svd_matches_lstsq_reference(dummy_two_mode_fourier_system):
+    design_matrix, targets = dummy_two_mode_fourier_system
+    theta_svd, _, _ = _solve_design_least_squares_svd(design_matrix, targets, rcond=None)
+    theta_lstsq, _, _, _ = np.linalg.lstsq(design_matrix, targets, rcond=None)
+    assert_almost_equal(theta_svd, theta_lstsq)
 
 
 def test_fourier_warning_rank_deficient(dummy_fourier_universe):

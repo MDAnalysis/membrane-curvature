@@ -1,7 +1,8 @@
 .. _usage:
 
+======
 Usage
-=========================================================
+======
 
 This page includes a practical guide to using MembraneCurvature with the surface
 derivation method of choice (binning or Fourier).
@@ -28,7 +29,7 @@ simulation systems.
 .. _surface-methods:
 
 1. Surface derivation methods
------------------------------
+=============================
 
 :class:`~membrane_curvature.base.MembraneCurvature` uses an AtomGroup as a reference,
 user-defined via the ``select`` parameter, to derive a surface and calculate mean and
@@ -62,7 +63,7 @@ For copy-paste examples of both methods see:
 .. _examples-usage:
 
 2. Examples of how to use MembraneCurvature to derive curvature profiles
-------------------------------------------------------------------------
+========================================================================
 
 The following sections offer examples of how to use MembraneCurvature to derive curvature profiles in three types of systems:
 
@@ -73,14 +74,15 @@ The following sections offer examples of how to use MembraneCurvature to derive 
 .. _membrane-only:
 
 2.1. Membrane-only systems
-------------------------------
+--------------------------
 
 In this example, we show a basic usage of MembraneCurvature in a system that
 comprises a lipid bilayer of DPPC:CHOL using the Martini force field. Since we
 have a bilayer, we select atoms of phospholipid head groups in the upper
 leaflet only using the :attr:`~select` parameter and apply coordinate wrapping.
 
-**Fourier surface method (default)**
+2.1.1 Fourier surface method (default)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We can calculate membrane curvature using the Fourier surface method by either
 setting ``surface_method='fourier'`` with ``fourier_m=2``, ``fourier_n=2``, or
@@ -122,7 +124,64 @@ is equivalent to:
   Use ``wrap=True`` only with ``surface_method='binning'`` to pack atoms into the primary unit cell
   on raw trajectories.
 
-**Binning surface method**
+Advanced: Tuning the Fourier least-squares cutoff (``fourier_rcond``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Fourier surface is fit by solving a linear least-squares system with singular-value truncation `SVD`_.
+The optional cutoff ``fourier_rcond`` controls which singular values are treated as "effectively zero" and
+therefore removed from the solve. Smaller values keep more directions, and potentially noisier if
+the system is underdetermined. Larger values regularize more aggressively.
+
+In :class:`~membrane_curvature.base.MembraneCurvature`, pass this cutoff as ``fourier_rcond``:
+
+.. code-block:: python
+
+    curvature_upper_leaflet = MembraneCurvature(universe,
+                                                select='resid 1-225 and name PO4',
+                                                surface_method='fourier',
+                                                fourier_m=2,
+                                                fourier_n=2,
+                                                fourier_rcond=1e-12
+                                                ).run()
+
+
+Note that ``fourier_rcond`` is a *relative* singular-value cutoff: singular values
+:math:`s \le rcond \cdot s_{\max}` are treated as zero.
+If the effective rank of the design matrix is smaller than the number of fitted parameters, a
+``UserWarning`` is emitted: the solver still returns a well-defined minimum-norm least-squares
+solution, but the coefficients are not uniquely determined by the data.
+
+.. warning::
+
+  ``fourier_rcond`` controls how aggressively we ignore poorly constrained combinations of
+  Fourier coefficients. **We strongly recommend using** ``fourier_rcond`` **with its
+  default value** ``None``.
+  Larger values keep fewer singular-value directions (more stable / more
+  regularized). Smaller values keep more directions (closer fit but potentially noisier).
+
+  Rough intuition:
+
+  - ``fourier_rcond=None``: sensible default; uses NumPy's heuristic cutoff.
+  - ``fourier_rcond=0``: truncate only *exactly* zero singular values.
+  - ``fourier_rcond=1e-12`` or ``1e-10``: more aggressive truncation; can reduce noise when the
+    fit is underdetermined.
+
+.. note::
+
+  All Fourier least-squares steps (design matrix, SVD, coefficients) use
+  64-bit floating point :func:`numpy.float64`. The cutoff defined by ``fourier_rcond`` is
+  a **relative threshold**: singular values with :math:`s \le rcond \cdot s_{\max}` are dropped.
+  The meaningful scale is therefore relative to the largest singular value :math:`s_{\max}`, not
+  absolute coordinates or heights.
+
+  With ``fourier_rcond=None``, the cutoff scales with the size of the least-squares problem, typically
+  the number of atoms in the selection, or the number of fitted coefficients if that is larger.
+  Passing a value much smaller than :math:`\sim 10^{-16}`, or much smaller than that automatic
+  cutoff, usually has no visible effect. To smooth an underdetermined fit on purpose, use larger
+  values such as ``1e-12`` or ``1e-10`` (see warning above).
+
+2.1.2 Binning surface method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Alternatively, set ``surface_method='binning'`` and provide the values for
 the binning grid ``n_x_bins`` and ``n_y_bins``. Note that you need to apply
@@ -305,3 +364,5 @@ Curvature tool can be found in the :ref:`visualization` page.
 .. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 
 .. _`Gromacs`: https://www.gromacs.org/
+
+.. _`SVD`: https://en.wikipedia.org/wiki/Singular_value_decomposition

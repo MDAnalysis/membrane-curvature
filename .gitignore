@@ -105,3 +105,10 @@ ENV/
 # There are reports this comes from LLVM profiling, but also Xcode 9.
 *profraw
 *.npz
+
+# macOS / editor files
+.DS_Store
+.vscode/
+
+# Generated docs figs
+docs/savefig/

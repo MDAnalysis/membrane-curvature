@@ -169,7 +169,8 @@ def fourier_curvature(
         Maximum Fourier mode indices; see
         :func:`~membrane_curvature.fourier_surface.fourier_mode_list`.
     rcond : float or None, optional
-        Passed to :func:`numpy.linalg.lstsq`.
+        Passed to singular-value truncation for the Fourier fit.
+        See :func:`~membrane_curvature.fourier_surface._solve_design_least_squares_svd`.
 
     Returns
     -------

@@ -25,6 +25,7 @@ a truncated 2D Fourier series. The workflow includes six steps:
     - :func:`_build_fourier_matrix`
 4. Solve the least-squares problem for the Fourier coefficients
     - :func:`_fourier_fit_from_atoms`
+    - :func:`_solve_design_least_squares_svd`
     - :func:`_unpack_coefficients`
 5. Reconstruct the continuous surface on a grid:
     - :func:`_bin_centre_mesh`
@@ -314,6 +315,69 @@ def _build_fourier_matrix(
     return design_matrix
 
 
+def _solve_design_least_squares_svd(
+    design_matrix: np.ndarray,
+    targets: np.ndarray,
+    rcond: float | None = None,
+) -> tuple[np.ndarray, int, np.ndarray]:
+    r"""
+    Least-squares solution with :func:`numpy.linalg.svd` and singular-value truncation.
+
+    Solves ``min ||design_matrix @ theta - targets||_2`` with a relative singular-value
+    cutoff ``rcond`` (values :math:`s \le rcond \cdot s_{\max}` are treated as
+    zero). When the system is rank-deficient, returns the minimum Euclidean-norm
+    coefficient vector among least-squares minimizers.
+
+    Parameters
+    ----------
+    design_matrix : ndarray, shape (n_rows, n_columns)
+        Design matrix with rows corresponding to atom positions and columns
+        corresponding to the basis functions.
+    targets : ndarray, shape (n_rows,)
+        Target heights.
+    rcond : float or None, optional
+        Relative cutoff for small singular values. ``None`` uses a heuristic
+        cutoff based on machine precision and the problem size.
+
+    Returns
+    -------
+    theta : ndarray, shape (n_columns,)
+        Fitted coefficients.
+    rank : int
+        Effective rank after truncation.
+    singular_values : ndarray
+        Singular values of ``design_matrix``.
+
+    .. note::
+
+        Here rank is the number of singular values greater than the cutoff.
+        The number of columns in the design matrix is the number of parameters.
+    """
+    design_matrix = np.asarray(design_matrix, dtype=np.float64)
+    targets = np.asarray(targets, dtype=np.float64)
+    n_rows, n_columns = design_matrix.shape
+    if targets.shape != (n_rows,):
+        raise ValueError('targets must have shape (design_matrix.shape[0],)')
+
+    if rcond is None:
+        rcond = np.finfo(np.float64).eps * max(n_rows, n_columns)
+
+    unitary_array, singular_values, vh = np.linalg.svd(design_matrix, full_matrices=False)
+
+    if singular_values.size == 0:
+        return np.zeros(n_columns, dtype=np.float64), 0, singular_values
+
+    cutoff = rcond * singular_values[0]
+    keep = singular_values > cutoff
+    rank = int(np.count_nonzero(keep))
+    if rank == 0:
+        return np.zeros(n_columns, dtype=np.float64), 0, singular_values
+
+    coefficients_on_span = (unitary_array[:, keep].T @ targets) / singular_values[keep]
+    theta = vh[keep].T @ coefficients_on_span
+    return theta, rank, singular_values
+
+
 # Step 4: least squares for Fourier coefficients
 def _unpack_coefficients(
     theta: np.ndarray, modes: list[tuple[int, int]]
@@ -321,7 +385,7 @@ def _unpack_coefficients(
     """
     Split the least-squares coefficient vector into the mean and per-mode amplitudes.
 
-    Used after step 4 (:func:`numpy.linalg.lstsq` in :func:`_fourier_fit_from_atoms`).
+    Used after step 4 (:func:`_solve_design_least_squares_svd` in :func:`_fourier_fit_from_atoms`).
     Index ``0`` is :math:`A_{00}`; remaining entries are cosine/sine pairs in ``modes`` order.
 
     Parameters
@@ -369,7 +433,7 @@ def _fourier_fit_from_atoms(
     M, N : int
         Maximum Fourier mode indices (see :func:`fourier_mode_list`).
     rcond : float or None, optional
-        Passed to :func:`numpy.linalg.lstsq`.
+        Relative cutoff for small singular values in :func:`_solve_design_least_squares_svd`.
 
     Returns
     -------
@@ -412,15 +476,13 @@ def _fourier_fit_from_atoms(
     y_rel = np.mod(positions[:, 1] - y0, Ly)
     z_at = positions[:, 2]
 
-    design = _build_fourier_matrix(x_rel, y_rel, Lx, Ly, modes)
-    # TODO: Consider using SVD instead since it has no problem dealing with rank deficiency.
-    # Check issue #161
-    theta, _residuals, rank, _singular_values = np.linalg.lstsq(design, z_at, rcond=rcond)
-    n_columns = int(design.shape[1])
+    design_matrix = _build_fourier_matrix(x_rel, y_rel, Lx, Ly, modes)
+    theta, rank, _singular_values = _solve_design_least_squares_svd(design_matrix, z_at, rcond=rcond)
+    n_columns = int(design_matrix.shape[1])
     if rank < n_columns:
         warnings.warn(
             'Fourier least-squares system is rank-deficient or underdetermined: '
-            f'lstsq rank is {rank} for {n_columns} parameters and {n_atom} atoms '
+            f'effective SVD rank is {rank} for {n_columns} parameters and {n_atom} atoms '
             f'(M={M}, N={N}). Coefficients may be non-unique or ill-conditioned.',
             UserWarning,
             stacklevel=2,
@@ -554,9 +616,7 @@ def _eval_fourier_surface(
     -----
     The ``derivatives=False`` branch returns ``(Z,)`` — a 1-tuple, not a bare
     ``ndarray`` — to keep a single return type (``tuple[ndarray, ...]``)
-    regardless of the flag. Callers therefore unwrap with ``[0]``. This is an
-    intentional ergonomic compromise; see the in-body TODO for the candidate
-    refactors.
+    regardless of the flag. Callers therefore unwrap with ``[0]``.
     """
     # TODO: the 1-tuple return when derivatives=False is awkward (callers do
     # [0] to unwrap). Future refactor options, in preference order:
@@ -567,9 +627,6 @@ def _eval_fourier_surface(
     #       e.g. _eval_fourier_height and _eval_fourier_height_with_derivatives;
     #   (c) return a NamedTuple/dataclass for field-name access (Z, fx, fy,
     #       fxx, fyy, fxy) while still supporting tuple unpacking.
-    # A plain dict was considered and rejected: it loses unpacking ergonomics
-    # and gives string-key typos at runtime in exchange for marginal call-site
-    # readability.
     twopi = 2.0 * np.pi
     X_rel = np.asarray(X_rel, dtype=np.float64)
     Y_rel = np.asarray(Y_rel, dtype=np.float64)
@@ -684,7 +741,8 @@ def fourier_height_from_atoms(
     M, N : int
         Maximum Fourier mode indices; see :func:`fourier_mode_list`.
     rcond : float or None, optional
-        Passed to :func:`numpy.linalg.lstsq`.
+        Relative cutoff for small singular values in
+        :func:`_solve_design_least_squares_svd`.
 
     Returns
     -------
@@ -749,7 +807,8 @@ def fourier_height_derivatives_from_atoms(
     M, N : int
         Maximum Fourier mode indices; see :func:`fourier_mode_list`.
     rcond : float or None, optional
-        Passed to :func:`numpy.linalg.lstsq`.
+        Relative cutoff for small singular values in
+        :func:`_solve_design_least_squares_svd`.
 
     Returns
     -------
