@@ -6,14 +6,16 @@ Membrane Curvature
 [![docs](https://readthedocs.org/projects/membrane-curvature/badge/?version=latest)](https://membrane-curvature.readthedocs.io/en/latest/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
-![PyPI](https://img.shields.io/pypi/v/membrane-curvature?color=lightgray)
+[![License](https://img.shields.io/github/license/MDAnalysis/membrane-curvature?color=yellow)](https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE)
+
+[![Python versions](https://img.shields.io/pypi/pyversions/membrane-curvature)](https://pypi.org/project/membrane-curvature/)
+[![PyPI](https://img.shields.io/pypi/v/membrane-curvature)](https://pypi.org/project/membrane-curvature/)
+[![Conda version](https://anaconda.org/conda-forge/membrane-curvature/badges/version.svg)](https://anaconda.org/conda-forge/membrane-curvature)
 
 ![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
 
 MembraneCurvature is an [MDAnalysis] tool to calculate membrane curvature from
 Molecular Dynamics simulations.
-
-> **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
 
 Features
 --------------
@@ -21,76 +23,103 @@ Features
 With MembraneCurvature you can:
 
 - Calculate mean and Gaussian curvature from MD simulations.
-- Derive 2D curvature profiles.
+- Derive 2D curvature profiles from atoms of reference with two different methods: binning or Fourier-based.
+- Get per-frame or averaged results for surface, mean and Gaussian curvature.
 - Live a happier life.
-
 
 Installation
 --------------
 
 The main dependency in MembraneCurvature is [MDAnalysis]. You can find
-instructions to install the latest stable version of MDAnalysis via `conda` in the [UserGuide].
+instructions to install the latest stable version of MDAnalysis in the [UserGuide].
 
 MembraneCurvature is available via `pip`:
 
-```
+```bash
 pip install membrane-curvature
 ```
 
 To install from source:
 
-```
+```bash
 git clone https://github.com/MDAnalysis/membrane-curvature.git
 cd membrane-curvature
-conda env create -f devtools/conda-envs/environment.yaml
-conda activate membrane-curvature
-python setup.py install
+python -m pip install -e .
 ```
 
 Some of the examples included in the MembraneCurvature documentation use test
-cases from [MDAnalysisTests]. To install the unit tests via `conda`:
+data from [MDAnalysisTests] and [MDAnalysisData]. To install these dependencies
+with conda, run:
 
-```
-conda install -c conda-forge MDAnalysisTests
+```bash
+conda install -c conda-forge MDAnalysisTests MDAnalysisData
 ```
 
 or via `pip`:
 
+```bash
+pip install --upgrade MDAnalysisTests MDAnalysisData
 ```
-pip install --upgrade MDAnalysisTests
-```
-
 
 Usage
 --------------
 
-This is a quick example on how to run MembraneCurvature:
+This is a quick example on how to run MembraneCurvature with the default
+surface method (Fourier):
 
-```Python
+```python
 import MDAnalysis as mda
-from membrane_curvature.base import MembraneCurvature
+from membrane_curvature import MembraneCurvature
 from MDAnalysis.tests.datafiles import Martini_membrane_gro
 
 universe = mda.Universe(Martini_membrane_gro)
 
+# run with the default surface_method - Fourier
 curvature_upper_leaflet = MembraneCurvature(universe,
-                                            select='resid 1-225 and name PO4',
-                                            n_x_bins=8,
-                                            n_y_bins=8,
-                                            wrap=True).run()
+                                            select='resid 1-225 and name PO4'
+                                            ).run()
 
-# extract mean curvature
+# extract average mean curvature
 mean_upper_leaflet = curvature_upper_leaflet.results.z_surface
 
-# extract mean curvature
+# extract average mean curvature
 mean_upper_leaflet = curvature_upper_leaflet.results.mean
 
-# extract Gaussian
+# extract average Gaussian curvature
 gaussian_upper_leaflet = curvature_upper_leaflet.results.gaussian
 ```
 
 In this example, we use the PO4 beads in the upper leaflet as reference to
 derive a surface and calculate its respective mean and Gaussian curvature.
+If you want per-frame arrays instead, use `results.z_surface`, `results.mean`,
+and `results.gaussian`.
+
+The same example run with the binning surface method looks like:
+
+```python
+import MDAnalysis as mda
+from membrane_curvature import MembraneCurvature
+from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+universe = mda.Universe(Martini_membrane_gro)
+
+# run with the binning surface_method
+curvature_upper_leaflet_binning = MembraneCurvature(universe,
+                                                    select='resid 1-225 and name PO4',
+                                                    surface_method='binning',
+                                                    n_x_bins=8,
+                                                    n_y_bins=8,
+                                                    wrap=True).run()
+
+# extract average mean curvature
+mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.z_surface
+
+# extract average mean curvature
+mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.mean
+
+# extract average Gaussian curvature
+gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.gaussian
+```
 
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
 To plot results from MembraneCurvature please check the [Visualization] page.
@@ -98,45 +127,59 @@ To plot results from MembraneCurvature please check the [Visualization] page.
 Documentation
 ---------------
 
-To help you get the most out MembraneCurvature, we have [documentation] available
-where you can find:
+To help you get the most out of MembraneCurvature, we have [documentation]
+available where you can find:
 
 - The standard [API] documentation.
-- Quick examples of how to run Membrane Curvature in the [Usage] page.
+- Quick examples of how to run MembraneCurvature in the [Usage] page.
 - Detailed explanation of the [Algorithm] implemented in MembraneCurvature.
 - Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
+- Detailed [Tutorials] to run MembraneCurvature in membrane-only and membrane-protein systems.
 
 
 Contributing
 ---------------
 
-Contributions are very welcome.
+Contributions are very welcome!
+
+MembraneCurvature is compatible with [uv] (recommended for development):
+
+```bash
+# create an environment and install the project + dev tools
+uv sync --extra dev
+
+# add test dependencies and run the test suite
+uv sync --extra dev --extra tests
+uv run pytest
+```
 
 This repository uses [pre-commit] hooks to run quick checks
 before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] linting/formatting.
 Using these hooks is highly encouraged because it helps catch common issues early and
 keeps pull requests easier to review.
 
-To set up hooks locally, with pip:
-
-```bash
-pip install .[dev]
-pre-commit install
-```
-
-Or with `uv`:
+To set up hooks locally, with with [uv]:
 
 ```bash
 uv sync --extra dev
 uv run pre-commit install
 ```
 
+Or with pip:
+
+```bash
+pip install -e ".[dev]"
+pre-commit install
+```
+
+> **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
+
 License
 ---------------
 
 Source code included in this project is available in the GitHub repository
-https://github.com/MDAnalysis/membrane-curvature under the GNU Public License
-v3 , version 3 (see [LICENSE]).
+https://github.com/MDAnalysis/membrane-curvature under the GNU General Public
+License v3 (see [LICENSE]).
 
 MembraneCurvature was developed as a [Google Summer of Code 2021][GSoC]
 project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduct].
@@ -153,7 +196,10 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [Visualization]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Visualization.html
 [Algorithm]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Algorithm.html
 [API]: https://membrane-curvature.readthedocs.io/en/latest/api/membrane_curvature.html
+[Tutorials]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Tutorials.html
 [MDAnalysisTests]: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
-[UserGuide]: https://userguide.mdanalysis.org/2.0.0-dev0/installation.html
+[MDAnalysisData]: https://www.mdanalysis.org/MDAnalysisData/
+[UserGuide]: https://userguide.mdanalysis.org/stable/installation.html
 [pre-commit]: https://pre-commit.com
 [ruff]: https://docs.astral.sh/ruff/
+[uv]: https://docs.astral.sh/uv/
