@@ -166,6 +166,20 @@ solution, but the coefficients are not uniquely determined by the data.
   - ``fourier_rcond=1e-12`` or ``1e-10``: more aggressive truncation; can reduce noise when the
     fit is underdetermined.
 
+.. note::
+
+  All Fourier least-squares steps (design matrix, SVD, coefficients) use
+  64-bit floating point :func:`numpy.float64`. The cutoff defined by ``fourier_rcond`` is
+  a **relative threshold**: singular values with :math:`s \le rcond \cdot s_{\max}` are dropped.
+  The meaningful scale is therefore relative to the largest singular value :math:`s_{\max}`, not
+  absolute coordinates or heights.
+
+  With ``fourier_rcond=None``, the cutoff scales with the size of the least-squares problem, typically
+  the number of atoms in the selection, or the number of fitted coefficients if that is larger.
+  Passing a value much smaller than :math:`\sim 10^{-16}`, or much smaller than that automatic
+  cutoff, usually has no visible effect. To smooth an underdetermined fit on purpose, use larger
+  values such as ``1e-12`` or ``1e-10`` (see warning above).
+
 2.1.2 Binning surface method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
