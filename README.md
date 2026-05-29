@@ -30,8 +30,11 @@ With MembraneCurvature you can:
 Installation
 --------------
 
-The main dependency in MembraneCurvature is [MDAnalysis]. You can find
-instructions to install the latest stable version of MDAnalysis in the [UserGuide].
+MembraneCurvature is available via pip and conda. Please refer to the [Installation] section in the [Getting Started] page for
+detailed installation instructions.
+
+Via pip
+^^^^^^^
 
 MembraneCurvature is available via `pip`:
 
@@ -39,11 +42,30 @@ MembraneCurvature is available via `pip`:
 pip install membrane-curvature
 ```
 
-To install from source:
+Or to install from source:
 
 ```bash
 git clone https://github.com/MDAnalysis/membrane-curvature.git
 cd membrane-curvature
+python -m pip install -e .
+```
+
+With conda
+^^^^^^^^^^
+
+MembraneCurvature is available via `conda`:
+
+```bash
+conda install -c conda-forge membrane-curvature
+```
+
+Or to install from source:
+
+```bash
+git clone https://github.com/MDAnalysis/membrane-curvature.git
+cd membrane-curvature
+conda env create -f devtools/conda-envs/environment.yaml
+conda activate membrane-curvature
 python -m pip install -e .
 ```
 

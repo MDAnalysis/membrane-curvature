@@ -5,7 +5,7 @@ dependencies:
   - python
   - pip
   - sphinx
-  - MDAnalysis>=2.0.0
+  - MDAnalysis>=2.4.0
      # Testing
   - pytest
   - pytest-cov
