@@ -5,7 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "membrane_curvature"
 dynamic = ["version"]
-license = {file = "LICENSE"}
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 description = "MDAnalysis tool to calculate membrane curvature from MD simulations."
 authors = [
     {name = "Estefania Barreto-Ojeda", email = "estefania@ojeda-e.com"},
@@ -29,12 +30,10 @@ classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX',
         'Topic :: Scientific/Engineering',
-        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
@@ -74,7 +73,9 @@ include = ["membrane_curvature*"]
 
 [project.urls]
 Documentation = "https://membrane-curvature.readthedocs.io/en/latest/"
+Code = "https://github.com/MDAnalysis/membrane-curvature"
 Changelog = "https://github.com/MDAnalysis/membrane-curvature/blob/main/CHANGELOG.rst"
+Issues = "https://github.com/MDAnalysis/membrane-curvature/issues"
 
 [tool.versioningit]
 default-version = "1+unknown"
@@ -101,18 +102,12 @@ exclude_also = [
     "if TYPE_CHECKING:",
 ]
 
-[tool.yapf]
-COLUMN_LIMIT = 80
-INDENT_WIDTH = 4
-USE_TABS = false
-
 [tool.ruff]
 line-length = 120
 target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F"]
-ignore = []
 exclude = [
 	".bzr",
 	".direnv",
