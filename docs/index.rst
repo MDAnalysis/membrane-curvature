@@ -57,11 +57,9 @@ Are you interested in calculating mean and Gaussian curvature from MD simulation
 Installation
 --------------
 
-The main dependency in MembraneCurvature is `MDAnalysis`_. Please refer to the `Installation`_ section in the `Getting Started`_ page for
-detailed installation instructions.
-
 MembraneCurvature is available via pip, conda, and uv. Please refer to the `Installation`_ section in the `Getting Started`_ page for
 detailed installation instructions.
+
 
 .. Contents
 .. ========
