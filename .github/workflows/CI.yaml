@@ -108,10 +108,10 @@ jobs:
         pytest -v --cov=membrane_curvature --cov-report=xml --color=yes membrane_curvature/tests/
 
     - name: codecov
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
+        files: ./coverage.xml
         name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
         fail_ci_if_error: True
         verbose: True
