@@ -9,7 +9,7 @@ reference (contained in an ``AtomGroup``) and calculate its associated mean and 
 Installation
 ------------
 
-There are two main ways to install MembraneCurvature:
+There are three main ways to install MembraneCurvature:
 
 :ref:`via_pip`
 
