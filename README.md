@@ -30,8 +30,11 @@ With MembraneCurvature you can:
 Installation
 --------------
 
-The main dependency in MembraneCurvature is [MDAnalysis]. You can find
-instructions to install the latest stable version of MDAnalysis in the [UserGuide].
+MembraneCurvature is available via pip and conda. Please refer to the [Installation] section in the [Getting Started] page for
+detailed installation instructions.
+
+Via pip
+^^^^^^^
 
 MembraneCurvature is available via `pip`:
 
@@ -39,11 +42,30 @@ MembraneCurvature is available via `pip`:
 pip install membrane-curvature
 ```
 
-To install from source:
+Or to install from source:
 
 ```bash
 git clone https://github.com/MDAnalysis/membrane-curvature.git
 cd membrane-curvature
+python -m pip install -e .
+```
+
+With conda
+^^^^^^^^^^
+
+MembraneCurvature is available via `conda`:
+
+```bash
+conda install -c conda-forge membrane-curvature
+```
+
+Or to install from source:
+
+```bash
+git clone https://github.com/MDAnalysis/membrane-curvature.git
+cd membrane-curvature
+conda env create -f devtools/conda-envs/environment.yaml
+conda activate membrane-curvature
 python -m pip install -e .
 ```
 
@@ -91,8 +113,19 @@ gaussian_upper_leaflet = curvature_upper_leaflet.results.gaussian
 
 In this example, we use the PO4 beads in the upper leaflet as reference to
 derive a surface and calculate its respective mean and Gaussian curvature.
-If you want per-frame arrays instead, use `results.z_surface`, `results.mean`,
-and `results.gaussian`.
+
+To access the per-frame arrays for the example above, use `results.z_surface[<frame_id>]`, `results.mean[<frame_id>]`, and `results.gaussian[<frame_id>]`:
+
+```python
+# to access the surface for the first frame
+surface_first_frame = curvature_upper_leaflet.results.z_surface[0]
+
+# access the mean curvature for the last frame
+mean_last_frame = curvature_upper_leaflet.results.mean[-1]
+
+# access the Gaussian curvature for the frame 10
+gaussian_frame_10 = curvature_upper_leaflet.results.gaussian[10]
+```
 
 The same example run with the binning surface method looks like:
 

@@ -18,7 +18,7 @@ curvature from Molecular Dynamics (MD) simulations.
 
 **MembraneCurvature** derives 2D curvature profiles of a surface of reference.
 To suit the needs of your system, we offer flexible atom selection that will
-enable you to use the most convenient `AtomGroup` to extract curvature from your
+enable you to use the most convenient ``AtomGroup`` to extract curvature from your
 MD simulations!
 
 This is an example on how to use MembraneCurvature:
@@ -41,12 +41,11 @@ You can find more details on how to use MembraneCurvature in the `Usage`_ page.
 Features
 ----------
 
-MembraneCurvature calculates mean and Gaussian curvature from MD simulations in:
+MembraneCurvature allows you to:
 
-#. Monolayers.
-#. Membrane-only systems.
-#. Membrane-protein systems.
-
+- Calculate mean and Gaussian curvature from MD simulations.
+- Derive 2D curvature profiles from atoms of reference with two different methods: binning or Fourier-based.
+- Get per-frame or averaged results for surface, mean and Gaussian curvature.
 
 Why MembraneCurvature?
 -------------------------
@@ -58,45 +57,15 @@ Are you interested in calculating mean and Gaussian curvature from MD simulation
 Installation
 --------------
 
-The main dependency in MembraneCurvature is `MDAnalysis`_. You can find
-instructions to install the latest stable version of MDAnalysis via 
-`conda`_ in the `Installation Quick Start`_ page.
-
-MembraneCurvature is available via pip:
-
-.. code-block:: bash
-
-   pip install membrane-curvature
-
-To install from source:
-
-.. code-block:: bash
-
-   git clone https://github.com/MDAnalysis/membrane-curvature.git
-   cd membrane-curvature
-   conda env create -f devtools/conda-envs/environment.yaml
-   conda activate membrane-curvature
-   python setup.py install
-
-Some of the examples included in the MembraneCurvature documentation use test
-cases from `MDAnalysis Tests`_. To install the unit tests via conda:
-
-.. code-block:: bash
-
-   conda install -c conda-forge MDAnalysisTests
-
-or via pip:
-
-.. code-block:: bash
-
-   pip install --upgrade MDAnalysisTests
+MembraneCurvature is available via pip, conda, and uv. Please refer to the `Installation`_ section in the `Getting Started`_ page for
+detailed installation instructions.
 
 
 .. Contents
 .. ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    getting_started
@@ -123,8 +92,11 @@ License v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
 .. _MDAnalysis: https://www.mdanalysis.org
 .. _`github.com/MDAnalysis/membrane_curvature`: https://github.com/MDAnalysis/membrane-curvature
 .. _`Usage`: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
-.. _`MDAnalysis Tests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
+.. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
+.. _`MDAnalysisData`: https://www.mdanalysis.org/MDAnalysisData/
 .. _`Installation Quick Start`: https://www.mdanalysis.org/pages/installation_quick_start/#installation-quick-start
+.. _`Installation`: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
+.. _`Getting Started`: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html
 .. _`conda`: https://conda.io/en/latest/
 .. |MDAnalysis_version| replace:: 2.4.0
 
