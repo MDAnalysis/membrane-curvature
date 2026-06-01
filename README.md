@@ -147,7 +147,7 @@ curvature_upper_leaflet_binning = MembraneCurvature(universe,
                                                     surface_method='binning',
                                                     n_x_bins=8,
                                                     n_y_bins=8,
-                                                    fft_filter='auto', # only available surface_method='binning'
+                                                    fft_filter='auto',
                                                     wrap=True).run()
 
 # extract average surface
@@ -159,6 +159,10 @@ mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mea
 # extract average Gaussian curvature
 gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
 ```
+
+> [!WARNING]
+>
+> FFT filtering is only available with `surface_method='binning'`. Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered.
 
 Note that the FFT filter runs once on the temporal mean of `z_surface`. **Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered.** With filtering enabled, `results.average_z_surface`, `results.average_mean`, and `results.average_gaussian` are computed from the filtered average height.
 
