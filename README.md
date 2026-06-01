@@ -23,7 +23,9 @@ Molecular Dynamics simulations.
 
 With MembraneCurvature you can:
 
-- Derive 2D surface profiles from MD simulations using an atom selection as reference with twodifferent methods: binning or Fourier.
+- Derive 2D surface profiles from MD simulations using an atom selection as reference with two
+  different methods: binning or Fourier.
+  - With optional brick-wall FFT filter on averaged surface maps (binning method only).
 - Calculate the mean and Gaussian curvatures of the derived surfaces.
 - Get per-frame or averaged results for surface, mean and Gaussian curvature.
 - Live a happier life.
@@ -34,6 +36,8 @@ MembraneCurvature is available via pip and conda. Please refer to the [Installat
 detailed installation instructions.
 
 ### With pip
+
+### Via pip
 
 MembraneCurvature is available via `pip`:
 
@@ -81,9 +85,9 @@ or via `pip`:
 pip install --upgrade MDAnalysisTests MDAnalysisData
 ```
 
-### Usage
+## Usage
 
-#### With the Fourier method
+### With the Fourier method
 
 This is a quick example on how to run MembraneCurvature with the default
 surface method (Fourier):
@@ -100,14 +104,14 @@ curvature_upper_leaflet = MembraneCurvature(universe,
                                             select='resid 1-225 and name PO4'
                                             ).run()
 
-# extract average mean curvature
-mean_upper_leaflet = curvature_upper_leaflet.results.z_surface
+# extract average surface
+mean_upper_leaflet = curvature_upper_leaflet.results.average_z_surface
 
 # extract average mean curvature
-mean_upper_leaflet = curvature_upper_leaflet.results.mean
+mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
 
 # extract average Gaussian curvature
-gaussian_upper_leaflet = curvature_upper_leaflet.results.gaussian
+gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 ```
 
 In this example, we use the PO4 beads in the upper leaflet as reference to
@@ -126,7 +130,7 @@ mean_last_frame = curvature_upper_leaflet.results.mean[-1]
 gaussian_frame_10 = curvature_upper_leaflet.results.gaussian[10]
 ```
 
-#### With the binning method
+### With the binning method
 
 The same example run with the binning surface method looks like:
 
@@ -137,28 +141,62 @@ from MDAnalysis.tests.datafiles import Martini_membrane_gro
 
 universe = mda.Universe(Martini_membrane_gro)
 
-# run with the binning surface_method
+# run with the binning surface_method with FFT filtering
 curvature_upper_leaflet_binning = MembraneCurvature(universe,
                                                     select='resid 1-225 and name PO4',
                                                     surface_method='binning',
                                                     n_x_bins=8,
                                                     n_y_bins=8,
+                                                    fft_filter='auto', # only available surface_method='binning'
                                                     wrap=True).run()
 
-# extract average mean curvature
-mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.z_surface
+# extract average surface
+mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
 
 # extract average mean curvature
-mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.mean
+mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mean
 
 # extract average Gaussian curvature
-gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.gaussian
+gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
 ```
 
+Note that the FFT filter runs once on the temporal mean of `z_surface`. **Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered.** With filtering enabled, `results.average_z_surface`, `results.average_mean`, and `results.average_gaussian` are computed from the filtered average height.
+
+> [!WARNING]
+>
+> Brick-wall mask in $|q|$. Check the [Algorithm] page for more details on empty bins, periodic boundaries, and manual $q_{low} > 0$ caveats.
+
+Alternatively, to get the raw time average of the surface without filtering, pass ``fft_filter=None``:
+
+```python
+import MDAnalysis as mda
+from membrane_curvature import MembraneCurvature
+from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+universe = mda.Universe(Martini_membrane_gro)
+
+# run with the binning surface_method without FFT filtering
+curvature_upper_leaflet_binning = MembraneCurvature(universe,
+                                                    select='resid 1-225 and name PO4',
+                                                    surface_method='binning',
+                                                    n_x_bins=8,
+                                                    n_y_bins=8,
+                                                    fft_filter=None,
+                                                    wrap=True).run()
+
+# extract average surface
+mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
+
+# extract average mean curvature
+mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mean
+
+# extract average Gaussian curvature
+gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
+```
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
 To plot results from MembraneCurvature please check the [Visualization] page.
 
-### Documentation
+## Documentation
 
 To help you get the most out of MembraneCurvature, we have [documentation]
 available where you can find:
@@ -169,7 +207,7 @@ available where you can find:
 - Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
 - Detailed [Tutorials] to run MembraneCurvature in membrane-only and membrane-protein systems.
 
-### Contributing
+## Contributing
 
 Contributions are very welcome! Check the [Contributing] page for more details.
 
@@ -216,7 +254,7 @@ pre-commit install
 
 > **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
 
-### License
+## License
 
 Source code included in this project is available in the GitHub repository
 https://github.com/MDAnalysis/membrane-curvature under the GNU General Public
