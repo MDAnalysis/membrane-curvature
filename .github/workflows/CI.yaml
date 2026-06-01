@@ -108,13 +108,10 @@ jobs:
         pytest -v --cov=membrane_curvature --cov-report=xml --color=yes membrane_curvature/tests/
 
     - name: codecov
-      if: ${{ github.repository == 'MDAnalysis/membrane-curvature'
-              && github.event_name == 'pull_request' }}
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-        flags: unittests
         name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
         fail_ci_if_error: True
         verbose: True
