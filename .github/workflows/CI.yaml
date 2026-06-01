@@ -108,6 +108,7 @@ jobs:
         pytest -v --cov=membrane_curvature --cov-report=xml --color=yes membrane_curvature/tests/
 
     - name: codecov
+      if: ${{github.repository == 'MDAnalysis/membrane-curvature'}}
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
