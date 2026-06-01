@@ -43,8 +43,10 @@ Features
 
 MembraneCurvature allows you to:
 
-- Calculate mean and Gaussian curvature from MD simulations.
-- Derive 2D curvature profiles from atoms of reference with two different methods: binning or Fourier-based.
+- Derive 2D surface profiles from MD simulations using an atom selection as reference with two
+  different methods: binning or Fourier.
+   - With optional brick-wall FFT filter on averaged surface maps (binning method only).
+- Calculate the mean and Gaussian curvatures of the derived surfaces.
 - Get per-frame or averaged results for surface, mean and Gaussian curvature.
 
 Why MembraneCurvature?
