@@ -60,60 +60,8 @@ Installation
 The main dependency in MembraneCurvature is `MDAnalysis`_. Please refer to the `Installation`_ section in the `Getting Started`_ page for
 detailed installation instructions.
 
-Via pip
-^^^^^^^^
-
-MembraneCurvature is available via pip:
-
-.. code-block:: bash
-
-   pip install membrane-curvature
-
-Some of the examples included in the MembraneCurvature documentation use test
-cases from `MDAnalysisTests`_ and `MDAnalysisData`_. To install these dependencies run:
-
-.. code-block:: bash
-
-   pip install --upgrade MDAnalysisTests MDAnalysisData
-
-
-MembraneCurvature is also available from source via pip with:
-
-.. code-block:: bash
-
-   git clone https://github.com/MDAnalysis/membrane-curvature.git
-   cd membrane-curvature
-   python -m pip install -e .
-
-
-Via conda
-^^^^^^^^^
-
-MembraneCurvature is available via conda with the ``conda-forge`` channel:
-
-.. code-block:: bash
-
-   conda install -c conda-forge membrane-curvature
-
-Or from source with conda:
-
-.. code-block:: bash
-
-   git clone https://github.com/MDAnalysis/membrane-curvature.git
-   cd membrane-curvature
-   conda env create -f devtools/conda-envs/environment.yaml
-   conda activate membrane-curvature
-   python -m pip install -e .
-
-To install the ``MDAnalysisTests`` and ``MDAnalysisData`` dependencies needed to run some of the examples in the documentation 
-via conda, run:
-
-.. code-block:: bash
-
-   conda install -c conda-forge MDAnalysisTests MDAnalysisData
-
-For more detailed installation instructions, please refer to the `Installation`_ section in the `Getting Started`_ page.
-   
+MembraneCurvature is available via pip, conda, and uv. Please refer to the `Installation`_ section in the `Getting Started`_ page for
+detailed installation instructions.
 
 .. Contents
 .. ========
