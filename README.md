@@ -1,5 +1,5 @@
-Membrane Curvature
-==============================
+# MembraneCurvature
+
 [![Powered by MDAnalysis](https://img.shields.io/badge/powered%20by-MDAnalysis-orange.svg?logoWidth=16&logo=data:image/x-icon;base64,AAABAAEAEBAAAAEAIAAoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJD+XwCY/fEAkf3uAJf97wGT/a+HfHaoiIWE7n9/f+6Hh4fvgICAjwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACT/yYAlP//AJ///wCg//8JjvOchXly1oaGhv+Ghob/j4+P/39/f3IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJH8aQCY/8wAkv2kfY+elJ6al/yVlZX7iIiI8H9/f7h/f38UAAAAAAAAAAAAAAAAAAAAAAAAAAB/f38egYF/noqAebF8gYaagnx3oFpUUtZpaWr/WFhY8zo6OmT///8BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgICAn46Ojv+Hh4b/jouJ/4iGhfcAAADnAAAA/wAAAP8AAADIAAAAAwCj/zIAnf2VAJD/PAAAAAAAAAAAAAAAAICAgNGHh4f/gICA/4SEhP+Xl5f/AwMD/wAAAP8AAAD/AAAA/wAAAB8Aov9/ALr//wCS/Z0AAAAAAAAAAAAAAACBgYGOjo6O/4mJif+Pj4//iYmJ/wAAAOAAAAD+AAAA/wAAAP8AAABhAP7+FgCi/38Axf4fAAAAAAAAAAAAAAAAiIiID4GBgYKCgoKogoB+fYSEgZhgYGDZXl5e/m9vb/9ISEjpEBAQxw8AAFQAAAAAAAAANQAAADcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjo6Mb5iYmP+cnJz/jY2N95CQkO4pKSn/AAAA7gAAAP0AAAD7AAAAhgAAAAEAAAAAAAAAAACL/gsAkv2uAJX/QQAAAAB9fX3egoKC/4CAgP+NjY3/c3Nz+wAAAP8AAAD/AAAA/wAAAPUAAAAcAAAAAAAAAAAAnP4NAJL9rgCR/0YAAAAAfX19w4ODg/98fHz/i4uL/4qKivwAAAD/AAAA/wAAAP8AAAD1AAAAGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALGxsVyqqqr/mpqa/6mpqf9KSUn/AAAA5QAAAPkAAAD5AAAAhQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADkUFBSuZ2dn/3V1df8uLi7bAAAATgBGfyQAAAA2AAAAMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB0AAADoAAAA/wAAAP8AAAD/AAAAWgC3/2AAnv3eAJ/+dgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9AAAA/wAAAP8AAAD/AAAA/wAKDzEAnP3WAKn//wCS/OgAf/8MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIQAAANwAAADtAAAA7QAAAMAAABUMAJn9gwCe/e0Aj/2LAP//AQAAAAAAAAAA)](https://www.mdanalysis.org)
 [![GitHub Actions Status](https://github.com/MDAnalysis/membrane-curvature/workflows/CI/badge.svg)](https://github.com/MDAnalysis/membrane-curvature/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main/graph/badge.svg)](https://codecov.io/gh/MDAnalysis/membrane-curvature/branch/main)
@@ -14,27 +14,24 @@ Membrane Curvature
 
 ![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
 
-MembraneCurvature is an [MDAnalysis] tool to calculate membrane curvature from
+MembraneCurvature is an [MDAnalysis] MDAKit to calculate membrane curvature from
 Molecular Dynamics simulations.
 
-Features
---------------
+## Features
 
 With MembraneCurvature you can:
 
-- Calculate mean and Gaussian curvature from MD simulations.
-- Derive 2D curvature profiles from atoms of reference with two different methods: binning or Fourier-based.
+- Derive 2D surface profiles from MD simulations using an atom selection as reference with twodifferent methods: binning or Fourier.
+- Calculate the mean and Gaussian curvatures of the derived surfaces.
 - Get per-frame or averaged results for surface, mean and Gaussian curvature.
 - Live a happier life.
 
-Installation
---------------
+## Installation
 
-MembraneCurvature is available via pip and conda. Please refer to the [Installation] section in the [Getting Started] page for
+MembraneCurvature is available via pip and conda. Please refer to the [Installation] section in the Getting Started Documentation page for
 detailed installation instructions.
 
-Via pip
-^^^^^^^
+### With pip
 
 MembraneCurvature is available via `pip`:
 
@@ -50,8 +47,7 @@ cd membrane-curvature
 python -m pip install -e .
 ```
 
-With conda
-^^^^^^^^^^
+### With conda
 
 MembraneCurvature is available via `conda`:
 
@@ -83,8 +79,9 @@ or via `pip`:
 pip install --upgrade MDAnalysisTests MDAnalysisData
 ```
 
-Usage
---------------
+### Usage
+
+#### With the Fourier method
 
 This is a quick example on how to run MembraneCurvature with the default
 surface method (Fourier):
@@ -127,6 +124,8 @@ mean_last_frame = curvature_upper_leaflet.results.mean[-1]
 gaussian_frame_10 = curvature_upper_leaflet.results.gaussian[10]
 ```
 
+#### With the binning method
+
 The same example run with the binning surface method looks like:
 
 ```python
@@ -157,8 +156,7 @@ gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.gaussia
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
 To plot results from MembraneCurvature please check the [Visualization] page.
 
-Documentation
----------------
+### Documentation
 
 To help you get the most out of MembraneCurvature, we have [documentation]
 available where you can find:
@@ -169,9 +167,7 @@ available where you can find:
 - Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
 - Detailed [Tutorials] to run MembraneCurvature in membrane-only and membrane-protein systems.
 
-
-Contributing
----------------
+### Contributing
 
 Contributions are very welcome!
 
@@ -191,7 +187,7 @@ before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] lint
 Using these hooks is highly encouraged because it helps catch common issues early and
 keeps pull requests easier to review.
 
-To set up hooks locally, with with [uv]:
+To set up hooks locally, with [uv]:
 
 ```bash
 uv sync --extra dev
@@ -207,8 +203,7 @@ pre-commit install
 
 > **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
 
-License
----------------
+### License
 
 Source code included in this project is available in the GitHub repository
 https://github.com/MDAnalysis/membrane-curvature under the GNU General Public
@@ -223,6 +218,7 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [NumPy]: https://numpy.org
 [SciPy]: https://www.scipy.org
 [code_of_conduct]: https://www.mdanalysis.org/conduct/
+[Installation]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
 [Usage]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
 [License]: https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE
 [documentation]: https://membrane-curvature.readthedocs.io/en/latest/index.html#
