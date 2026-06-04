@@ -1,5 +1,7 @@
 """
 
+.. versionadded:: 2.0.0
+
 Input checks used before running a Fourier-surface calculation.
 
 .. warning::
