@@ -113,6 +113,8 @@ extra_nav_links["MDAKits"] = "https://mdakits.mdanalysis.org/"
 html_theme_options = {
     "mda_official": True,
     "extra_nav_links": extra_nav_links,
+    "collapse_navigation": True,
+    "navigation_depth": 4,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

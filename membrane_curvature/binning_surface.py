@@ -1,9 +1,5 @@
 r"""
 
---------------------
-Binning Surface
---------------------
-
 With `surface_method='binning'`, MembraneCurvature forms a surface from
 the `z` position of the `atoms` in an `AtomGroup` of reference. This
 surface is then used as a reference to calculate curvature.

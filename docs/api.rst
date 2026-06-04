@@ -8,8 +8,7 @@ MembraneCurvature's API Documentation
 .. toctree::
 
    api/membrane_curvature
+   api/surface_methods
+   api/validators
    api/curvature
-   api/binning_surface
-   api/fourier_surface
-   api/fourier_validators
 

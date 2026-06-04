@@ -1,6 +1,4 @@
 """
-MembraneCurvature
-=======================================
 
 :Author: Estefania Barreto-Ojeda
 :Year: 2021

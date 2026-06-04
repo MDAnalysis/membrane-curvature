@@ -1,9 +1,5 @@
 """
 
-------------------
-Fourier Validators
-------------------
-
 Input checks used before running a Fourier-surface calculation.
 
 .. warning::
