@@ -154,6 +154,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          path: repo
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -167,7 +169,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ "membrane_curvature==${{ needs.build.outputs.version }}"
-          pip install --group tests
+          pip install --group repo/pyproject.toml:tests
 
       - name: Test import
         run: |
