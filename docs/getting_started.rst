@@ -29,34 +29,45 @@ The following command will install or upgrade the latest stable version of Membr
 
    pip install membrane-curvature
 
-
-MembraneCurvature has optional dependency groups that you can install with pip to enable additional features:
-
-- ``dev``: optional dependencies for development.
-- ``tests``: optional dependencies for testing.
-- ``docs``: install documentation build dependencies (e.g. Sphinx, themes).
-
-To install all optional dependencies, run:
+Some of the examples included in the MembraneCurvature documentation use test
+cases from `MDAnalysisTests`_ or `MDAnalysisData`_. To install the unit tests via pip:
 
 .. code-block:: bash
 
-   pip install -e ".[dev,tests,docs]"
+   pip install --upgrade MDAnalysisTests MDAnalysisData
 
 
-Installation from source is also available with pip by cloning the repository and running:
+The pip installation of `MembraneCurvature`, `MDAnalysisTests` and `MDAnalysisData` in most of the cases will be enough,
+but if you want to install the development dependencies of MembraneCurvature,
+you can do so with the following commands:
+
+
+.. code-block:: bash
+
+   pip install -e .
+   pip install --group dev
+
+
+Note that MembraneCurvature defines development dependency groups in ``pyproject.toml``, which are 
+not included in the published package, so installation of these dependencies is required.
+These dependency groups are:
+
+- ``dev``: development tools (includes ``tests`` and ``docs`` via ``include-group``).
+- ``tests``: testing dependencies.
+- ``docs``: documentation build dependencies (e.g. Sphinx, themes).
+
+.. warning::
+    The following command requires `pip >= 25.1`
+
+Installation from source is also available with pip by cloning the repository and running the following commands:
 
 .. code-block:: bash
 
    git clone https://github.com/MDAnalysis/membrane-curvature.git
    cd membrane-curvature
    python -m pip install -e .
+   pip install --group dev
 
-Note that some of the examples included in the MembraneCurvature documentation use test
-cases from `MDAnalysisTests`_ or `MDAnalysisData`_. To install the unit tests via conda:
-
-.. code-block:: bash
-
-   pip install --upgrade MDAnalysisTests MDAnalysisData
 
 
 .. _via_conda:
@@ -64,7 +75,7 @@ cases from `MDAnalysisTests`_ or `MDAnalysisData`_. To install the unit tests vi
 2. Via conda
 ^^^^^^^^^^^^
 
-MembraneCurvature is available via conda with the ``conda-forge`` channel:
+MembraneCurvature is also available via conda with the ``conda-forge`` channel:
 
 .. code-block:: bash
 
@@ -102,18 +113,12 @@ To install the latest stable version of MembraneCurvature with `uv`_, run the fo
 
    uv pip install membrane-curvature
 
-For development, you can install the optional dependencies with the following commands:
+For development, install the development dependency group with the following commands:
 
 .. code-block:: bash
 
-   uv sync --extra dev # install only the development dependencies
-   uv sync --extra tests --extra docs # install the testing and documentation dependencies
+   uv sync --group dev
 
-or to install all optional dependencies with uv:
-
-.. code-block:: bash
-
-   uv sync --all-extras
 
 
 .. _MDAnalysis: https://www.mdanalysis.org
