@@ -2,7 +2,7 @@ Membranecurvature CHANGELOG
 =============================
 
 * Improve API documentation: layout, content, and navigation menu (PR #193)
-* Modernize codebase: comply with PEP 639 (PR #185)
+* Modernized project metadata: comply with PEP 639 (PR #185) and PEP 735 (PR #194)
 * Updated installation instructions (conda, pip, uv) and conda environment files (PR #186)
 * Refactored Fourier surface method to use singular-value decomposition (SVD) instead of least-squares (PR #177)
 * Apply coordinate wrapping only for ``surface_method='binning'``, set ``wrap`` to ``None`` by default,
