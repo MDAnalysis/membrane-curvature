@@ -44,7 +44,6 @@ classifiers = [
 tests = [
     "pytest",
     "pytest-cov",
-    "ipython",
     "MDAnalysisTests"
 ]
 docs = [
