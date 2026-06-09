@@ -1,5 +1,9 @@
 """
 
+------------------
+Fourier Validators
+------------------
+
 .. versionadded:: 2.0.0
 
 Input checks used before running a Fourier-surface calculation.
@@ -21,6 +25,9 @@ Input checks used before running a Fourier-surface calculation.
     one row`` or ``n_x_bins and n_y_bins must be positive``. For coordinate
     input, the original NumPy message is kept attached to the error (chained
     via ``__cause__``) so the full traceback still shows where the problem started.
+
+Functions
+---------
 
 """
 

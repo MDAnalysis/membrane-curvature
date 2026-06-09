@@ -1,16 +1,19 @@
 r"""
 
-With `surface_method='binning'`, MembraneCurvature forms a surface from
-the `z` position of the `atoms` in an `AtomGroup` of reference. This
-surface is then used as a reference to calculate curvature.
+--------------------
+Binning Surface
+--------------------
 
+With ``surface_method='binning'``, :class:`~membrane_curvature.base.MembraneCurvature` forms a surface from
+the ``z`` position of the atoms in an ``AtomGroup`` of reference. This
+surface is then used to calculate mean and Gaussian curvature.
+
+.. versionchanged:: 2.0.0
+
+   Renamed module from ``surface`` to ``binning_surface``.
 
 Functions
 ---------
-
-.. versionchanged:: 2.0.0
-   Renamed module from ``surface`` to ``binning_surface``.
-
 """
 
 import numpy as np

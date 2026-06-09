@@ -62,6 +62,7 @@ extensions = [
 nb_kernel_rgx_aliases = {"mc_docs": "python3"}
 autosectionlabel_prefix_document = True
 autosummary_generate = True
+toc_object_entries = False
 napoleon_google_docstring = False
 napoleon_use_param = False
 napoleon_use_ivar = True

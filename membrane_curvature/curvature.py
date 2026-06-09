@@ -1,5 +1,10 @@
 r"""
 
+
+--------------------
+Curvature
+--------------------
+
 In MembraneCurvature, we calculate curvature from a height field :math:`z = f(x,y)`
 using the Monge gauge formulas, where partial derivatives are estimated from the
 derived surface.
