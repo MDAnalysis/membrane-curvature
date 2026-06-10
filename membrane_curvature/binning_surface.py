@@ -1,5 +1,7 @@
 r"""
 
+.. binning_surface:
+
 --------------------
 Binning Surface
 --------------------

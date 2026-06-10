@@ -16,20 +16,18 @@ curvature on the resulting surface. The specific operations used to derive
 the surface depend on the method selected by the user
 in the parameter :attr:`~membrane_curvature.base.MembraneCurvature.surface_method`.
 
-.. warning::
+The set of required parameters to run :class:`~membrane_curvature.base.MembraneCurvature` varies depending
+on the selected ``surface_method``:
 
-    The set of required parameters to run :class:`~membrane_curvature.base.MembraneCurvature` varies depending
-    on the selected ``surface_method``:
+- **Fourier method**:
 
-    - **Fourier method**:
+    Required parameters are the maximum Fourier mode indices ``fourier_m`` and ``fourier_n`` (Default: ``2``).
+    Optional parameters include a singular-value cutoff for the Fourier fit via truncated SVD with ``fourier_rcond``.
 
-      Required parameters are the maximum Fourier mode indices ``fourier_m`` and ``fourier_n`` (Default: ``2``).
-      Optional parameters include a singular-value cutoff for the Fourier fit via truncated SVD with ``fourier_rcond``.
+- **Binning method**:
 
-    - **Binning method**:
-
-      Required parameters are the number of bins in the x and y directions ``n_x_bins`` and ``n_y_bins``.
-      Optional ``wrap`` parameter to control whether to wrap the coordinates exceeding the simulation box dimensions.
+    Required parameters are the number of bins in the x and y directions ``n_x_bins`` and ``n_y_bins``.
+    Optional ``wrap`` parameter to control whether to wrap the coordinates exceeding the simulation box dimensions.
 
 Mean curvature is calculated in units of Å :sup:`-1` and Gaussian curvature in units of Å :sup:`-2`.
 """
