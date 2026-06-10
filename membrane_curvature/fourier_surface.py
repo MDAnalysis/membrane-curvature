@@ -6,15 +6,8 @@ Fourier Surface
 
 .. versionadded:: 2.0.0
 
-.. note::
-
-    This is an alternative to binning and calculating :func:`numpy.gradient`
-    to derive surfaces and compute mean and Gaussian curvature on a
-    simulation box with periodic boundary conditions in :math:`x` and
-    :math:`y`.
-
-This module fits a smooth periodic surface to atomistic or bead height data using
-a truncated 2D Fourier series. The workflow includes six steps:
+With ``surface_method='fourier'``, :class:`~membrane_curvature.base.MembraneCurvature` fits a smooth periodic
+surface to atomistic or bead height data using a truncated 2D Fourier series. The Fourier method comprises six steps:
 
 1. Choose a non-redundant set of Fourier modes:
     - :func:`fourier_mode_list`
@@ -29,7 +22,7 @@ a truncated 2D Fourier series. The workflow includes six steps:
     - :func:`_unpack_coefficients`
 5. Reconstruct the continuous surface on a grid:
     - :func:`_bin_centre_mesh`
-    - :func:`_eval_fourier_surface`
+    - :func:`_eval_fourier_surface` with ``derivatives=False``
 6. Evaluate partial derivatives analytically:
     - :func:`_eval_fourier_surface` with ``derivatives=True``, or
     - :func:`fourier_height_derivatives_from_atoms`
@@ -109,6 +102,7 @@ The associated wavevector for each mode is
     allowed wavevectors, while higher modes represent progressively shorter
     wavelengths.
 
+For more details on the Fourier method, refer to the :ref:`fourier_method` section in the :ref:`algorithm` page.
 
 References
 ----------

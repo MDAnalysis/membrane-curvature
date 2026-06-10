@@ -4,13 +4,18 @@ r"""
 Binning Surface
 --------------------
 
-With ``surface_method='binning'``, :class:`~membrane_curvature.base.MembraneCurvature` forms a surface from
-the ``z`` position of the atoms in an ``AtomGroup`` of reference. This
-surface is then used to calculate mean and Gaussian curvature.
-
 .. versionchanged:: 2.0.0
 
    Renamed module from ``surface`` to ``binning_surface``.
+
+With ``surface_method='binning'``, :class:`~membrane_curvature.base.MembraneCurvature` derives a surface by
+partitioning the dimensions of the simulation box into a regular ``n_x_bins x n_y_bins`` grid along the ``x``
+and ``y`` directions. For each bin ``MembraneCurvature`` computes the average ``z`` coordinate of the atoms
+that fall inside the bin to form the discrete height field. Empty bins are represented as :data:`numpy.nan`.
+
+This height field is then used to calculate mean and Gaussian curvature using finite differences.
+
+For more details on the binning method, refer to the :ref:`binning_method` section in the :ref:`algorithm` page.
 
 Functions
 ---------

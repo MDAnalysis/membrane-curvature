@@ -1,8 +1,2 @@
-MembraneCurvature
-=================
-
-.. currentmodule:: membrane_curvature.base
-
-.. autoclass:: MembraneCurvature
+.. automodule:: membrane_curvature.base
    :members:
-   :inherited-members:

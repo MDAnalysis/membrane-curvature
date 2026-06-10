@@ -6,25 +6,35 @@ Fourier Validators
 
 .. versionadded:: 2.0.0
 
-Input checks used before running a Fourier-surface calculation.
+Helper functions to validate inputs when running :class:`~membrane_curvature.base.MembraneCurvature`
+with the Fourier surface method.
+
+These validators check user-provided coordinates, grid sizes, and related parameters before
+the Fourier fit is run, so invalid inputs fail fast with clear error messages.
+
+Invalid inputs raise :class:`ValueError` with messages that describe the
+problem. For example, if the coordinates are invalid, the error message will be:
+
+.. code-block:: bash
+
+    ValueError: positions must contain at least one row
+
+or if the grid sizes are invalid, the error message will be:
+
+.. code-block:: bash
+
+    ValueError: n_x_bins and n_y_bins must be positive;
+
+Error messages always display the original error message and the traceback with the source of the error.
 
 .. warning::
 
-    These helpers check the atom coordinates, grid sizes, and related inputs
-    that are passed into the Fourier surface API and raise a clear error if
-    something is off. They are called automatically by the high-level entry
-    points in :mod:`membrane_curvature.fourier_surface`
-    (:func:`~membrane_curvature.fourier_surface.fourier_height_from_atoms`
-    and :func:`~membrane_curvature.fourier_surface.fourier_height_derivatives_from_atoms`),
-    so you do not normally have to call them yourself.
+   We provide the API documentation for the validators **for reference only.**
 
-.. note::
+   **Validators are not intended to be called directly by the user**.
+   They are called automatically by the high-level entry points in the surface derivation methods:
+   :mod:`~membrane_curvature.fourier_surface` and :mod:`~membrane_curvature.binning_surface`.
 
-    If an input is invalid, you will see a :class:`ValueError` message
-    explaining what is wrong. For example ``positions must contain at least
-    one row`` or ``n_x_bins and n_y_bins must be positive``. For coordinate
-    input, the original NumPy message is kept attached to the error (chained
-    via ``__cause__``) so the full traceback still shows where the problem started.
 
 Functions
 ---------
