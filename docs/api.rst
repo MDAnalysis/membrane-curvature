@@ -63,8 +63,8 @@ Surface Methods
 :mod:`~membrane_curvature.fourier_surface` fits a periodic 2D Fourier sum to atom heights by linear least squares at each frame,
 evaluates the fitted surface, and obtains partial derivatives analytically from that sum.
 
-:mod:`~membrane_curvature.binning_surface` assigns atoms to a regular grid and stores the mean :math:`\bar{z}` per cell, and estimates partial derivatives
-with numpy.gradient using the physical bin spacing with finite differences.
+:mod:`~membrane_curvature.binning_surface` assigns atoms to a regular grid, stores the mean height per cell, and estimates partial derivatives
+using the physical bin spacing with finite differences.
 
 
 Curvature
