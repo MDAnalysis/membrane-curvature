@@ -1,7 +1,5 @@
 r"""
 
-.. fourier_surface:
-
 ---------------
 Fourier Surface
 ---------------

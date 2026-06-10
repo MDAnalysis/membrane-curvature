@@ -1,5 +1,4 @@
 """
-
 MembraneCurvature
 =======================================
 
@@ -129,39 +128,6 @@ class MembraneCurvature(AnalysisBase):
     :class:`~MDAnalysis.transformations.wrap.wrap`
         Wrap/unwrap the atoms of a given AtomGroup in the unit cell.
 
-    Notes
-    -----
-
-    **Fourier surface method (default)**
-
-    ``surface_method='fourier'`` uses ``fourier_m = fourier_n = 2`` as default.
-    Do not modify the default values unless you need shorter wavelengths.
-    Since the method performs periodic boundary conditions by itself, ``wrap`` defaults
-    to ``False`` and is not required.
-
-    **Binning mode**
-
-    The binning routine does not apply periodic wrapping itself; :class:`MembraneCurvature`
-    calls ``AtomGroup.wrap()`` when ``surface_method='binning'`` and ``wrap=True``.
-    When using binning, ``wrap`` defaults to ``True`` if not provided. Omit ``wrap`` or pass
-    ``wrap=True`` for raw trajectories so atoms are packed into the unit cell before
-    binning. Run with ``wrap=False`` for preprocessed trajectories that have already applied
-    periodic boundary conditions. For membrane-protein systems without position restraints,
-    preprocessing should include rotational and translational fitting around the protein.
-
-    For more details on when to use ``wrap=True``, check the :ref:`usage` page.
-
-    For any method of choice, the derived surface and calculated curvatures are available
-    in the :attr:`results` attributes.
-
-    The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
-    the derived surface averaged over the `n_frames` of the trajectory.
-
-    The attributes :attr:`~MembraneCurvature.results.average_mean` and
-    :attr:`~MembraneCurvature.results.average_gaussian` contain the computed
-    values of mean and Gaussian curvature averaged over the `n_frames` of the
-    trajectory.
-
     See also
     --------
     :class:`~MDAnalysis.transformations.wrap.wrap`
@@ -195,6 +161,30 @@ class MembraneCurvature(AnalysisBase):
     :attr:`~MembraneCurvature.results.average_gaussian` contain the computed
     values of mean and Gaussian curvature averaged over the `n_frames` of the
     trajectory.
+
+    Example
+    -----------
+    You can pass a universe containing your selection of reference::
+
+        import MDAnalysis as mda
+        from membrane_curvature.base import MembraneCurvature
+
+        u = mda.Universe(coordinates, trajectory)
+        mc = MembraneCurvature(u).run()
+
+        surface =  mc.results.average_z_surface
+        mean_curvature =  mc.results.average_mean
+        gaussian_curvature = mc.results.average_gaussian
+
+    The respective 2D curvature plots can be obtained using the `matplotlib`
+    package for data visualization via :func:`~matplotlib.pyplot.contourf` or
+    :func:`~matplotlib.pyplot.imshow`.
+
+    For specific examples visit the :ref:`usage` page.
+    Check the :ref:`visualization` page for more examples to plot
+    MembraneCurvature results using :func:`~matplotlib.pyplot.contourf`
+    and :func:`~matplotlib.pyplot.imshow`.
+
 
     """
 
