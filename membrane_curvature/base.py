@@ -6,11 +6,29 @@ MembraneCurvature
 :Year: 2021
 :Copyright: GNU Public License v3
 
-MembraneCurvature calculates the mean and Gaussian curvature of
-surfaces derived from a selection of reference.
+:class:`~membrane_curvature.base.MembraneCurvature` is the main analysis class
+for calculating mean and Gaussian curvature from atom selections.
 
-Mean curvature is calculated in units of Å :sup:`-1` and Gaussian curvature
-in units of Å :sup:`-2`.
+It derives a height surface from the selected reference atoms using either the
+``"fourier"`` method (default) or the ``"binning"`` method, then evaluates
+curvature on the resulting surface. The specific operations used to derive
+the surface depend on the method selected by the user
+in the parameter :attr:`~membrane_curvature.base.MembraneCurvature.surface_method`.
+
+The set of required parameters to run :class:`~membrane_curvature.base.MembraneCurvature` varies depending
+on the selected ``surface_method``:
+
+- **Fourier method**:
+
+    Required parameters are the maximum Fourier mode indices ``fourier_m`` and ``fourier_n`` (Default: ``2``).
+    Optional parameters include a singular-value cutoff for the Fourier fit via truncated SVD with ``fourier_rcond``.
+
+- **Binning method**:
+
+    Required parameters are the number of bins in the x and y directions ``n_x_bins`` and ``n_y_bins``.
+    Optional ``wrap`` parameter to control whether to wrap the coordinates exceeding the simulation box dimensions.
+
+Mean curvature is calculated in units of Å :sup:`-1` and Gaussian curvature in units of Å :sup:`-2`.
 """
 
 import numpy as np
@@ -36,7 +54,6 @@ logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
 
 class MembraneCurvature(AnalysisBase):
     r"""
-    MembraneCurvature is a tool to calculate membrane curvature.
 
     Parameters
     ----------
@@ -46,12 +63,12 @@ class MembraneCurvature(AnalysisBase):
         The selection string of an atom selection to use as a
         reference to derive a surface.
     wrap : bool or None, optional
-        Apply coordinate wrapping with :meth:`~MDAnalysis.core.groups.AtomGroup.wrap`
+        Apply coordinate wrapping with :meth:`~MDAnalysis.core.groups.AtomGroup.wrap`.
         Defaults to ``True`` for ``surface_method='binning'`` and must be omitted or
-        ``False`` for ``surface_method='fourier'``.
-    n_x_bins : int, optional, default: '100'
+        explicitly set to ``False`` for ``surface_method='fourier'``.
+    n_x_bins : int, optional, default: 100
         Number of bins in grid in the x dimension.
-    n_y_bins : int, optional, default: '100'
+    n_y_bins : int, optional, default: 100
         Number of bins in grid in the y dimension.
     x_range : tuple of (float, float), optional, default: (0, `universe.dimensions[0]`)
         Range of coordinates (min, max) in the x dimension.
@@ -111,39 +128,6 @@ class MembraneCurvature(AnalysisBase):
     :class:`~MDAnalysis.transformations.wrap.wrap`
         Wrap/unwrap the atoms of a given AtomGroup in the unit cell.
 
-    Notes
-    -----
-
-    **Fourier surface method (default)**
-
-    ``surface_method='fourier'`` uses ``fourier_m = fourier_n = 2`` as default.
-    Do not modify the default values unless you need shorter wavelengths.
-    Since the method performs periodic boundary conditions by itself, ``wrap`` defaults
-    to ``False`` and is not required.
-
-    **Binning mode**
-
-    The binning routine does not apply periodic wrapping itself; :class:`MembraneCurvature`
-    calls ``AtomGroup.wrap()`` when ``surface_method='binning'`` and ``wrap=True``.
-    When using binning, ``wrap`` defaults to ``True`` if not provided. Omit ``wrap`` or pass
-    ``wrap=True`` for raw trajectories so atoms are packed into the unit cell before
-    binning. Run with ``wrap=False`` for preprocessed trajectories that have already applied
-    periodic boundary conditions. For membrane-protein systems without position restraints,
-    preprocessing should include rotational and translational fitting around the protein.
-
-    For more details on when to use ``wrap=True``, check the :ref:`usage` page.
-
-    For any method of choice, the derived surface and calculated curvatures are available
-    in the :attr:`results` attributes.
-
-    The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
-    the derived surface averaged over the `n_frames` of the trajectory.
-
-    The attributes :attr:`~MembraneCurvature.results.average_mean` and
-    :attr:`~MembraneCurvature.results.average_gaussian` contain the computed
-    values of mean and Gaussian curvature averaged over the `n_frames` of the
-    trajectory.
-
     See also
     --------
     :class:`~MDAnalysis.transformations.wrap.wrap`
@@ -200,6 +184,7 @@ class MembraneCurvature(AnalysisBase):
     Check the :ref:`visualization` page for more examples to plot
     MembraneCurvature results using :func:`~matplotlib.pyplot.contourf`
     and :func:`~matplotlib.pyplot.imshow`.
+
 
     """
 

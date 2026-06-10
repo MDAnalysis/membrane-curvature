@@ -1,4 +1,3 @@
-
 .. automodule:: membrane_curvature.binning_surface
-    :members:
-    :exclude-members: WarnOnce
+   :members:
+   :exclude-members: WarnOnce
