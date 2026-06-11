@@ -4,8 +4,8 @@ authors:
 - family-names: "Barreto-Ojeda"
   given-names: "Estefania"
   orcid: "https://orcid.org/0000-0002-1288-737X"
-title: "MDAnalysis MembraneCurvature Tool"
-version: 0.0.2
-doi: 10.5281/zenodo.5553452
-date-released: 2021-10-06
+title: "MembraneCurvature MDAkit"
+version: 1.1.2
+doi: 10.5281/zenodo.20644126
+date-released: 2026-04-25
 url: "https://github.com/MDAnalysis/membrane-curvature/"
