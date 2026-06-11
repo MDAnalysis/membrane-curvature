@@ -12,7 +12,9 @@
 [![PyPI](https://img.shields.io/pypi/v/membrane-curvature)](https://pypi.org/project/membrane-curvature/)
 [![Conda version](https://anaconda.org/conda-forge/membrane-curvature/badges/version.svg)](https://anaconda.org/conda-forge/membrane-curvature)
 
-![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/source/_static/PM_Membrane_EBO.png?raw=true)
+<p align="center">
+  <img src="docs/_static/mc-logo-whitebg-EBO.png" width="600" alt="MembraneCurvature logo">
+</p>
 
 MembraneCurvature is an [MDAnalysis] MDAKit to calculate membrane curvature from
 Molecular Dynamics simulations.
