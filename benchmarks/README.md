@@ -2,7 +2,7 @@
 
 Performance benchmarks for MembraneCurvature using [Airspeed Velocity] (ASV).
 
-ASV creates isolated environments with the [uv plugin] (See [environment_type: uv] in [asv.conf.json]).
+ASV creates isolated environments with the [uv plugin] (See ``[environment_type: uv]`` in [asv.conf.json]).
 
 Each benchmark run uses Python **3.11** and **3.14**, the minimum and latest versions declared in [pyproject.toml].
 
