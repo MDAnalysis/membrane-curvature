@@ -171,16 +171,23 @@ available where you can find:
 
 ### Contributing
 
-Contributions are very welcome!
+Contributions are very welcome! Check the [Contributing] page for more details.
+
+If you are interested in contributing to MembraneCurvature, installation of the development dependencies
+is required. There are three dependency groups defined in `pyproject.toml`:
+
+- `tests`: testing dependencies.
+- `docs`: documentation build dependencies (e.g. Sphinx, themes).
+- `dev`: development tools (includes `tests` and `docs`).
+
+Note that by installing the `dev` group, the `tests` and `docs` groups are also installed.
 
 MembraneCurvature is compatible with [uv] (recommended for development):
 
 ```bash
-# create an environment and install the project + dev tools
-uv sync --extra dev
+# create an environment and install --group dev dependencies
+uv sync --group dev
 
-# add test dependencies and run the test suite
-uv sync --extra dev --extra tests
 uv run pytest
 ```
 
@@ -192,14 +199,18 @@ keeps pull requests easier to review.
 To set up hooks locally, with [uv]:
 
 ```bash
-uv sync --extra dev
+uv sync --group dev
 uv run pre-commit install
 ```
 
-Or with pip:
+Or with pip :
+
+> [!NOTE]
+> This requires pip >= 25.1
 
 ```bash
-pip install -e ".[dev]"
+pip install -e .
+pip install --group dev
 pre-commit install
 ```
 
@@ -234,3 +245,4 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [pre-commit]: https://pre-commit.com
 [ruff]: https://docs.astral.sh/ruff/
 [uv]: https://docs.astral.sh/uv/
+[Contributing]: https://github.com/MDAnalysis/membrane-curvature/blob/main/.github/CONTRIBUTING.md

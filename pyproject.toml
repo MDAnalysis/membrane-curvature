@@ -40,11 +40,10 @@ classifiers = [
         'Programming Language :: Python :: 3.14'
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 tests = [
     "pytest",
     "pytest-cov",
-    "ipython",
     "MDAnalysisTests"
 ]
 docs = [
@@ -65,7 +64,9 @@ dev = [
     "ruff",
     "validate-pyproject[all]",
     "pre-commit",
-    "ty"
+    "ty",
+    {include-group = "tests"},
+    {include-group = "docs"},
     ]
 
 [tool.setuptools.packages.find]
