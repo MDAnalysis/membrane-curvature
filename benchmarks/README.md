@@ -1,5 +1,4 @@
-MembraneCurvature benchmarks
-=============================
+# MembraneCurvature benchmarks
 
 Performance benchmarks for MembraneCurvature using [Airspeed Velocity] (ASV).
 
@@ -7,8 +6,7 @@ ASV creates isolated environments with the [uv plugin] (See [environment_type: u
 
 Each benchmark run uses Python **3.11** and **3.14**, the minimum and latest versions declared in [pyproject.toml].
 
-Prerequisites
--------------
+## Prerequisites
 
 - [uv] on your `PATH` (`uv --version`)
 
@@ -31,8 +29,7 @@ cd benchmarks
 uv run asv machine --yes
 ```
 
-Usage
------
+## Usage
 
 > [!NOTE]
 > Run all `asv` commands from the `benchmarks/` directory.
@@ -104,8 +101,7 @@ uv run asv run --quick --show-stderr       # fast smoke check; results not saved
 uv run asv run --show-stderr -b Small      # debug failures (regex on benchmark name)
 ```
 
-Clean previous outputs
-----------------------
+## Clean previous outputs
 
 Delete generated ASV artifacts when environments go stale, results look inconsistent, or you want a fresh local run:
 
@@ -124,9 +120,7 @@ uv run asv machine --yes
 
 Note that all of these paths are gitignored. See [Output layout](#output-layout) for what each directory contains.
 
-
-Output layout
--------------
+## Output layout
 
 - `env/`: ASV uv virtualenvs.
 - `results/`: Raw JSON timing data.
@@ -134,9 +128,7 @@ Output layout
 - `virtualenv/`: Leftover from older ASV configs.
 - `.asv/`: Local machine metadata.
 
-
 ## Benchmark modules
-
 
 - `MembraneCurvatureSmallBenchmark`: `MembraneCurvature.run()` on a nine-atom PO4 system (Fourier and binning).
 - `MembraneCurvatureBenchmark`: `MembraneCurvature.run()` on ~900 PO4 atoms at grid sizes 25, 50, and 100.
@@ -145,8 +137,7 @@ Output layout
 
 The file `membranecurvature.py` contains the benchmarks for the `MembraneCurvature.run()` method for different input sizes and for the two surface derivation methods. Peak memory benchmarks are also included to track RAM usage during multi-frame trajectory runs, where per-frame surface and curvature arrays grow with trajectory length and grid resolution.
 
-Pull requests
--------------
+## Pull requests
 
 ### Before opening or updating a PR
 
@@ -177,7 +168,7 @@ Pull requests
    uv run asv continuous main HEAD
    ```
 
-  ASV compares `HEAD` (your branch) against `main` and prints a summary table of benchmarks that are faster, slower, or unchanged. This runs locally and does **not** modify the public `main` history. This is a quick comparison to be included in the PR discussion (optional).
+   ASV compares `HEAD` (your branch) against `main` and prints a summary table of benchmarks that are faster, slower, or unchanged. This runs locally and does **not** modify the public `main` history. This is a quick comparison to be included in the PR discussion (optional).
 
 
 [uv]:https://docs.astral.sh/uv/
