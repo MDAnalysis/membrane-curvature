@@ -1,16 +1,15 @@
 r"""
+.. _fft_filtering:
 
 -------------
 FFT filtering
 -------------
 
-This module implements a brick-wall filter on a binned height field in the reciprocal space.
-This implementation uses :func:`numpy.fft.fft2` with physical bin widths :math:`\Delta x` and
-:math:`\Delta y` in Å along the x and y dimensions, respectively.
+.. versionadded:: 2.0.0
 
 .. important::
 
-    This module is available only when :class:`~membrane_curvature.base.MembraneCurvature`
+    The brick-wall FFT filter is available only when :class:`~membrane_curvature.base.MembraneCurvature`
     runs with ``surface_method='binning'``.
 
     **Note that per-frame arrays are not FFT-filtered!**
@@ -19,6 +18,10 @@ This implementation uses :func:`numpy.fft.fft2` with physical bin widths :math:`
     filter once to the averaged ``z_surface`` and computes mean and Gaussian curvature on that filtered average.
 
     For binning, filtering defaults to ``fft_filter='auto'``. Pass ``fft_filter=None`` to disable FFT filtering.
+
+This module implements a brick-wall filter on a binned height field in the reciprocal space.
+This implementation uses :func:`numpy.fft.fft2` with physical bin widths :math:`\Delta x` and
+:math:`\Delta y` in Å along the x and y dimensions, respectively.
 
 Usage
 ------
@@ -40,8 +43,8 @@ Users can control filtering in three ways via the ``fft_filter`` argument:
 
 .. warning::
 
-    **We recommend** ``fft_filter='auto'`` **when enabling a filter**, unless there is a
-    specific reason to choose bounds manually.
+    **We recommend** ``fft_filter='auto'`` **when enabling the brick-wall filter**,
+    unless there is a specific reason to choose bounds manually.
     With ``fft_filter='auto'``, bounds are ``(0, 0.5 * q_Nyq)`` from the bin grid
     ``dx`` and ``dy``.
 
@@ -75,18 +78,19 @@ Limitations
   oscillations). Curvature uses second derivatives of the height field, so ringing can
   be amplified. ``fft_filter='auto'`` uses a conservative cutoff. Tune manually only
   if you know what you are doing.
-- **Empty bins** (``NaN`` after binning): before the FFT, every empty bin is filled with a
-  single constant, the mean height of all occupied bins (not zero, not spatial
-  interpolation). That step injects a strong DC component and spreads energy across
-  **all** Fourier modes before the brick-wall mask is applied, so the filtered field
-  can show broadband contamination and ringing near empty regions even after ``NaN``
-  is restored. Prefer denser binning or smaller empty regions when filtering. See
-  :func:`_height_for_fft`.
+- **Empty bins** (``NaN`` after binning): before filtering, empty bins are filled with
+  the average height of occupied bins (not zero or neighbour interpolation). Large gaps
+  can therefore add artifacts near empty regions in the filtered surface. Finer binning
+  or fewer empty bins usually helps. See :func:`_height_for_fft`.
 - **Non-square bins** (``dx != dy``): the pass band uses an **isotropic** cutoff on
   :math:`|q| = \sqrt{q_x^2 + q_y^2}`, while :func:`nyquist_q` uses
   :math:`\min(\pi/\Delta x, \pi/\Delta y)`. Modes that are Nyquist-resolvable along the
   finer-spaced axis but have :math:`|q|` above the coarse-axis limit are removed by the
   filter even though the grid could represent them along that axis.
+
+
+Functions
+----------
 """
 
 import warnings
@@ -95,7 +99,21 @@ import numpy as np
 
 
 def _validate_bin_widths(dx, dy):
-    """Raise if bin widths are not strictly positive."""
+    """
+    Validate bin widths before calculating the Nyquist wavevector magnitude.
+
+    Parameters
+    ----------
+    dx: float
+        Bin width along ``x`` (Å).
+    dy: float
+        Bin width along ``y`` (Å).
+
+    Raises
+    ------
+    ValueError
+        If ``dx`` or ``dy`` is not strictly positive.
+    """
     if dx <= 0.0 or dy <= 0.0:
         raise ValueError(f'Bin widths must be positive. Got dx={dx}, dy={dy}')
 
@@ -187,7 +205,8 @@ def _auto_q_bounds(dx, dy):
 
 def _validate_q_pair(bounds, dx, dy):
     """
-    Parse and validate an ``(q_low, q_high)`` pair for ``fft_filter``.
+    Parse and validate the bounds ``(q_low, q_high)`` for ``fft_filter``.
+    If valid, the pass band is defined by ``q_low <= |q| <= q_high`` in rad/Å.
 
     Parameters
     ----------
@@ -342,14 +361,14 @@ def _height_for_fft(height, nan_mask):
     Notes
     -----
 
-        Bins with no atoms are ``NaN``. The FFT needs finite values, so each empty bin is
-        set to the **average height of all occupied bins** on that map (not zero, and not
-        interpolated from neighbours).
+    Empty bins are stored as ``NaN``. Before the forward FFT, each empty bin is
+    replaced with the mean height of occupied bins. The fill value is uniform
+    across empty bins and it is neither zero nor obtained by spatial interpolation.
 
-        This is a simple placeholder to run the filter. It can make the surface look
-        too smooth or wavy near large gaps, especially when many bins are empty. After
-        the inverse FFT, empty bins are set back to ``NaN``. If every bin is empty, the
-        fill value is ``0.0``.
+    This is a simple placeholder to run the filter. It can make the surface look
+    too smooth or wavy near large gaps, especially when many bins are empty. After
+    the inverse FFT, empty bins are set back to ``NaN``. If all bins are empty, the
+    fill value is ``0.0``.
     """
     if not nan_mask.any():
         return height
