@@ -1,7 +1,7 @@
 Membranecurvature CHANGELOG
 =============================
 
-* Added `uv.lock` file and updated docs for consistent dev env instructions (PR #202)
+* Added `uv.lock` file and step in CI to validate uv environment with dev dependency group (PR #202)
 * Improve API documentation: layout, content, and navigation menu (PR #193)
 * Modernized project metadata: comply with PEP 639 (PR #185) and PEP 735 (PR #194)
 * Updated installation instructions (conda, pip, uv) and conda environment files (PR #186)
