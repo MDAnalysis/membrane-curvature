@@ -171,7 +171,7 @@ available where you can find:
 
 ## Contributing
 
-Contributions are very welcome! Check the [Contributing] page for more details.
+Contributions are very welcome!
 
 If you are interested in contributing to MembraneCurvature, installation of the development dependencies
 is required. See the [Installation] section in the Getting Started documentation for full details on pip,
@@ -183,36 +183,37 @@ There are three dependency groups defined in `pyproject.toml`:
 - `tests`: testing dependencies.
 - `docs`: documentation build dependencies (e.g. Sphinx, themes).
 
-Note that by installing the `dev` group, the `tests` and `docs` groups are also installed.
+Note that by installing the `dev` group, the `tests` and `docs` dependency groups are also installed.
 
-MembraneCurvature is compatible with [uv] (recommended for development):
+We recommend using [uv] as a development environment for MembraneCurvature. To set up a `uv` dev environment, clone the repository and move to the root directory:
 
 ```bash
 git clone https://github.com/MDAnalysis/membrane-curvature.git
 cd membrane-curvature
-uv sync --group dev
-uv run pre-commit install
-uv run pytest
 ```
 
-This repository uses [pre-commit] hooks to run quick checks
+Then, run:
+
+```bash
+uv sync --group dev
+```
+
+This will create a new environment and install the dependencies included in the `dev` group.
+
+MembraneCurvature uses [pre-commit] hooks to run quick checks
 before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] linting/formatting.
 Using these hooks is highly encouraged because it helps catch common issues early and
-keeps pull requests easier to review.
+keeps pull requests easier to review. By syncing the `dev` group, the pre-commit hooks are installed automatically.
 
-Or with pip:
-
-> [!NOTE]
-> This requires ``pip >= 25.1``
+To run the pre-commit hooks manually, with [uv]:
 
 ```bash
-git clone https://github.com/MDAnalysis/membrane-curvature.git
-cd membrane-curvature
-pip install -e .
-pip install --group dev
-pre-commit install
-pytest
+uv run pre-commit run --all-files
 ```
+
+For instructions on how to create a development environment with pip, see the [Installing development dependencies with pip] page.
+
+For more information on how to contribute to MembraneCurvature, see the [Contributing] page.
 
 > **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
 
@@ -232,6 +233,7 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [SciPy]: https://www.scipy.org
 [code_of_conduct]: https://www.mdanalysis.org/conduct/
 [Installation]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
+[Installing development dependencies with pip]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installing-development-dependencies-with-pip
 [Usage]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
 [License]: https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE
 [documentation]: https://membrane-curvature.readthedocs.io/en/latest/index.html#
