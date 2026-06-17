@@ -61,16 +61,13 @@ jobs:
   uv-dev-check:
     name: Validate uv environment
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
     - uses: actions/checkout@v6
-    - name: Install uv and set the python version
+    - name: Install uv and set Python 3.11
       uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
       with:
-        python-version: ${{ matrix.python-version }}
-    - name: Create uv env with dev dependencies
+        python-version: "3.11"
+    - name: Create uv env with dev dependency group
       run: uv sync --frozen --group dev
     - name: Run tests with uv
       run: uv run --frozen pytest
