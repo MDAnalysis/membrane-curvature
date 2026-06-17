@@ -173,9 +173,7 @@ available where you can find:
 
 Contributions are very welcome!
 
-If you are interested in contributing to MembraneCurvature, installation of the development dependencies
-is required. See the [Installation] section in the Getting Started documentation for full details on pip,
-conda, and [uv] setup.
+If you are interested in contributing to MembraneCurvature, installation of the development dependencies is required.
 
 There are three dependency groups defined in `pyproject.toml`:
 
@@ -192,13 +190,11 @@ git clone https://github.com/MDAnalysis/membrane-curvature.git
 cd membrane-curvature
 ```
 
-Then, run:
+To create a new `uv` environment and install the dependencies included in the `dev` group, run:
 
 ```bash
 uv sync --group dev
 ```
-
-This will create a new environment and install the dependencies included in the `dev` group.
 
 MembraneCurvature uses [pre-commit] hooks to run quick checks
 before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] linting/formatting.
