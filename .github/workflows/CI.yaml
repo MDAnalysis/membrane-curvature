@@ -58,6 +58,19 @@ jobs:
         - name: Run ty - check
           run: ty check
 
+  uv-dev-check:
+    name: Validate uv dev env and run tests with Python 3.11
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.11"
+    - name: Create uv env with dev dependencies
+      run: uv sync --frozen --group dev
+    - name: Run tests with uv
+      run: uv run pytest
+
   test:
     name: "Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}"
     runs-on: ${{ matrix.os }}
