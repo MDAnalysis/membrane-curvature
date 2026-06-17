@@ -63,13 +63,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
+    - name: Install uv and set the python version
+      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
       with:
         python-version: "3.11"
     - name: Create uv env with dev dependencies
       run: uv sync --frozen --group dev
     - name: Run tests with uv
-      run: uv run pytest
+      run: uv run --frozen pytest
 
   test:
     name: "Test on ${{ matrix.os }}, Python ${{ matrix.python-version }}"
