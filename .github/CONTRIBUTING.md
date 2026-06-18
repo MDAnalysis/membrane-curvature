@@ -71,7 +71,9 @@ For more information on building the documentation, see the [docs/README.md](../
   and multiple core developers give "Approved" reviews.
 
 > [!NOTE]
-> All tests must pass before a PR can be merged. CI runs the test suite, linters, and type checks. Coverage is reported to Codecov and it is reported in the PR. Maintainers may block merge if code coverage drops below 100%.
+> All tests must pass before a PR can be merged. CI runs the test suite, linters, and type checks.
+> New code warrants new tests, and all added code should be covered by the test suite.
+> Coverage is reported to Codecov and it is reported in the PR. Maintainers may block merge if code coverage drops below 100%.
 
 # Additional Resources
 
