@@ -23,7 +23,7 @@ Molecular Dynamics simulations.
 
 With MembraneCurvature you can:
 
-- Derive 2D surface profiles from MD simulations using an atom selection as reference with twodifferent methods: binning or Fourier.
+- Derive 2D surface profiles from MD simulations using an atom selection as reference with two different methods: binning or Fourier.
 - Calculate the mean and Gaussian curvatures of the derived surfaces.
 - Get per-frame or averaged results for surface, mean and Gaussian curvature.
 - Live a happier life.
@@ -81,9 +81,9 @@ or via `pip`:
 pip install --upgrade MDAnalysisTests MDAnalysisData
 ```
 
-### Usage
+## Usage
 
-#### With the Fourier method
+### With the Fourier method
 
 This is a quick example on how to run MembraneCurvature with the default
 surface method (Fourier):
@@ -100,14 +100,14 @@ curvature_upper_leaflet = MembraneCurvature(universe,
                                             select='resid 1-225 and name PO4'
                                             ).run()
 
-# extract average mean curvature
-mean_upper_leaflet = curvature_upper_leaflet.results.z_surface
+# extract average mean surface
+average_surface = curvature_upper_leaflet.results.average_z_surface
 
 # extract average mean curvature
-mean_upper_leaflet = curvature_upper_leaflet.results.mean
+mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
 
 # extract average Gaussian curvature
-gaussian_upper_leaflet = curvature_upper_leaflet.results.gaussian
+gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 ```
 
 In this example, we use the PO4 beads in the upper leaflet as reference to
@@ -126,7 +126,7 @@ mean_last_frame = curvature_upper_leaflet.results.mean[-1]
 gaussian_frame_10 = curvature_upper_leaflet.results.gaussian[10]
 ```
 
-#### With the binning method
+### With the binning method
 
 The same example run with the binning surface method looks like:
 
@@ -158,7 +158,7 @@ gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.gaussia
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
 To plot results from MembraneCurvature please check the [Visualization] page.
 
-### Documentation
+## Documentation
 
 To help you get the most out of MembraneCurvature, we have [documentation]
 available where you can find:
@@ -169,54 +169,51 @@ available where you can find:
 - Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
 - Detailed [Tutorials] to run MembraneCurvature in membrane-only and membrane-protein systems.
 
-### Contributing
+## Contributing
 
-Contributions are very welcome! Check the [Contributing] page for more details.
+Contributions are very welcome!
 
-If you are interested in contributing to MembraneCurvature, installation of the development dependencies
-is required. There are three dependency groups defined in `pyproject.toml`:
+If you are interested in contributing to MembraneCurvature, installation of the development dependencies is required.
 
+There are three dependency groups defined in `pyproject.toml`:
+
+- `dev`: development tools (includes `tests` and `docs`).
 - `tests`: testing dependencies.
 - `docs`: documentation build dependencies (e.g. Sphinx, themes).
-- `dev`: development tools (includes `tests` and `docs`).
 
-Note that by installing the `dev` group, the `tests` and `docs` groups are also installed.
+Note that by installing the `dev` group, the `tests` and `docs` dependency groups are also installed.
 
-MembraneCurvature is compatible with [uv] (recommended for development):
+We recommend using [uv] as a development environment for MembraneCurvature. To set up a `uv` dev environment, clone the repository and move to the root directory:
 
 ```bash
-# create an environment and install --group dev dependencies
-uv sync --group dev
-
-uv run pytest
+git clone https://github.com/MDAnalysis/membrane-curvature.git
+cd membrane-curvature
 ```
 
-This repository uses [pre-commit] hooks to run quick checks
+To create a new `uv` environment and install the dependencies included in the `dev` group, run:
+
+```bash
+uv sync --group dev
+```
+
+MembraneCurvature uses [pre-commit] hooks to run quick checks
 before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] linting/formatting.
 Using these hooks is highly encouraged because it helps catch common issues early and
-keeps pull requests easier to review.
+keeps pull requests easier to review. By syncing the `dev` group, the pre-commit hooks are installed automatically.
 
-To set up hooks locally, with [uv]:
-
-```bash
-uv sync --group dev
-uv run pre-commit install
-```
-
-Or with pip :
-
-> [!NOTE]
-> This requires pip >= 25.1
+To run the pre-commit hooks manually, with [uv]:
 
 ```bash
-pip install -e .
-pip install --group dev
-pre-commit install
+uv run pre-commit run --all-files
 ```
+
+For instructions on how to create a development environment with pip, see the [Installing development dependencies with pip] page.
+
+For more information on how to contribute to MembraneCurvature, see the [Contributing] page.
 
 > **Interested in becoming a maintainer?** We welcome your passion and expertise to help shape and grow this open-source project! Please contact estefania@ojeda-e.com for more details.
 
-### License
+## License
 
 Source code included in this project is available in the GitHub repository
 https://github.com/MDAnalysis/membrane-curvature under the GNU General Public
@@ -232,6 +229,7 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [SciPy]: https://www.scipy.org
 [code_of_conduct]: https://www.mdanalysis.org/conduct/
 [Installation]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
+[Installing development dependencies with pip]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installing-development-dependencies-with-pip
 [Usage]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
 [License]: https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE
 [documentation]: https://membrane-curvature.readthedocs.io/en/latest/index.html#

@@ -128,11 +128,14 @@ To install the latest stable version of MembraneCurvature with `uv`_, run the fo
 Installing development dependencies with uv
 ++++++++++++++++++++++++++++++++++++++++++++
 
-For development, install the development dependency group with:
+For development, clone the repository and install the development dependency group with:
 
 .. code-block:: bash
 
+   git clone https://github.com/MDAnalysis/membrane-curvature.git
+   cd membrane-curvature
    uv sync --group dev
+   uv run pytest
 
 This command creates a virtual environment, installs MembraneCurvature in editable mode, and resolves all ``dev``
 dependency groups (including ``tests`` and ``docs``) in one step.

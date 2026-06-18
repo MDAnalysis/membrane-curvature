@@ -9,7 +9,7 @@ repos:
     rev: v6.0.0
     hooks:
     -   id: check-added-large-files
-        exclude: ^docs/.*$
+        exclude: ^(docs/.*$|uv.lock)
     -   id: check-ast
     -   id: check-case-conflict
     -   id: check-yaml
