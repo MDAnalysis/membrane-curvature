@@ -229,8 +229,8 @@ You can find more detailed examples in the notebooks available in the :ref:`tuto
   
 The order of operations is:
 
-1. Per frame: bin atoms, store height field  in ``results.z_surface``.
-1. After the trajectory is processed, time-average ``z_surface`` over frames, optionally
+1. Per frame: bin atoms, store height field in ``results.z_surface``.
+2. After the trajectory is processed, time-average ``z_surface`` over frames, optionally
    apply one brick-wall filter in reciprocal space to that average, then compute
    ``results.average_mean`` and ``results.average_gaussian`` from the (possibly filtered)
    average height.

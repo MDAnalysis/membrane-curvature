@@ -115,7 +115,7 @@ def _validate_bin_widths(dx, dy):
         If ``dx`` or ``dy`` is not strictly positive.
     """
     if dx <= 0.0 or dy <= 0.0:
-        raise ValueError(f'Bin widths must be positive. Got dx={dx}, dy={dy}')
+        raise ValueError(f'Bin widths must be positive nonzero. Got dx={dx}, dy={dy}')
 
 
 def nyquist_q(dx, dy):
@@ -236,7 +236,7 @@ def _validate_q_pair(bounds, dx, dy):
     """
     if not isinstance(bounds, (tuple, list)) or len(bounds) != 2:
         raise ValueError('fft_filter["q"] must be a pair (q_low, q_high)')
-    q_low, q_high = float(bounds[0]), float(bounds[1])
+    q_low, q_high = bounds[0], bounds[1]
     if q_low < 0.0 or q_high < 0.0:
         raise ValueError('fft_filter bounds must be non-negative')
     if q_low > q_high:
