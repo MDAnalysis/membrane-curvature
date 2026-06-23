@@ -1,6 +1,7 @@
 Membranecurvature CHANGELOG
 =============================
 
+* Added brick-wall FFT filtering to the binning surface method (PR #188)
 * Added `uv.lock` file and step in CI to validate uv environment with dev dependency group (PR #202)
 * Improve API documentation: layout, content, and navigation menu (PR #193)
 * Modernized project metadata: comply with PEP 639 (PR #185) and PEP 735 (PR #194)

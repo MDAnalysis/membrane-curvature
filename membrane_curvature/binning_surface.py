@@ -17,6 +17,12 @@ This height field is then used to calculate mean and Gaussian curvature using fi
 
 For more details on the binning method, refer to the :ref:`binning_method` section in the :ref:`algorithm` page.
 
+.. note::
+
+    The binning method supports a brick-wall filter to remove high-frequency noise from the height field.
+    The filter is applied to the height field before calculating curvature. For more details, check the API
+    documentation for the :ref:`fft_filtering` module.
+
 Functions
 ---------
 """

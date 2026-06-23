@@ -379,8 +379,8 @@ For every frame of the trajectory, the surface derived from the
 :class:`~MDAnalysis.core.groups.AtomGroup` is
 calculated and stored in :attr:`~MembraneCurvature.results.z_surface`.
 Similarly, the calculation of mean and Gaussian curvature is performed in every
-frame and stored in :attr:`MembraneCurvature.results.mean_curvature` and
-:attr:`MembraneCurvature.results.gaussian_curvature`, respectively.
+frame and stored in :attr:`MembraneCurvature.results.mean` and
+:attr:`MembraneCurvature.results.gaussian`, respectively.
 
 The following sections describe the details of the two methods used
 to derive the surface and calculate its derivatives.
@@ -436,7 +436,7 @@ and :math:`\partial_{yy}`, and the mixed derivative :math:`\partial_{xy}`.
   derivatives are exact for that fitted surface at any output grid resolution, so refining the bin grid
   alone does not remove truncation or sampling limitations.
   
-3.2a. Binning + finite differences (``surface_method='binning'``)
+3.2.1. Binning + finite differences (``surface_method='binning'``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With ``surface_method='binning'``, these are estimated numerically from
@@ -462,8 +462,61 @@ For details on the binning method, see API documentation in
 :mod:`~membrane_curvature.binning_surface` that describes every
 associated functions.
 
-3.2b. Fourier fit + analytic derivatives (``surface_method='fourier'``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _binning-fft-filter:
+
+3.2.1.1. FFT filtering on the averaged surface (``fft_filter``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A brick-wall filter is applied to the averaged surface once all frames have been processed
+when ``surface_method='binning'`` and the argument ``fft_filter`` is set to ``'auto'`` (default) or
+passed as a dictionary like ``{'q': (q_low, q_high)}``.
+
+.. important::
+
+  **The FFT filter is not applied to per-frame surfaces**.  Filtering is performed on the
+  time-averaged height field, where thermal fluctuations have already been suppressed by averaging.
+
+Pass-band limits are resolved at construction time via
+:func:`~membrane_curvature.fft_filtering.resolve_fft_filter` and applied at the end
+of the run with :func:`~membrane_curvature.fft_filtering.apply_fft_filter` (see
+:mod:`~membrane_curvature.fft_filtering`).
+
+|fft_filter_plot|
+
+For **filtered average surface** maps, :class:`~membrane_curvature.base.MembraneCurvature` 
+averages the height field (:attr:`~membrane_curvature.base.MembraneCurvature.results.z_surface`)
+over the trajectory and then smooths it in reciprocal space by zeroing all Fourier modes outside
+the pass band defined by :math:`q_{\mathrm{low}} \leq |q| \leq q_{\mathrm{high}}` via
+:func:`~membrane_curvature.fft_filtering.apply_fft_filter` before transforming back to real space.
+The resulting filtered surface is stored in :attr:`~membrane_curvature.base.MembraneCurvature.results.average_z_surface`,
+and then used to calculate mean and Gaussian curvature via :func:`~membrane_curvature.curvature.mean_curvature` and
+:func:`~membrane_curvature.curvature.gaussian_curvature`, respectively.
+
+With the default ``fft_filter='auto'``, the pass band is :math:`(0,\ 0.5\,q_{\mathrm{Nyq}})`,
+a conservative low-pass by default which retains the large-scale membrane shape while
+suppressing short-wavelength noise.
+
+For binning, filtering defaults to ``fft_filter='auto'``. To control the band manually,
+pass ``fft_filter={'q': (q_low, q_high)}`` in rad/Å. To disable filtering altogether, pass ``fft_filter=None``.
+
+.. warning::
+
+  Before the FFT filtering, empty bins are temporarily filled with the mean height of occupied
+  bins, then restored to ``NaN`` after the inverse FFT. Large empty regions can
+  introduce broadband spectral contamination and distort the filtered surface near gaps.
+  Prefer denser binning or smaller empty regions when filtering is enabled.
+
+.. note::
+
+  The pass-band mask is isotropic in :math:`|q|`. For non-square bins
+  (:math:`\Delta x \neq \Delta y`), modes that are resolvable along the finer axis
+  but exceed :math:`q_{\mathrm{Nyq}} = \min(\pi/\Delta x,\, \pi/\Delta y)` are
+  removed. Since :func:`numpy.fft.fft2` assumes a periodic grid, use ``wrap=True``,
+  as recommended for binning in general.
+
+
+3.2.2. Fourier fit + analytic derivatives (``surface_method='fourier'``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 With ``surface_method='fourier'``, the partial derivatives are evaluated
 analytically from the fitted Fourier series (see :ref:`fourier_method`),
@@ -499,7 +552,7 @@ arrays using the Monge-gauge formula:
 via :func:`~membrane_curvature.curvature.mean_curvature_monge`.
 
 The result has units Å :sup:`-1` and is stored in
-:attr:`MembraneCurvature.results.mean_curvature` for each frame.
+:attr:`MembraneCurvature.results.mean` for each frame.
 
 .. _gaussian-curvature:
 
@@ -519,7 +572,7 @@ via :func:`~membrane_curvature.curvature.gaussian_curvature_monge`.
 
 As for the calculation of mean curvature, Gaussian curvature is calculated for
 every frame and the result has units Å :sup:`-2` and is stored in
-:attr:`MembraneCurvature.results.gaussian_curvature` for each frame.
+:attr:`MembraneCurvature.results.gaussian` for each frame.
 
 
 .. warning::
@@ -559,6 +612,10 @@ Each array has shape ``(n_x_bins, n_y_bins)``.
 .. |grid| image:: ../_static/grid.png
   :width: 600
   :alt: Grid
+
+.. |fft_filter_plot| image:: ../_static/fft_filter.png
+  :width: 800
+  :alt: fftFilter
 
 .. |fourier_modes| image:: ../_static/Fourier_modes.png
   :width: 800

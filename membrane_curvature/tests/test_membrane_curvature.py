@@ -847,11 +847,15 @@ class TestMembraneCurvature(object):
 
     @pytest.fixture()
     def curvature_unwrapped_universe(self, universe_dummy_wrap):
-        return MembraneCurvature(universe_dummy_wrap, surface_method='binning', n_x_bins=3, n_y_bins=3).run()
+        return MembraneCurvature(
+            universe_dummy_wrap, surface_method='binning', fft_filter=None, n_x_bins=3, n_y_bins=3
+        ).run()
 
     @pytest.fixture()
     def curvature_unwrapped_universe_xy(self, universe_dummy_wrap_xy):
-        return MembraneCurvature(universe_dummy_wrap_xy, surface_method='binning', n_x_bins=3, n_y_bins=3).run()
+        return MembraneCurvature(
+            universe_dummy_wrap_xy, surface_method='binning', fft_filter=None, n_x_bins=3, n_y_bins=3
+        ).run()
 
     @pytest.fixture()
     def mc_fourier_dummy(self, universe_dummy_full):
@@ -904,7 +908,7 @@ class TestMembraneCurvature(object):
         assert mc.wrap is False
 
     def test_wrap_defaults_true_binning(self, universe):
-        mc = MembraneCurvature(universe, select='name PO4', surface_method='binning')
+        mc = MembraneCurvature(universe, select='name PO4', surface_method='binning', fft_filter=None)
         assert mc.wrap is True
 
     def test_wrap_false_explicit_fourier(self, universe_fourier_defaults):
@@ -954,7 +958,7 @@ class TestMembraneCurvature(object):
             r'must be equal to simulation box.'
         )
         with pytest.warns(UserWarning, match=regex):
-            MembraneCurvature(universe, select='name PO4', surface_method='binning', x_range=(0, 10))
+            MembraneCurvature(universe, select='name PO4', surface_method='binning', fft_filter=None, x_range=(0, 10))
 
     def test_grid_bigger_than_simulation_box_y_dim(self, universe):
         regex = (
@@ -963,7 +967,7 @@ class TestMembraneCurvature(object):
             r'must be equal to simulation box.'
         )
         with pytest.warns(UserWarning, match=regex):
-            MembraneCurvature(universe, surface_method='binning', select='name PO4', y_range=(0, 10))
+            MembraneCurvature(universe, surface_method='binning', fft_filter=None, select='name PO4', y_range=(0, 10))
 
     @pytest.mark.parametrize(
         'x_bin, y_bin, x_range, y_range, expected_surface',
@@ -989,7 +993,14 @@ class TestMembraneCurvature(object):
     def test_analysis_get_z_surface_dummy(self, universe_dummy, x_bin, y_bin, x_range, y_range, expected_surface):
         u = universe_dummy
         mc = MembraneCurvature(
-            u, select='all', surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, x_range=x_range, y_range=y_range
+            u,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            n_x_bins=x_bin,
+            n_y_bins=y_bin,
+            x_range=x_range,
+            y_range=y_range,
         ).run()
 
         avg_surface = mc.results.average_z_surface
@@ -1050,7 +1061,9 @@ class TestMembraneCurvature(object):
     # test surface in universe with atoms out of bounds in x and y
     def test_analysis_get_z_surface_wrap_xy(self, universe_dummy_wrap_xy, dummy_surface):
         x_bin = y_bin = 3
-        mc = MembraneCurvature(universe_dummy_wrap_xy, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin).run()
+        mc = MembraneCurvature(
+            universe_dummy_wrap_xy, surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin
+        ).run()
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, dummy_surface)
 
@@ -1095,7 +1108,7 @@ class TestMembraneCurvature(object):
         expected_surface = [[np.nan, 150.0, np.nan], [150.0, 150.0, 150.0], [150.0, np.nan, 150.0]]
         x_bin = y_bin = 3
         mc = MembraneCurvature(
-            universe_dummy_wrap, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+            universe_dummy_wrap, surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
         ).run()
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
@@ -1105,7 +1118,12 @@ class TestMembraneCurvature(object):
         expected_surface = [[np.nan, np.nan, np.nan], [150.0, np.nan, 150.0], [150.0, np.nan, 150.0]]
         x_bin = y_bin = 3
         mc = MembraneCurvature(
-            universe_dummy_wrap_xy, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+            universe_dummy_wrap_xy,
+            surface_method='binning',
+            fft_filter=None,
+            n_x_bins=x_bin,
+            n_y_bins=y_bin,
+            wrap=False,
         ).run()
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
@@ -1115,7 +1133,7 @@ class TestMembraneCurvature(object):
         expected_mean = np.array(np.full((3, 3), np.nan))
         x_bin = y_bin = 3
         mc = MembraneCurvature(
-            universe_dummy_wrap, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+            universe_dummy_wrap, surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
         ).run()
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
@@ -1124,7 +1142,12 @@ class TestMembraneCurvature(object):
         expected_mean = np.array(np.full((3, 3), np.nan))
         x_bin = y_bin = 3
         mc = MembraneCurvature(
-            universe_dummy_wrap_xy, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+            universe_dummy_wrap_xy,
+            surface_method='binning',
+            fft_filter=None,
+            n_x_bins=x_bin,
+            n_y_bins=y_bin,
+            wrap=False,
         ).run()
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
@@ -1134,7 +1157,7 @@ class TestMembraneCurvature(object):
         expected_gaussian = np.array(np.full((3, 3), np.nan))
         x_bin = y_bin = 3
         mc = MembraneCurvature(
-            universe_dummy_wrap, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+            universe_dummy_wrap, surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
         ).run()
         avg_gaussian = mc.results.average_gaussian
         assert_almost_equal(avg_gaussian, expected_gaussian)
@@ -1143,7 +1166,12 @@ class TestMembraneCurvature(object):
         expected_gaussian = np.array(np.full((3, 3), np.nan))
         x_bin = y_bin = 3
         mc = MembraneCurvature(
-            universe_dummy_wrap_xy, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+            universe_dummy_wrap_xy,
+            surface_method='binning',
+            fft_filter=None,
+            n_x_bins=x_bin,
+            n_y_bins=y_bin,
+            wrap=False,
         ).run()
         avg_gaussian = mc.results.average_gaussian
         assert_almost_equal(avg_gaussian, expected_gaussian)
@@ -1180,7 +1208,9 @@ class TestMembraneCurvature(object):
         ],
     )
     def test_analysis_get_z_surface_dummy_full(self, universe_dummy_full, x_bin, y_bin, expected_surface):
-        mc = MembraneCurvature(universe_dummy_full, surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin).run()
+        mc = MembraneCurvature(
+            universe_dummy_full, surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin
+        ).run()
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 
@@ -1192,7 +1222,9 @@ class TestMembraneCurvature(object):
                 [0.000659054783409, 0.000725381187923, 0.0015],
             ]
         )
-        mc = MembraneCurvature(universe_dummy_full, surface_method='binning', n_x_bins=3, n_y_bins=3).run()
+        mc = MembraneCurvature(
+            universe_dummy_full, surface_method='binning', fft_filter=None, n_x_bins=3, n_y_bins=3
+        ).run()
         avg_mean = mc.results.average_mean
         assert_almost_equal(avg_mean, expected_mean)
 
@@ -1261,7 +1293,14 @@ class TestMembraneCurvature(object):
         u.dimensions = [box_dim, box_dim, 300, 90.0, 90.0, 90.0]
         # Check with wrapped coords in base
         mc = MembraneCurvature(
-            u, select='all', surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, x_range=x_range, y_range=y_range
+            u,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            n_x_bins=x_bin,
+            n_y_bins=y_bin,
+            x_range=x_range,
+            y_range=y_range,
         ).run()
         avg_surface = mc.results.average_z_surface
         # assert if default values of wrapped coords in z_surface returns correctly
@@ -1270,7 +1309,7 @@ class TestMembraneCurvature(object):
     def test_test_analysis_no_wrapping(self, universe):
         regex = r'`wrap == False` may result in inaccurate calculation'
         with pytest.warns(UserWarning, match=regex):
-            MembraneCurvature(universe, surface_method='binning', wrap=False)
+            MembraneCurvature(universe, surface_method='binning', fft_filter=None, wrap=False)
 
     @pytest.mark.parametrize(
         'x_bin, y_bin, box_dim, dummy_array',
@@ -1306,7 +1345,7 @@ class TestMembraneCurvature(object):
         regex = r'exceed boundaries | size of grid'
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(
-                u, select='all', surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+                u, select='all', surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
             ).run()
 
     @pytest.mark.parametrize(
@@ -1353,7 +1392,7 @@ class TestMembraneCurvature(object):
         regex = r'exceed boundaries | coordinates falls'
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(
-                u, select='all', surface_method='binning', n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
+                u, select='all', surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
             ).run()
 
     # Fourier method should fail when atoms << modes
