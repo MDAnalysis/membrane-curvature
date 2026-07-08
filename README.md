@@ -162,7 +162,7 @@ gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average
 
 > [!TIP]
 >
-> The parameters ``wrap=True`` and ``fft_filter='auto'`` are already defaults for the binning method. If you are using these defaults, you can omit them from the constructor.
+> The parameter ``fft_filter='auto'`` is already default for the binning method. If you are using this default, you can omit it from the constructor.
 
 Alternatively, to get the raw time average of the surface without filtering, pass ``fft_filter=None``:
 
