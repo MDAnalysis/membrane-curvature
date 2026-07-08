@@ -12,9 +12,7 @@
 [![PyPI](https://img.shields.io/pypi/v/membrane-curvature)](https://pypi.org/project/membrane-curvature/)
 [![Conda version](https://anaconda.org/conda-forge/membrane-curvature/badges/version.svg)](https://anaconda.org/conda-forge/membrane-curvature)
 
-<p align="center">
-  <img src="docs/_static/mc-logo-whitebg-EBO.png" width="600" alt="MembraneCurvature logo">
-</p>
+![](https://github.com/MDAnalysis/membrane-curvature/blob/main/docs/_static/mc-logo-whitebg-EBO.png?raw=true)
 
 MembraneCurvature is an [MDAnalysis] MDAKit to calculate membrane curvature from
 Molecular Dynamics simulations.
@@ -36,8 +34,6 @@ MembraneCurvature is available via pip and conda. Please refer to the [Installat
 detailed installation instructions.
 
 ### With pip
-
-### Via pip
 
 MembraneCurvature is available via `pip`:
 
@@ -160,15 +156,9 @@ mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mea
 gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
 ```
 
-> [!WARNING]
+> [!NOTE]
 >
-> FFT filtering is only available with `surface_method='binning'`. Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered.
-
-Note that the FFT filter runs once on the temporal mean of `z_surface`. **Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered.** With filtering enabled, `results.average_z_surface`, `results.average_mean`, and `results.average_gaussian` are computed from the filtered average height.
-
-> [!WARNING]
->
-> Brick-wall mask in $|q|$. Check the [Algorithm] page for more details on empty bins, periodic boundaries, and manual $q_{low} > 0$ caveats.
+> FFT filtering is only available with `surface_method='binning'`. Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered. With filtering enabled, `results.average_z_surface`, `results.average_mean`, and `results.average_gaussian` are computed from the filtered average height. Check the [Algorithm] page for more details on empty bins, periodic boundaries, and manual $q_{low} > 0$ caveats.
 
 Alternatively, to get the raw time average of the surface without filtering, pass ``fft_filter=None``:
 
