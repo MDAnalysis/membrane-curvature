@@ -49,6 +49,7 @@ tests = [
 docs = [
     "ipython",
     "MDAnalysisData",
+    "MDAnalysisTests",
     "networkx",
     "widgetsnbextension",
     "mdanalysis-sphinx-theme",
