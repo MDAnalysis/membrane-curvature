@@ -100,7 +100,7 @@ curvature_upper_leaflet = MembraneCurvature(universe,
                                             select='resid 1-225 and name PO4'
                                             ).run()
 
-# extract average mean surface
+# extract average surface
 average_surface = curvature_upper_leaflet.results.average_z_surface
 
 # extract average mean curvature
@@ -147,7 +147,7 @@ curvature_upper_leaflet_binning = MembraneCurvature(universe,
                                                     wrap=True).run()
 
 # extract average surface
-mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
+surface_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
 
 # extract average mean curvature
 mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mean
@@ -159,6 +159,10 @@ gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average
 > [!NOTE]
 >
 > FFT filtering is only available with `surface_method='binning'`. Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered. With filtering enabled, `results.average_z_surface`, `results.average_mean`, and `results.average_gaussian` are computed from the filtered average height. Check the [Algorithm] page for more details on empty bins, periodic boundaries, and manual $q_{low} > 0$ caveats.
+
+> [!TIP]
+>
+> The parameters ``wrap=True`` and ``fft_filter='auto'`` are already defaults for the binning method. If you are using these defaults, you can omit them from the constructor.
 
 Alternatively, to get the raw time average of the surface without filtering, pass ``fft_filter=None``:
 
@@ -179,7 +183,7 @@ curvature_upper_leaflet_binning = MembraneCurvature(universe,
                                                     wrap=True).run()
 
 # extract average surface
-mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
+surface_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
 
 # extract average mean curvature
 mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mean
@@ -187,6 +191,7 @@ mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mea
 # extract average Gaussian curvature
 gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
 ```
+
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
 To plot results from MembraneCurvature please check the [Visualization] page.
 
@@ -226,14 +231,14 @@ To create a new `uv` environment and install the dependencies included in the `d
 
 ```bash
 uv sync --group dev
+uv run pre-commit install
 ```
 
-MembraneCurvature uses [pre-commit] hooks to run quick checks
+By syncing the `dev` group with [uv], all the development dependencies are installed. MembraneCurvature uses [pre-commit] hooks to run quick checks
 before commits such as whitespace cleanup, TOML/YAML validation, and [Ruff] linting/formatting.
-Using these hooks is highly encouraged because it helps catch common issues early and
-keeps pull requests easier to review. By syncing the `dev` group, the pre-commit hooks are installed automatically.
+Using these hooks is highly encouraged because it helps catch common issues early and keeps pull requests easier to review.
 
-To run the pre-commit hooks manually, with [uv]:
+To run the hooks manually without committing:
 
 ```bash
 uv run pre-commit run --all-files
@@ -257,8 +262,6 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 
 [GSoC]: https://summerofcode.withgoogle.com/
 [MDAnalysis]: https://www.mdanalysis.org
-[NumPy]: https://numpy.org
-[SciPy]: https://www.scipy.org
 [code_of_conduct]: https://www.mdanalysis.org/conduct/
 [Installation]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
 [Installing development dependencies with pip]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installing-development-dependencies-with-pip
@@ -271,8 +274,7 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [Tutorials]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Tutorials.html
 [MDAnalysisTests]: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 [MDAnalysisData]: https://www.mdanalysis.org/MDAnalysisData/
-[UserGuide]: https://userguide.mdanalysis.org/stable/installation.html
 [pre-commit]: https://pre-commit.com
-[ruff]: https://docs.astral.sh/ruff/
+[Ruff]: https://docs.astral.sh/ruff/
 [uv]: https://docs.astral.sh/uv/
 [Contributing]: https://github.com/MDAnalysis/membrane-curvature/blob/main/.github/CONTRIBUTING.md
