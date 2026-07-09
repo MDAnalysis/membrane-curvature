@@ -29,10 +29,8 @@ Functions
 
 import numpy as np
 import warnings
-import MDAnalysis
 import logging
 
-MDAnalysis.start_logging()
 logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
 
 

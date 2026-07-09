@@ -43,12 +43,9 @@ from .fft_filtering import apply_fft_filter, resolve_fft_filter
 from .fourier_surface import n_fourier_parameters
 from .fourier_validators import validate_positive_bin_counts
 
-import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisBase
 
 import logging
-
-MDAnalysis.start_logging()
 
 logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
 
