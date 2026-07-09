@@ -367,7 +367,8 @@ def _solve_design_least_squares_svd(
     if rank == 0:
         return np.zeros(n_columns, dtype=np.float64), 0, singular_values
 
-    coefficients_on_span = (unitary_array[:, keep].T @ targets) / singular_values[keep]
+    projection = np.dot(unitary_array[:, keep].T, targets)
+    coefficients_on_span = projection / singular_values[keep]
     theta = vh[keep].T @ coefficients_on_span
     return theta, rank, singular_values
 
