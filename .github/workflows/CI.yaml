@@ -101,7 +101,7 @@ jobs:
     # More info on options: https://github.com/conda-incubator/setup-miniconda
     # An environment for the minimum versions
     - name: setup micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476 # v3.0.0
       with:
         environment-file: devtools/conda-envs/test_${{ matrix.env_file }}.yaml
         environment-name: test
