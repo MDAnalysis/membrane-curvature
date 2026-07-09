@@ -21,7 +21,7 @@ jobs:
     name: Run pre-commit hooks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - uses: actions/setup-python@v6
       with:
         python-version: "3.11"
@@ -34,7 +34,7 @@ jobs:
     name: Lint with Ruff
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - uses: actions/setup-python@v6
       with:
         python-version: "3.11"
@@ -47,7 +47,7 @@ jobs:
         name: Type check with ty
         runs-on: ubuntu-latest
         steps:
-        - uses: actions/checkout@v6
+        - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         - uses: actions/setup-python@v6
           with:
             python-version: "3.11"
@@ -62,7 +62,7 @@ jobs:
     name: Validate uv environment
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Install uv and set Python 3.11
       # SHA value equivalent to v8.1.0 - see github.com/astral-sh/setup-uv#usage
       uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
@@ -89,7 +89,7 @@ jobs:
             env_file: min
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Additional info about the build
       shell: bash
@@ -140,7 +140,7 @@ jobs:
         latest-python: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.latest-python }}
