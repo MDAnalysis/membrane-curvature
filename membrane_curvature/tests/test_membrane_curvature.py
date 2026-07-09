@@ -852,12 +852,6 @@ class TestMembraneCurvature(object):
         ).run()
 
     @pytest.fixture()
-    def curvature_unwrapped_universe_xy(self, universe_dummy_wrap_xy):
-        return MembraneCurvature(
-            universe_dummy_wrap_xy, surface_method='binning', fft_filter=None, n_x_bins=3, n_y_bins=3
-        ).run()
-
-    @pytest.fixture()
     def mc_fourier_dummy(self, universe_dummy_full):
         u = universe_dummy_full
         x_bin = y_bin = 4
