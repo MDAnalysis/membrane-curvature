@@ -23,7 +23,7 @@ updates:
       development:
         patterns: ["*"]
         dependency-type: "development"
-      ignore:
+    ignore:
       - dependency-name: "nglview"
 
   - package-ecosystem: "conda"
