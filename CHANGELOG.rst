@@ -1,6 +1,7 @@
 Membranecurvature CHANGELOG
 =============================
 
+* Replaced action version with specific commit hash in github actions (PR #224)
 * Include tests in coverage report; set Codecov threshold to 100% (PR #219)
 * Added brick-wall FFT filtering to the binning surface method (PR #188)
 * Added `uv.lock` file and step in CI to validate uv environment with dev dependency group (PR #202)
