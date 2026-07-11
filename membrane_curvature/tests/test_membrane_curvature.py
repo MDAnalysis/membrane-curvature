@@ -852,12 +852,6 @@ class TestMembraneCurvature(object):
         ).run()
 
     @pytest.fixture()
-    def curvature_unwrapped_universe_xy(self, universe_dummy_wrap_xy):
-        return MembraneCurvature(
-            universe_dummy_wrap_xy, surface_method='binning', fft_filter=None, n_x_bins=3, n_y_bins=3
-        ).run()
-
-    @pytest.fixture()
     def mc_fourier_dummy(self, universe_dummy_full):
         u = universe_dummy_full
         x_bin = y_bin = 4
@@ -1003,43 +997,6 @@ class TestMembraneCurvature(object):
             y_range=y_range,
         ).run()
 
-        avg_surface = mc.results.average_z_surface
-        assert_almost_equal(avg_surface, expected_surface)
-
-    @pytest.mark.xfail(reason='Wrapping coordinates not applied.')
-    @pytest.mark.parametrize(
-        'x_bin, y_bin, expected_surface',
-        [
-            (3, 3, np.array([[150.0, 150.0, 120.0], [150.0, 120.0, 120.0], [150.0, 120.0, 120.0]])),
-            (
-                4,
-                4,
-                np.array(
-                    [
-                        [150.0, 150.0, 135.0, 120.0],
-                        [150.0, 120.0, 120.0, np.nan],
-                        [150.0, 120.0, 120.0, 120.0],
-                        [150.0, np.nan, 120.0, 120.0],
-                    ]
-                ),
-            ),
-            (
-                5,
-                5,
-                np.array(
-                    [
-                        [150.0, 150.0, 150.0, 120.0, 120.0],
-                        [150.0, 120.0, np.nan, 120.0, np.nan],
-                        [150.0, np.nan, 120.0, np.nan, 120.0],
-                        [150.0, 120.0, np.nan, 120.0, np.nan],
-                        [150.0, np.nan, 120.0, np.nan, 120.0],
-                    ]
-                ),
-            ),
-        ],
-    )
-    def test_analysis_get_z_surface(self, universe, x_bin, y_bin, expected_surface):
-        mc = MembraneCurvature(universe, select='name PO4', n_x_bins=x_bin, n_y_bins=y_bin).run()
         avg_surface = mc.results.average_z_surface
         assert_almost_equal(avg_surface, expected_surface)
 

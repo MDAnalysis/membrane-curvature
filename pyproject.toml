@@ -92,12 +92,6 @@ distance = "{base_version}+{distance}.{vcs}{rev}"
 dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
 distance-dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
 
-[tool.coverage.run]
-omit = [
-    # Omit the tests
-    "*/tests/*",
-]
-
 [tool.coverage.report]
 exclude_also = [
     "if TYPE_CHECKING:",
