@@ -192,20 +192,21 @@ def binning_3x3_fft_mc(universe_dummy_wrap):
         x_range=x_range,
         y_range=y_range,
     )
-    expected_average_z_surface = apply_fft_filter(height, dx, dy, q_bounds)
-    return mc, dx, dy, q_bounds, height, expected_average_z_surface
+    expected_filtered_height = apply_fft_filter(height, dx, dy, q_bounds)
+    return mc, dx, dy, q_bounds, height, expected_filtered_height
 
 
-def test_membrane_curvature_average_z_surface_is_filtered_time_mean(binning_3x3_fft_mc):
+def test_membrane_curvature_average_z_surface_is_mean_of_filtered(binning_3x3_fft_mc):
     mc, dx, dy, _q_bounds, _height, expected = binning_3x3_fft_mc
     assert mc.dx == dx
     assert mc.dy == dy
     assert_allclose(mc.results.average_z_surface, expected, rtol=1e-10, equal_nan=True)
 
 
-def test_membrane_curvature_per_frame_z_surface_not_fft_filtered(binning_3x3_fft_mc):
-    mc, _dx, _dy, _q_bounds, height, _expected = binning_3x3_fft_mc
-    assert_allclose(mc.results.z_surface[0], height, rtol=1e-10, equal_nan=True)
+def test_membrane_curvature_per_frame_z_surface_is_fft_filtered(binning_3x3_fft_mc):
+    mc, _dx, _dy, _q_bounds, height, expected = binning_3x3_fft_mc
+    assert_allclose(mc.results.z_surface[0], expected, rtol=1e-10, equal_nan=True)
+    assert not np.allclose(mc.results.z_surface[0], height, equal_nan=True)
 
 
 def test_membrane_curvature_binning_filter_changes_average_surface(universe_dummy_wrap):
@@ -228,12 +229,18 @@ def test_average_curvature_order_filter_then_curvature():
     q_high = 0.4 * nyquist_q(dx, dx)
     heights = [rng.normal(size=(n_bins, n_bins)), rng.normal(size=(n_bins, n_bins))]
     z_avg = np.mean(np.stack(heights), axis=0)
-    correct = mean_curvature(apply_fft_filter(z_avg, dx, dx, (0.0, q_high)), dx, dx)
-    wrong = np.mean(
+    curvature_of_filtered_mean = mean_curvature(apply_fft_filter(z_avg, dx, dx, (0.0, q_high)), dx, dx)
+    mean_of_filtered_curvatures = np.mean(
         [mean_curvature(apply_fft_filter(h, dx, dx, (0.0, q_high)), dx, dx) for h in heights],
         axis=0,
     )
-    assert not np.allclose(correct, wrong)
+    assert not np.allclose(curvature_of_filtered_mean, mean_of_filtered_curvatures)
+
+
+def test_membrane_curvature_average_curvature_is_mean_of_per_frame(binning_3x3_fft_mc):
+    mc, _dx, _dy, _q_bounds, _height, _filtered = binning_3x3_fft_mc
+    assert_allclose(mc.results.average_mean, mc.results.mean[0], rtol=1e-10, equal_nan=True)
+    assert_allclose(mc.results.average_gaussian, mc.results.gaussian[0], rtol=1e-10, equal_nan=True)
 
 
 def test_membrane_curvature_fourier_rejects_fft_filter_dict(universe_dummy_wrap):

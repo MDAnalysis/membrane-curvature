@@ -95,15 +95,14 @@ class MembraneCurvature(AnalysisBase):
         Brick-wall filter on the binned height field when ``surface_method='binning'``.
         Default ``'auto'`` (low-pass ``(0, 0.5 * q_Nyq)`` from bin widths). Pass
         ``None`` to disable. Pass ``{'q': (q_low, q_high)}`` for custom bounds in rad/Å.
-        For **average** maps: time-average of ``z_surface``, filter once, then curvature
-        on that filtered height. Per-frame arrays are not FFT-filtered. Ignored for
+        Applied to each frame before curvature is computed. Ignored for
         ``surface_method='fourier'``.
 
     Attributes
     ----------
     results.z_surface : ndarray
-        Per-frame height field from the atom selection (unfiltered when
-        ``fft_filter`` is used with `surface_method='binning'`).
+        Per-frame height field from the atom selection. With binning and
+        ``fft_filter`` enabled, each frame is FFT-filtered before storage.
         Shape (`n_frames`, `n_x_bins`, `n_y_bins`).
     results.mean : ndarray
         Per-frame mean curvature associated with the surface.
@@ -112,19 +111,12 @@ class MembraneCurvature(AnalysisBase):
         Per-frame Gaussian curvature associated with the surface.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.average_z_surface : ndarray
-        Average of the array elements in `z_surface`. With binning and
-        ``fft_filter`` enabled, this is the FFT-filtered temporal mean of ``z_surface``,
-        not the mean of per-frame filtered surfaces.
-        Each array has shape (`n_x_bins`, `n_y_bins`)
+        Time average of ``z_surface``. Each array has shape (`n_x_bins`, `n_y_bins`)
     results.average_mean : ndarray
-        Average of the array elements in `mean_curvature`. With binning
-        and ``fft_filter`` enabled, curvature of the filtered time-averaged height
-        (not the time average of per-frame ``results.mean``).
+        Time average of per-frame mean curvature in ``results.mean``.
         Each array has shape (`n_x_bins`, `n_y_bins`)
     results.average_gaussian : ndarray
-        Average of the array elements in `gaussian_curvature`. With
-        binning and ``fft_filter`` enabled, curvature of the filtered time-averaged
-        height (not the time average of per-frame ``results.gaussian``).
+        Time average of per-frame Gaussian curvature in ``results.gaussian``.
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
     Raises
@@ -170,14 +162,13 @@ class MembraneCurvature(AnalysisBase):
     in the :attr:`results` attributes.
 
     The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
-    the time-averaged derived surface. When ``fft_filter`` is set, the brick-wall filter
-    is applied to that averaged surface.
+    the time-averaged derived surface.
 
-    The attributes :attr:`~MembraneCurvature.results.average_mean` and
-    :attr:`~MembraneCurvature.results.average_gaussian` contain mean and
-    Gaussian curvature maps for analysis and plotting; with ``fft_filter`` on
-    binning surfaces they are curvatures of the filtered average height, not the
-    time average of per-frame curvatures.
+    When ``fft_filter`` is set with binning, the brick-wall filter is applied to
+    each frame before curvature is computed. The attributes
+    :attr:`~MembraneCurvature.results.average_mean` and
+    :attr:`~MembraneCurvature.results.average_gaussian` are time averages of the
+    per-frame curvature maps.
 
     Example
     -----------
@@ -322,6 +313,8 @@ class MembraneCurvature(AnalysisBase):
                 x_range=self.x_range,
                 y_range=self.y_range,
             )
+            if self._fft_q_bounds is not None:
+                z_surface = apply_fft_filter(z_surface, self.dx, self.dy, self._fft_q_bounds)
             self.results.z_surface[self._frame_index] = z_surface
             self.results.mean[self._frame_index] = mean_curvature(z_surface, self.dx, self.dy)
             self.results.gaussian[self._frame_index] = gaussian_curvature(z_surface, self.dx, self.dy)
@@ -341,14 +334,6 @@ class MembraneCurvature(AnalysisBase):
             self.results.gaussian[self._frame_index] = gauss_f
 
     def _conclude(self):
-        z_average = np.nanmean(self.results.z_surface, axis=0)
-        # resolve bounds and apply filter ONLY when binning + filtering is enabled
-        if self.surface_method == 'binning' and self._fft_q_bounds is not None:
-            self.results.average_z_surface = apply_fft_filter(z_average, self.dx, self.dy, self._fft_q_bounds)
-            z_filtered = self.results.average_z_surface
-            self.results.average_mean = mean_curvature(z_filtered, self.dx, self.dy)
-            self.results.average_gaussian = gaussian_curvature(z_filtered, self.dx, self.dy)
-        else:
-            self.results.average_z_surface = z_average
-            self.results.average_mean = np.nanmean(self.results.mean, axis=0)
-            self.results.average_gaussian = np.nanmean(self.results.gaussian, axis=0)
+        self.results.average_z_surface = np.nanmean(self.results.z_surface, axis=0)
+        self.results.average_mean = np.nanmean(self.results.mean, axis=0)
+        self.results.average_gaussian = np.nanmean(self.results.gaussian, axis=0)
