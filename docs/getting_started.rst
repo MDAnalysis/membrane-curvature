@@ -153,6 +153,71 @@ dependency groups (including ``tests`` and ``docs``) in one step.
 
 Installation guides :ref:`with_pip` and :ref:`with_conda` are also available if you prefer them.
 
+Basic example
+-------------
+
+This is an example on how to use MembraneCurvature:
+
+.. code-block:: python
+
+      import MDAnalysis as mda
+      from membrane_curvature.base import MembraneCurvature
+      from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT  # test trajectory
+
+      # create a universe from the coordinates and trajectory files
+      universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
+
+      # run the membrane curvature analysis
+      mc = MembraneCurvature(universe,
+                             select='resid 297-517 and name P'
+                             ).run()
+
+      # access the results
+      surface = mc.results.average_z_surface
+      mean_curvature = mc.results.average_mean
+      gaussian_curvature = mc.results.average_gaussian
+
+You can find more details on how to use MembraneCurvature in the `Usage`_ page.
+
+Please note that **MembraneCurvature does not configure MDAnalysis logging on import**.
+If you want MDAnalysis log output, set up your own logger as described in the `MDAnalysis logging guide`_. 
+A basic example of how to set up your own logger is shown below.
+
+.. code-block:: python
+
+      import MDAnalysis as mda
+      from membrane_curvature.base import MembraneCurvature
+      from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT  # test trajectory
+
+      # set up the MDAnalysis logger
+      mda.start_logging()
+
+      mda.logger.info("Starting curvature analysis...")
+
+      universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
+
+      mc = MembraneCurvature(universe,
+                             select='resid 297-517 and name P'
+                             ).run()
+
+      surface = mc.results.average_z_surface
+      mean_curvature = mc.results.average_mean
+      gaussian_curvature = mc.results.average_gaussian
+
+      mda.logger.info("Curvature analysis finished")
+
+With this basic example, the output of the logger will look like:
+
+.. code-block:: text
+
+      INFO:MDAnalysis.MDAKit.membrane_curvature:Starting curvature analysis...
+      INFO:MDAnalysis.core.universe:attribute types has been guessed successfully.
+      INFO:MDAnalysis.core.universe:attribute masses has been guessed successfully.
+      INFO:MDAnalysis.analysis.base:Choosing frames to analyze
+      INFO:MDAnalysis.analysis.base:Starting preparation
+      INFO:MDAnalysis.analysis.base:Finishing up
+      INFO:MDAnalysis.MDAKit.membrane_curvature:Curvature analysis finished
+
 .. _MDAnalysis: https://www.mdanalysis.org
 .. _NumPy: https://numpy.org
 .. _`github.com/MDAnalysis/membrane_curvature`: https://github.com/MDAnalysis/membrane-curvature
@@ -161,3 +226,5 @@ Installation guides :ref:`with_pip` and :ref:`with_conda` are also available if 
 .. _`Installation Quick Start`: https://www.mdanalysis.org/pages/installation_quick_start/#installation-quick-start
 .. _`conda`: https://conda.io/en/latest/
 .. _`uv`: https://docs.astral.sh/uv/
+.. _`Usage`: https://membrane-curvature.readthedocs.io/en/stable/Usage.html
+.. _`MDAnalysis logging guide`: https://docs.mdanalysis.org/stable/documentation_pages/lib/log.html#setting-up-logging-mdanalysis-lib-log

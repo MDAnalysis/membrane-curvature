@@ -1,6 +1,6 @@
 Membranecurvature CHANGELOG
 =============================
-
+* Remove side effect - MDAnalysis logging at import (PR #221)
 * Fixed stale project metadata and updated README files (PR #218)
 * Replaced action version with specific commit hash in github actions and added dependabot cfg file (PR #224 #234)
 * Include tests in coverage report; set Codecov threshold to 100% (PR #219)
