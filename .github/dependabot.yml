@@ -19,21 +19,11 @@ updates:
       day: "saturday"
       time: "18:00"
     groups:
-      production:
+      main:
         patterns: ["*"]
         dependency-type: "production"
-      development:
+      dev:
         patterns: ["*"]
         dependency-type: "development"
     ignore:
       - dependency-name: "nglview"
-
-  - package-ecosystem: "conda"
-    directory: "/devtools/conda-envs"
-    schedule:
-      interval: "weekly"
-      day: "saturday"
-      time: "18:00"
-    groups:
-      all-conda:
-        patterns: ["*"]
