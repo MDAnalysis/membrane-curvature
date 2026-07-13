@@ -185,16 +185,14 @@ A basic example of how to set up your own logger is shown below.
 
 .. code-block:: python
 
-      import logging
       import MDAnalysis as mda
       from membrane_curvature.base import MembraneCurvature
       from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT  # test trajectory
 
-      # set up the logger
-      logging.basicConfig(level=logging.INFO)
-      logger = logging.getLogger("MDAnalysis.MDAKit.membrane_curvature")
+      # set up the MDAnalysis logger
+      mda.start_logging()
 
-      logger.info("Starting curvature analysis...")
+      mda.logger.info("Starting curvature analysis...")
 
       universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
 
@@ -206,7 +204,7 @@ A basic example of how to set up your own logger is shown below.
       mean_curvature = mc.results.average_mean
       gaussian_curvature = mc.results.average_gaussian
 
-      logger.info("Curvature analysis finished")
+      mda.logger.info("Curvature analysis finished")
 
 With this basic example, the output of the logger will look like:
 
