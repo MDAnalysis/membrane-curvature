@@ -1,21 +1,31 @@
-# Sample Package Data
+# MembraneCurvature Package Data
 
-This directory contains sample additional data you may want to include with your package.
-This is a place where non-code related additional information (such as data files, molecular structures,  etc.) can
-go that you want to ship alongside your code.
+This directory contains GROMACS structure (`.gro`) and trajectory (`.xtc`) files
+shipped with MembraneCurvature for unit tests and documentation examples.
 
-Please note that it is not recommended to place large files in your git directory. If your project requires files larger
-than a few megabytes in size it is recommended to host these files elsewhere. This is especially true for binary files
-as the `git` structure is unable to correctly take updates to these files and will store a complete copy of every version
-in your `git` history which can quickly add up. As a note most `git` hosting services like GitHub have a 1 GB per repository
-cap.
+## Accessing the data
 
-## Including package data
+Paths are exposed in `membrane_curvature.tests.datafiles`.
 
-Modify your package's `setup.py` file and the `setup()` command. Include the
-[`package_data`](http://setuptools.readthedocs.io/en/latest/setuptools.html#basic-use) keyword and point it at the
-correct files.
+For example, to load the test data `GRO_PO4_SMALL`, `MEMB_GRO`, and `MEMB_XTC`, we do:
 
-## Manifest
+```python
+from membrane_curvature.tests.datafiles import GRO_PO4_SMALL, MEMB_GRO, MEMB_XTC
 
-* `look_and_say.dat`: first entries of the "Look and Say" integer series, sequence [A005150](https://oeis.org/A005150)
+import MDAnalysis as mda
+
+universe = mda.Universe(MEMB_GRO, MEMB_XTC)
+```
+
+## Files
+
+File names and test constants are defined in [`membrane_curvature/tests/datafiles.py`](../tests/datafiles.py).
+
+- `test_po4_small.{gro,xtc}`: small POPC/POPE membrane (10 lipids), PO4 beads.
+- `test_curvature_po4_only.{gro,xtc}`: POPC/POPE membrane (914 lipids), PO4 beads.
+- `MEMB_traj_short.{gro,xtc}`: large membrane patch in a squared cell (~240 Å).
+- `test_curvature_abca1.{gro,xtc}`: POPC/POPE/CHOL membrane–protein system.
+- `Membrane_protein_fit.{gro,xtc}`: membrane–protein trajectory with rotational and translational fit.
+- `test_po4_inverted_indexes.gro`: small PO4 membrane structure (not used in the test suite).
+
+These files are included in the package via `MANIFEST.in` with the ``graft membrane_curvature`` line.
