@@ -21,8 +21,8 @@ jobs:
     name: Run pre-commit hooks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: "3.11"
     - name: Install pre-commit
@@ -34,8 +34,8 @@ jobs:
     name: Lint with Ruff
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: "3.11"
     - name: Install ruff
@@ -47,8 +47,8 @@ jobs:
         name: Type check with ty
         runs-on: ubuntu-latest
         steps:
-        - uses: actions/checkout@v6
-        - uses: actions/setup-python@v6
+        - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
           with:
             python-version: "3.11"
         - name: Install package (deps for import resolution)
@@ -62,10 +62,9 @@ jobs:
     name: Validate uv environment
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Install uv and set Python 3.11
-      # SHA value equivalent to v8.1.0 - see github.com/astral-sh/setup-uv#usage
-      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+      uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       with:
         python-version: "3.11"
     - name: Create uv env with dev dependency group
@@ -89,7 +88,7 @@ jobs:
             env_file: min
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Additional info about the build
       shell: bash
@@ -101,7 +100,7 @@ jobs:
     # More info on options: https://github.com/conda-incubator/setup-miniconda
     # An environment for the minimum versions
     - name: setup micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@4b9113af4fba0e9e1124b252dd6497a419e7396d # v1
       with:
         environment-file: devtools/conda-envs/test_${{ matrix.env_file }}.yaml
         environment-name: test
@@ -124,7 +123,7 @@ jobs:
 
     - name: codecov
       if: ${{ github.repository == 'MDAnalysis/membrane-curvature' }}
-      uses: codecov/codecov-action@v7
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
@@ -140,8 +139,8 @@ jobs:
         latest-python: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: ${{ matrix.latest-python }}
 
