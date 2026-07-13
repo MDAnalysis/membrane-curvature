@@ -6,6 +6,8 @@ updates:
       interval: "weekly"
       day: "sunday"
       time: "18:00"
+    cooldown:
+      default-days: 7
     groups:
       all-actions:
         patterns: [ "*" ]
