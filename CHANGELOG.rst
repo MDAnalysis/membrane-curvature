@@ -1,5 +1,7 @@
 Membranecurvature CHANGELOG
 =============================
+
+* Refact: Calculate Fourier coeffs in SVD with `np.dot` instead of matmul (PR #223)
 * Remove side effect - MDAnalysis logging at import (PR #221)
 * Fixed stale project metadata and updated README files (PR #218)
 * Replaced action version with specific commit hash in github actions and added dependabot cfg file (PR #224 #234)

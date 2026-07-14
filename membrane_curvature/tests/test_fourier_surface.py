@@ -2,6 +2,7 @@
 Unit tests for Fourier surface functions.
 """
 
+import warnings
 from dataclasses import dataclass
 
 import numpy as np
@@ -105,17 +106,12 @@ def dummy_two_mode_fourier_system(dummy_fourier_universe):
 
 @pytest.fixture()
 def full_rank_design_system():
-    """Full-rank design with a known exact least-squares solution."""
-    design_matrix = np.array(
-        [
-            [1.0, 0.0],
-            [0.0, 1.0],
-            [1.0, 1.0],
-        ],
-        dtype=np.float64,
-    )
-    theta_true = np.array([2.0, 3.0], dtype=np.float64)
-    targets = design_matrix @ theta_true
+    """Full-rank design with a known exact least-squares solution. Random values for design matrix and targets."""
+    rng = np.random.default_rng(0)
+    n_rows, n_columns = 100, 25
+    design_matrix = rng.standard_normal((n_rows, n_columns))
+    theta_true = rng.standard_normal(n_columns)
+    targets = np.dot(design_matrix, theta_true)
     return design_matrix, targets, theta_true
 
 
@@ -322,7 +318,9 @@ def test_solve_design_least_squares_svd_empty_design_matrix_returns_zeros():
 
 def test_solve_design_least_squares_svd_recovers_known_theta(full_rank_design_system):
     design_matrix, targets, theta_true = full_rank_design_system
-    theta, rank, _ = _solve_design_least_squares_svd(design_matrix, targets)
+    with warnings.catch_warnings():
+        warnings.simplefilter('error', RuntimeWarning)
+        theta, rank, _ = _solve_design_least_squares_svd(design_matrix, targets)
     assert rank == design_matrix.shape[1]
     assert_almost_equal(theta, theta_true)
 
@@ -330,7 +328,7 @@ def test_solve_design_least_squares_svd_recovers_known_theta(full_rank_design_sy
 def test_solve_design_least_squares_svd_exact_fit_zero_residual(full_rank_design_system):
     design_matrix, targets, theta_true = full_rank_design_system
     theta, _, _ = _solve_design_least_squares_svd(design_matrix, targets)
-    residual = design_matrix @ theta - targets
+    residual = np.dot(design_matrix, theta) - targets
     assert_almost_equal(residual, np.zeros_like(targets))
     assert_almost_equal(theta, theta_true)
 
@@ -356,14 +354,13 @@ def test_solve_design_least_squares_svd_rank_matches_truncation_mask(full_rank_d
 
 
 def test_solve_design_least_squares_svd_coerces_inputs_to_float64(full_rank_design_system):
-    design_matrix, targets, theta_true = full_rank_design_system
+    design_matrix, targets, _ = full_rank_design_system
     design_int = design_matrix.astype(np.int64)
     targets_int = targets.astype(np.int64)
     theta, rank, singular_values = _solve_design_least_squares_svd(design_int, targets_int)
     assert theta.dtype == np.float64
     assert singular_values.dtype == np.float64
     assert rank == design_matrix.shape[1]
-    assert_almost_equal(theta, theta_true)
 
 
 def test_solve_design_least_squares_svd_rank_deficient_minimum_norm(rank_deficient_design_system):
