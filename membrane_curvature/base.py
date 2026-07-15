@@ -27,6 +27,8 @@ on the selected ``surface_method``:
 
     Required parameters are the number of bins in the x and y directions ``n_x_bins`` and ``n_y_bins``.
     Optional ``wrap`` parameter to control whether to wrap the coordinates exceeding the simulation box dimensions.
+    Optional ``padding`` applies a periodic buffer before finite differences (in orthorhombic boxes only);
+    ``edge_pad_bins`` sets the buffer width in bins (default ``2``).
 
 Mean curvature is calculated in units of Å :sup:`-1` and Gaussian curvature in units of Å :sup:`-2`.
 """
@@ -38,7 +40,14 @@ from .curvature import (
     mean_curvature,
     gaussian_curvature,
     fourier_curvature,
+    curvature_from_primary_with_edge_pad,
+    curvature_with_edge_pad,
 )
+from .padding import (
+    get_z_surface_padded,
+    padded_grid_spec,
+)
+from .padding_validators import validate_edge_pad_bins, validate_orthorhombic
 from .fft_filtering import apply_fft_filter, resolve_fft_filter
 from .fourier_surface import n_fourier_parameters
 from .fourier_validators import validate_positive_bin_counts
@@ -61,9 +70,10 @@ class MembraneCurvature(AnalysisBase):
         The selection string of an atom selection to use as a
         reference to derive a surface.
     wrap : bool or None, optional
-        Apply coordinate wrapping with :meth:`~MDAnalysis.core.groups.AtomGroup.wrap`.
-        Defaults to ``True`` for ``surface_method='binning'`` and must be omitted or
-        explicitly set to ``False`` for ``surface_method='fourier'``.
+        Wrap ``x``/``y`` into the unit cell for ``surface_method='binning'``
+        but leave ``z`` unchanged. Defaults to ``True`` for binning and must be
+        omitted or explicitly set to ``False`` for ``surface_method='fourier'``.
+        With ``padding=True``, lateral PBC are also handled by image tiling.
     n_x_bins : int, optional, default: 100
         Number of bins in grid in the x dimension.
     n_y_bins : int, optional, default: 100
@@ -94,7 +104,15 @@ class MembraneCurvature(AnalysisBase):
         as ``(0, 0.5 * q_Nyq)``. For custom bounds in rad/Å, pass ``{'q': (q_low, q_high)}``.
         For **average** maps: time-average of ``z_surface``, filter once, then curvature
         on that filtered height. Per-frame arrays are not FFT-filtered. Ignored for
-        ``surface_method='fourier'``.
+        ``surface_method='fourier'``. Compatible with ``padding``.
+    padding : bool, optional
+        Apply periodic edge padding for ``surface_method='binning'``. Default ``False``.
+        Pads the simulation box using periodic images in ``x`` and ``y``, compute surface
+        and curvature on the padded grid, then clip back to ``(n_x_bins, n_y_bins)``.
+        Requires an orthorhombic box. Invalid with ``surface_method='fourier'``.
+    edge_pad_bins : int, optional
+        Buffer width in bins on each side when ``padding=True`` (default ``2``).
+        Ignored when ``padding=False``.
 
     Attributes
     ----------
@@ -133,8 +151,11 @@ class MembraneCurvature(AnalysisBase):
         ``'binning'`` or ``'fourier'``, or, when ``surface_method='fourier'``,
         if ``fourier_m`` / ``fourier_n`` are negative or the selection has fewer
         atoms than Fourier parameters, if ``wrap=True`` with
-        ``surface_method='fourier'``, or if a manual ``fft_filter`` dict is passed
-        with ``surface_method='fourier'``.
+        ``surface_method='fourier'``, if a manual ``fft_filter`` dict is passed
+        with ``surface_method='fourier'``, if ``padding=True`` with
+        ``surface_method='fourier'``, if ``padding=True`` on a
+        non-orthorhombic box, or if ``edge_pad_bins`` is not an integer
+        ``>= 1`` when ``padding=True``.
 
     See also
     --------
@@ -153,15 +174,19 @@ class MembraneCurvature(AnalysisBase):
 
     **Binning mode**
 
-    The binning routine does not apply periodic wrapping itself; :class:`MembraneCurvature`
-    calls ``AtomGroup.wrap()`` when ``surface_method='binning'`` and ``wrap=True``.
-    When using binning, ``wrap`` defaults to ``True`` if not provided. Omit ``wrap`` or pass
-    ``wrap=True`` for raw trajectories so atoms are packed into the unit cell before
-    binning. Run with ``wrap=False`` for preprocessed trajectories that have already applied
-    periodic boundary conditions. For membrane-protein systems without position restraints,
-    preprocessing should include rotational and translational fitting around the protein.
+    ``surface_method='binning'`` runs with ``wrap`` set to ``True`` by default:
+    only ``x`` and ``y`` are wrapped into the unit cell while ``z`` remains unchanged.
+    Omit ``wrap`` or pass ``wrap=True`` for raw trajectories so atoms outside the unit
+    cell in ``x``/``y`` are included in the bins. Run with ``wrap=False`` for trajectories
+    already wrapped into the primary cell, or after rotational / translational fitting.
+    For membrane-protein systems without position restraints, preprocessing should include
+    rotational and translational fitting around the protein.
 
-    For more details on when to use ``wrap=True``, check the :ref:`usage` page.
+    Padding is only available for orthorhombic boxes. With ``padding=True``, finite differences
+    run on a padded height field built from periodic images, then the buffer of ``edge_pad_bins``
+    on each side is clipped so stored arrays keep the primary grid shape.
+    The default ``edge_pad_bins=2``, which uses two bins on each side for padding, is enough to
+    reduce finite difference artifacts at edges and corners.
 
     For any method of choice, the derived surface and calculated curvatures are available
     in the :attr:`results` attributes.
@@ -216,6 +241,8 @@ class MembraneCurvature(AnalysisBase):
         fourier_n=2,
         fourier_rcond=None,
         fft_filter=None,
+        padding=False,
+        edge_pad_bins=2,
         **kwargs,
     ):
 
@@ -233,6 +260,14 @@ class MembraneCurvature(AnalysisBase):
         self.y_range = y_range if y_range else (0, universe.dimensions[1])
         self.dx = (self.x_range[1] - self.x_range[0]) / n_x_bins
         self.dy = (self.y_range[1] - self.y_range[0]) / n_y_bins
+        if not isinstance(padding, (bool, np.bool_)):
+            raise ValueError(f'padding must be True or False, got {padding!r}')
+        self.padding = padding
+        if self.padding:
+            self.edge_pad_bins = validate_edge_pad_bins(edge_pad_bins, n_x_bins, n_y_bins)
+        else:
+            self.edge_pad_bins = None
+        self._pad_spec = None
 
         valid_methods = ('binning', 'fourier')
         if surface_method not in valid_methods:
@@ -247,8 +282,11 @@ class MembraneCurvature(AnalysisBase):
                 raise ValueError("wrap=True is only valid when surface_method='binning'")
             if isinstance(fft_filter, dict):
                 raise ValueError("fft_filter dict is only allowed when surface_method='binning'")
+            if self.padding:
+                raise ValueError("padding=True is only valid when surface_method='binning'")
             self.wrap = False
             self.fft_filter = None
+            self._fft_q_bounds = None
             if self.fourier_m < 0 or self.fourier_n < 0:
                 raise ValueError('fourier_m and fourier_n must be non-negative')
             n_param = n_fourier_parameters(self.fourier_m, self.fourier_n)
@@ -268,6 +306,16 @@ class MembraneCurvature(AnalysisBase):
             self.wrap = True if wrap is None else wrap
             self.fft_filter = fft_filter
             self._fft_q_bounds = None
+            if self.padding:
+                # padding only makes sense for orthorhombic boxes
+                validate_orthorhombic(universe.dimensions)
+                self._pad_spec = padded_grid_spec(
+                    self.n_x_bins,
+                    self.n_y_bins,
+                    self.x_range,
+                    self.y_range,
+                    self.edge_pad_bins,
+                )
             if self.fft_filter is not None:
                 self._fft_q_bounds = resolve_fft_filter(self.fft_filter, self.dx, self.dy)
                 logger.info(
@@ -287,8 +335,7 @@ class MembraneCurvature(AnalysisBase):
                 warnings.warn(msg)
                 logger.warning(msg)
 
-        # Warn when binning without wrapping coordinates
-        if not self.wrap and self.surface_method == 'binning':
+        if not self.wrap and self.surface_method == 'binning' and not self.padding:
             # Warning
             msg = (
                 ' `wrap == False` may result in inaccurate calculation '
@@ -300,6 +347,14 @@ class MembraneCurvature(AnalysisBase):
             warnings.warn(msg)
             logger.warning(msg)
 
+    def _wrap_xy(self):
+        """Wrap x,y into the unit cell and leave z unchanged."""
+        z = self.ag.positions[:, 2].copy()
+        self.ag.wrap()
+        positions = self.ag.positions
+        positions[:, 2] = z
+        self.ag.positions = positions
+
     def _prepare(self):
         # Initialize empty np.array with results
         self.results.z_surface = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
@@ -308,20 +363,32 @@ class MembraneCurvature(AnalysisBase):
 
     def _single_frame(self):
         if self.surface_method == 'binning':
-            # Check wrap in binning method only
             if self.wrap:
-                # Apply wrapping coordinates
-                self.ag.wrap()
-            z_surface = get_z_surface(
-                self.ag.positions,
-                n_x_bins=self.n_x_bins,
-                n_y_bins=self.n_y_bins,
-                x_range=self.x_range,
-                y_range=self.y_range,
-            )
-            self.results.z_surface[self._frame_index] = z_surface
-            self.results.mean[self._frame_index] = mean_curvature(z_surface, self.dx, self.dy)
-            self.results.gaussian[self._frame_index] = gaussian_curvature(z_surface, self.dx, self.dy)
+                self._wrap_xy()
+            if not self.padding:
+                z_surface = get_z_surface(
+                    self.ag.positions,
+                    n_x_bins=self.n_x_bins,
+                    n_y_bins=self.n_y_bins,
+                    x_range=self.x_range,
+                    y_range=self.y_range,
+                )
+                self.results.z_surface[self._frame_index] = z_surface
+                self.results.mean[self._frame_index] = mean_curvature(z_surface, self.dx, self.dy)
+                self.results.gaussian[self._frame_index] = gaussian_curvature(z_surface, self.dx, self.dy)
+            else:
+                z_padded = get_z_surface_padded(
+                    self.ag.positions,
+                    self.n_x_bins,
+                    self.n_y_bins,
+                    self.x_range,
+                    self.y_range,
+                    self.edge_pad_bins,
+                )
+                z_surface, mean_c, gauss_c = curvature_with_edge_pad(z_padded, self.dx, self.dy, self.edge_pad_bins)
+                self.results.z_surface[self._frame_index] = z_surface
+                self.results.mean[self._frame_index] = mean_c
+                self.results.gaussian[self._frame_index] = gauss_c
         else:
             z_f, mean_f, gauss_f = fourier_curvature(
                 self.ag.positions,
@@ -343,8 +410,15 @@ class MembraneCurvature(AnalysisBase):
         if self.surface_method == 'binning' and self._fft_q_bounds is not None:
             self.results.average_z_surface = apply_fft_filter(z_average, self.dx, self.dy, self._fft_q_bounds)
             z_filtered = self.results.average_z_surface
-            self.results.average_mean = mean_curvature(z_filtered, self.dx, self.dy)
-            self.results.average_gaussian = gaussian_curvature(z_filtered, self.dx, self.dy)
+            if self.padding:
+                _, avg_mean, avg_gauss = curvature_from_primary_with_edge_pad(
+                    z_filtered, self.dx, self.dy, self.edge_pad_bins
+                )
+                self.results.average_mean = avg_mean
+                self.results.average_gaussian = avg_gauss
+            else:
+                self.results.average_mean = mean_curvature(z_filtered, self.dx, self.dy)
+                self.results.average_gaussian = gaussian_curvature(z_filtered, self.dx, self.dy)
         else:
             self.results.average_z_surface = z_average
             self.results.average_mean = np.nanmean(self.results.mean, axis=0)

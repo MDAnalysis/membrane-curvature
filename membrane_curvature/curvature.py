@@ -64,6 +64,9 @@ For a periodic **Fourier** fit to atom heights, use
 :func:`fourier_curvature` for Monge :math:`H` and :math:`K`
 in one call.
 
+For binning with ``padding=True``, curvature is evaluated with
+:func:`curvature_with_edge_pad`.
+
 
 Functions
 ---------
@@ -73,6 +76,7 @@ Functions
 import numpy as np
 
 from .fourier_surface import fourier_height_derivatives_from_atoms
+from .padding import clip_padded_grid
 
 
 def mean_curvature_monge(fx, fy, fxx, fyy, fxy):
@@ -256,3 +260,83 @@ def mean_curvature(Z, *varargs):
     _, Zyy = np.gradient(Zy, *varargs)
 
     return mean_curvature_monge(Zx, Zy, Zxx, Zyy, Zxy)
+
+
+def curvature_with_edge_pad(z_surface_padded, dx, dy, edge_pad_bins):
+    """
+    Evaluate Monge curvature on a padded height field and clip to the primary box.
+
+    Parameters
+    ----------
+    z_surface_padded : ndarray
+        Height field on the expanded grid, shape
+        ``(n_x_bins + 2*edge_pad_bins, n_y_bins + 2*edge_pad_bins)``.
+    dx : float
+        Bin spacing along ``x`` (Å).
+    dy : float
+        Bin spacing along ``y`` (Å).
+    edge_pad_bins : int
+        Buffer width in bins.
+
+    Returns
+    -------
+    z_surface : ndarray
+        Clipped height, shape ``(n_x_bins, n_y_bins)``.
+    mean : ndarray
+        Clipped mean curvature, same shape.
+    gaussian : ndarray
+        Clipped Gaussian curvature, same shape.
+
+    .. note::
+
+        Function available only when running with ``padding=True``. Finite differences
+        run on the padded array and then clipped to the primary box. Gradients are
+        computed once and shared by mean and Gaussian curvature.
+    """
+    zx, zy = np.gradient(z_surface_padded, dx, dy)
+    zxx, zxy = np.gradient(zx, dx, dy)
+    _, zyy = np.gradient(zy, dx, dy)
+    mean_padded = mean_curvature_monge(zx, zy, zxx, zyy, zxy)
+    gauss_padded = gaussian_curvature_monge(zx, zy, zxx, zyy, zxy)
+    return (
+        clip_padded_grid(z_surface_padded, edge_pad_bins),
+        clip_padded_grid(mean_padded, edge_pad_bins),
+        clip_padded_grid(gauss_padded, edge_pad_bins),
+    )
+
+
+def curvature_from_primary_with_edge_pad(z_surface, dx, dy, edge_pad_bins):
+    """
+    Evaluate Monge curvature on a primary box height field using a wrap-pad buffer.
+
+    Parameters
+    ----------
+    z_surface : ndarray
+        Primary height field, shape ``(n_x_bins, n_y_bins)``.
+    dx : float
+        Bin spacing along ``x`` (Å).
+    dy : float
+        Bin spacing along ``y`` (Å).
+    edge_pad_bins : int
+        Buffer width in bins on each side.
+
+    Returns
+    -------
+    z_surface : ndarray
+        Same primary height (clipped identity of the wrap-padded array).
+    mean : ndarray
+        Mean curvature on the primary grid.
+    gaussian : ndarray
+        Gaussian curvature on the primary grid.
+
+    Notes
+    -----
+    Used for average maps after optional FFT filtering, when atom images are no
+    longer available and the height field is already periodic on the primary
+    grid. The buffer is built with :func:`numpy.pad` ``mode='wrap'``.
+    """
+    p = int(edge_pad_bins)
+    if p < 1:
+        raise ValueError(f'edge_pad_bins must be >= 1, got {edge_pad_bins!r}')
+    z_padded = np.pad(np.asarray(z_surface, dtype=float), pad_width=p, mode='wrap')
+    return curvature_with_edge_pad(z_padded, dx, dy, p)
