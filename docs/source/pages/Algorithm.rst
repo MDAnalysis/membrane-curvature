@@ -467,19 +467,21 @@ associated functions.
 3.2.1.1. FFT filtering on the averaged surface (``fft_filter``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A brick-wall filter is applied to the averaged surface once all frames have been processed
-when ``surface_method='binning'`` and the argument ``fft_filter`` is set to ``'auto'`` (default) or
-passed as a dictionary like ``{'q': (q_low, q_high)}``.
+A brick-wall filter is available when running with ``surface_method='binning'`` and the argument
+``fft_filter``. By default, ``fft_filter`` is set to ``None``. When set to ``'auto'``, the
+brick-wall filter is applied with the default low-pass ``(0, 0.5 * q_Nyq)`` from ``dx`` and ``dy``.
+This filter is applied to the averaged surface once all frames have been processed. An additional
+option is to pass a dictionary like ``{'q': (q_low, q_high)}`` to set the pass-band limits manually.
 
 .. important::
 
   **The FFT filter is not applied to per-frame surfaces**.  Filtering is performed on the
   time-averaged height field, where thermal fluctuations have already been suppressed by averaging.
 
-Pass-band limits are resolved at construction time via
-:func:`~membrane_curvature.fft_filtering.resolve_fft_filter` and applied at the end
-of the run with :func:`~membrane_curvature.fft_filtering.apply_fft_filter` (see
-:mod:`~membrane_curvature.fft_filtering`).
+For both the ``'auto'`` and manual modes, the pass-band limits are resolved at construction time via
+:func:`~membrane_curvature.fft_filtering.resolve_fft_filter` and applied at the end of the run with
+:func:`~membrane_curvature.fft_filtering.apply_fft_filter`. See 
+:mod:`~membrane_curvature.fft_filtering` for more details.
 
 |fft_filter_plot|
 
@@ -488,16 +490,15 @@ averages the height field (:attr:`~membrane_curvature.base.MembraneCurvature.res
 over the trajectory and then smooths it in reciprocal space by zeroing all Fourier modes outside
 the pass band defined by :math:`q_{\mathrm{low}} \leq |q| \leq q_{\mathrm{high}}` via
 :func:`~membrane_curvature.fft_filtering.apply_fft_filter` before transforming back to real space.
-The resulting filtered surface is stored in :attr:`~membrane_curvature.base.MembraneCurvature.results.average_z_surface`,
-and then used to calculate mean and Gaussian curvature via :func:`~membrane_curvature.curvature.mean_curvature` and
+The resulting filtered surface is stored in
+:attr:`~membrane_curvature.base.MembraneCurvature.results.average_z_surface`, and then used to
+calculate mean and Gaussian curvature via :func:`~membrane_curvature.curvature.mean_curvature` and
 :func:`~membrane_curvature.curvature.gaussian_curvature`, respectively.
 
-With the default ``fft_filter='auto'``, the pass band is :math:`(0,\ 0.5\,q_{\mathrm{Nyq}})`,
+With ``fft_filter='auto'``, the pass band is :math:`(0,\ 0.5\,q_{\mathrm{Nyq}})`,
 a conservative low-pass by default which retains the large-scale membrane shape while
-suppressing short-wavelength noise.
-
-For binning, filtering defaults to ``fft_filter='auto'``. To control the band manually,
-pass ``fft_filter={'q': (q_low, q_high)}`` in rad/Å. To disable filtering altogether, pass ``fft_filter=None``.
+suppressing short-wavelength noise. To control the band manually, pass
+``fft_filter={'q': (q_low, q_high)}`` in rad/Å. The filter is disabled by default.
 
 .. warning::
 
