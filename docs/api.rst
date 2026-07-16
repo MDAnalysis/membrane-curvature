@@ -60,6 +60,7 @@ Surface Methods
    api/surface_methods/fourier_surface
    api/surface_methods/binning_surface
    api/surface_methods/fft_filtering
+   api/surface_methods/padding
 
 :mod:`~membrane_curvature.fourier_surface` fits a periodic 2D Fourier sum to atom heights by linear least squares at each frame,
 evaluates the fitted surface, and obtains partial derivatives analytically from that sum.
@@ -70,6 +71,10 @@ using the physical bin spacing with finite differences.
 The binning method supports a brick-wall filter to remove high-frequency noise from the height field.
 The filter is applied to the height field before calculating curvature.
 :mod:`~membrane_curvature.fft_filtering` provides the functions to apply the filter and to resolve the pass-band limits.
+
+For orthorhombic boxes, binning can optionally pad the grid with a periodic buffer via ``padding=True``
+(buffer width ``edge_pad_bins``, default ``2``), reducing finite difference artifacts particularly visible in second derivatives
+for Gaussian curvature. :mod:`~membrane_curvature.padding` implements the pad, bin, differentiate, and clip workflow.
 
 Curvature
 =========
@@ -96,15 +101,20 @@ In both cases, the derivatives are then used to calculate mean and Gaussian curv
 Validators
 ==========
 
-The :mod:`~membrane_curvature.fourier_validators` are helper functions used to verify that input parameters provided by
-the user are valid and compatible with the ``MembraneCurvature`` class and the surface derivation methods.
-They are called automatically by the high-level entry points when ``MembraneCurvature`` runs with ``surface_method="fourier"``.
+The :mod:`~membrane_curvature.fourier_validators` and
+:mod:`~membrane_curvature.padding_validators` are helper functions used to verify
+that input parameters provided by the user are valid and compatible with the
+``MembraneCurvature`` class and the surface derivation methods.
+They are called automatically by the high-level entry points when
+``MembraneCurvature`` runs with ``surface_method="fourier"`` or with
+``padding=True`` on binning.
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
    api/validators/fourier_validators
+   api/validators/padding_validators
 
 .. warning::
 
