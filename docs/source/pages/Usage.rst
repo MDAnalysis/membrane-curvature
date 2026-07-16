@@ -51,7 +51,7 @@ There are two methods available to derive the surface:
 .. warning::
 
   Use ``fourier_m = fourier_n = 2`` (the constructor with default values) unless you need
-  shorter-wavelength structure; increase ``fourier_m`` and ``fourier_n`` only while curvature
+  shorter-wavelength structure. Increase ``fourier_m`` and ``fourier_n`` only while curvature
   improves systematically, rather than becoming noisier.
 
 For copy-paste examples of both methods see:
@@ -121,8 +121,8 @@ is equivalent to:
 
   When using the Fourier method, ``wrap`` is not required. Periodic boundary conditions are handled
   inside the Fourier fit. 🙂
-  Use ``wrap=True`` only with ``surface_method='binning'`` to pack atoms into the primary unit cell
-  on raw trajectories.
+  Use ``wrap=True`` only with ``surface_method='binning'`` to wrap ``x`` and``y`` into the
+  primary unit cell on raw trajectories (``z`` is left unchanged).
 
 Advanced: Tuning the Fourier least-squares cutoff (``fourier_rcond``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -161,9 +161,9 @@ solution, but the coefficients are not uniquely determined by the data.
 
   Rough intuition:
 
-  - ``fourier_rcond=None``: sensible default; uses NumPy's heuristic cutoff.
+  - ``fourier_rcond=None``: sensible default. uses NumPy's heuristic cutoff.
   - ``fourier_rcond=0``: truncate only *exactly* zero singular values.
-  - ``fourier_rcond=1e-12`` or ``1e-10``: more aggressive truncation; can reduce noise when the
+  - ``fourier_rcond=1e-12`` or ``1e-10``: more aggressive truncation. It can reduce noise when the
     fit is underdetermined.
 
 .. note::
@@ -183,9 +183,9 @@ solution, but the coefficients are not uniquely determined by the data.
 2.1.2 Binning surface method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Alternatively, set ``surface_method='binning'`` and provide the values for the binning grid
-``n_x_bins`` and ``n_y_bins``. Note that you need to apply coordinate wrapping with
-``wrap=True``. Since the default filtering is disabled, you can omit the ``fft_filter`` argument:
+Alternatively, set ``surface_method='binning'`` to run membrane curvature with raw binning by
+providing the values for the grid ``n_x_bins`` and ``n_y_bins``. Note that for the binning method,
+coordinate wrapping is applied unless the user sets ``wrap=False``.
 
 .. code-block:: python
 
@@ -195,12 +195,12 @@ Alternatively, set ``surface_method='binning'`` and provide the values for the b
 
     universe = mda.Universe(Martini_membrane_gro)
 
+    # run with binning and coordinate wrapping
     curvature_upper_leaflet = MembraneCurvature(universe,
                                                 select='resid 1-225 and name PO4',
                                                 surface_method='binning',
                                                 n_x_bins=8,
                                                 n_y_bins=8,
-                                                wrap=True,
                                                 ).run()
   
     mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
@@ -208,27 +208,105 @@ Alternatively, set ``surface_method='binning'`` and provide the values for the b
     gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
 
+.. _edge-padding:
+
+2.1.2.1 Binning with periodic edge padding
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. warning::
+  Padding is supported only for orthorhombic boxes and ``surface_method='binning'``.
+
+Running membrane curvature with ``surface_method="binning"`` computes derivatives using finite
+differences (see Algorithm page, section :ref:`binning_method` for details). With this approach,
+grid points at the simulation box boundaries lack neighbouring values on one side.
+As a result, ``np.nan`` values at the edges and corners can propagate and become amplified during
+the calculation of second derivatives, particularly affecting the values of Gaussian curvature and
+creating artifacts on the edges.
+
+With the parameter ``padding``, :class:`~membrane_curvature.base.MembraneCurvature` adds a buffer
+region around the simulation box with neighboring images, evaluates curvature on ``box + \Delta``,
+and then clips back to the initial ``n_x_bins x n_y_bins`` grid size.
+
+Padding is optional and it is set to ``False`` by default. To use padding, set ``padding=True``:
+
+.. code-block:: python
+
+    curvature_upper_leaflet = MembraneCurvature(universe,
+                                                select='resid 1-225 and name PO4',
+                                                surface_method='binning',
+                                                n_x_bins=8,
+                                                n_y_bins=8,
+                                                padding=True,
+                                                ).run()
+
+.. tip::
+
+  **Running with** ``padding=True`` **is particularly useful for analysis of Gaussian curvature,
+  where edge artifacts can be significant.**
+
+  Padding runs with ``edge_pad_bins=2`` by default. A buffer of 2 bins on each side
+  is usually enough to fix edge artifacts in the calculation of second derivatives of
+  Gaussian curvature. Values above ``4`` are unlikely to change the curvature values
+  and mainly increase runtime.
+
+Alternatively, use ``edge_pad_bins`` if you need to change the width of the default buffer
+regions of 2 bins on each side.
+
+For example, if you need to change the width of the buffer regions to 3 bins on each side,
+you can do:
+
+.. code-block:: python
+
+    curvature_upper_leaflet = MembraneCurvature(universe,
+                                                select='resid 1-225 and name PO4',
+                                                surface_method='binning',
+                                                n_x_bins=8,
+                                                n_y_bins=8,
+                                                padding=True,
+                                                edge_pad_bins=3,
+                                                ).run()
+
+See :mod:`~membrane_curvature.padding`, :mod:`~membrane_curvature.curvature`, and
+:ref:`binning-edge-padding` for more details.
+
+
 .. _fft-filtering:
 
-2.1.2.1 Binning with FFT filtering 
+2.1.2.2 Binning with FFT filtering 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to apply a brick-wall passband to the averaged height field, 
+:class:`~membrane_curvature.base.MembraneCurvature` has the parameter ``fft_filter``.
 
 .. warning::
   FFT filtering is available only with ``surface_method='binning'``. Per-frame
   ``results.z_surface``, ``results.mean``, and ``results.gaussian`` stay unfiltered.
-  
-The order of operations is:
 
-1. Per frame: bin atoms, store height field in ``results.z_surface``.
-2. After the trajectory is processed, time-average ``z_surface`` over frames, optionally
-   apply one brick-wall filter in reciprocal space to that average, then compute
-   ``results.average_mean`` and ``results.average_gaussian`` from the (possibly filtered)
-   average height.
+By default, binning uses ``fft_filter=None`` and no brick-wall filter is applied.
+In that case, ``results.average_z_surface``, ``results.average_mean``, and
+``results.average_gaussian`` are time averages of the per-frame arrays.
 
-By default, binning uses ``fft_filter=None``. With the auto filtering mode ``fft_filter="auto"``,
-the brick-wall filter is set to ``(0, 0.5 * q_Nyq)``, where $q_{low}$ is set to 0 and $q_{high}$
-is set to 0.5 * q_Nyq from ``dx`` and ``dy``.
+When ``fft_filter`` is enabled, by passing ``'auto'`` or a manual dict, the filter
+runs the following steps:
 
+1. Per frame: bin atoms into ``results.z_surface`` and store per-frame curvatures.
+   Those per-frame arrays stay unfiltered.
+2. After the trajectory: time-average ``z_surface``, apply one brick-wall filter
+   to that average, then compute ``results.average_mean`` and
+   ``results.average_gaussian`` from the filtered average height.
+
+.. tip::
+
+  ``fft_filter`` can be used together with ``padding=True``. Padding reduces
+  finite-difference edge artifacts on its own. The filter is only needed if you
+  want a brick-wall pass band on the averaged height.
+
+With the auto filtering mode ``fft_filter="auto"``, the brick-wall filter is set to
+``(0, 0.5 * q_Nyq)``, where $q_{low}$ is set to 0 and $q_{high}$ is set to $0.5 * q_{Nyq}$
+from ``dx`` and ``dy``.
+
+Running membrane curvature with FFT filtering is done by setting ``fft_filter='auto'``, or by 
+passing a tuple of ``(q_low, q_high)`` in rad/Å to ``fft_filter={'q': (q_low, q_high)}``.
 
 .. code-block:: python
 
@@ -238,7 +316,8 @@ is set to 0.5 * q_Nyq from ``dx`` and ``dy``.
                                                 n_x_bins=8,
                                                 n_y_bins=8,
                                                 wrap=True,
-                                                fft_filter={'q': (0, 0.5 * q_Nyq)}
+                                                fft_filter='auto' # automatic mode
+                                                # fft_filter={'q': (0, 0.5 * q_Nyq)} - manual mode
                                                 ).run()
 
 .. warning::
@@ -260,9 +339,12 @@ is set to 0.5 * q_Nyq from ``dx`` and ``dy``.
         To improve sampling when passing raw trajectories:
 
         - In systems of membrane-only or membrane-protein with position restraints,
-          set ``wrap=True`` to translate the atoms of the AtomGroup back in the unit cell.
+          set ``wrap=True`` to wrap ``x`` and ``y`` of the AtomGroup into the unit cell
+          while leaving ``z`` unchanged.
         - In membrane-protein systems with no position restraints, set ``wrap=False`` and
           preprocess the trajectory with rotational/translational fit.
+        - With ``padding=True``, the ``wrap == False`` warning is not emitted, because
+          image tiling supplies lateral PBC in the padded buffer.
 
         Some points to keep in mind when calculating membrane curvature in membrane-only and
         membrane-protein systems with position restraints are addressed in this `blog post`_. 
@@ -367,7 +449,7 @@ Omit ``surface_method``, ``fourier_m``, and ``fourier_n`` unless you need shorte
 **Binning surface method**
 
 Set ``surface_method='binning'`` with the values for ``n_x_bins`` and ``n_y_bins``, and in this
-case set ``wrap=False`` to avoid the warning message since the trajectory is already fitted and centered:
+case set ``wrap=False`` since the trajectory is already fitted and centered:
 
 .. code-block:: python
 
@@ -391,10 +473,32 @@ case set ``wrap=False`` to avoid the warning message since the trajectory is alr
 
 .. note::
 
-        Since you are providing a preprocessed trajectory with translation/rotational fit 
-        you can ignore the warning message: 
-        ``WARNING   `wrap == False` may result in inaccurate calculation of membrane curvature.`` 
+  Since you are providing a preprocessed trajectory with translation/rotational fit 
+  you can ignore the warning message: 
+  ``WARNING   `wrap == False` may result in inaccurate calculation of membrane curvature.`` 
 
+  That warning is not emitted when ``padding=True``, because image tiling still
+  supplies lateral PBC in the padded buffer.
+
+To run with padding, set ``padding=True`` (keep ``wrap=False`` for the fitted trajectory):
+
+.. code-block:: python
+
+    curvature_lower_leaflet = MembraneCurvature(universe,
+                                                select='resid 2583-3042',
+                                                surface_method='binning',
+                                                n_x_bins=10,
+                                                n_y_bins=10,
+                                                wrap=False,
+                                                padding=True,
+                                                ).run()
+
+.. note::
+
+  With ``padding=True``, lateral PBC come from image tiling, and ``wrap=False``
+  does not emit the usual binning warning because atoms outside the primary cell
+  can still land in the padded buffer. For fitted trajectories, keep ``wrap=False``
+  so the fitted geometry is not re-wrapped into the primary cell.
 
 More information on how to visualize the results of the MDAnalysis Membrane 
 Curvature tool can be found in the :ref:`visualization` page.
