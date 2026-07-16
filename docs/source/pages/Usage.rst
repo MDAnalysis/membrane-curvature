@@ -183,9 +183,9 @@ solution, but the coefficients are not uniquely determined by the data.
 2.1.2 Binning surface method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Alternatively, set ``surface_method='binning'`` and provide the values for
-the binning grid ``n_x_bins`` and ``n_y_bins``. Note that you need to apply
-coordinate wrapping with ``wrap=True``:
+Alternatively, set ``surface_method='binning'`` and provide the values for the binning grid
+``n_x_bins`` and ``n_y_bins``. Note that you need to apply coordinate wrapping with
+``wrap=True``. Since the default filtering is disabled, you can omit the ``fft_filter`` argument:
 
 .. code-block:: python
 
@@ -200,22 +200,12 @@ coordinate wrapping with ``wrap=True``:
                                                 surface_method='binning',
                                                 n_x_bins=8,
                                                 n_y_bins=8,
-                                                wrap=True
+                                                wrap=True,
                                                 ).run()
   
     mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
 
     gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
-
-By default, binning uses ``fft_filter='auto'``, so the ``average_z_surface`` map above is
-computed from the FFT-filtered time-averaged height (see :ref:`fft-filtering`). 
-
-.. warning
-
-  Per-frame ``results.z_surface``, ``results.mean``, and ``results.gaussian``
-  stay unfiltered.
-
-You can find more detailed examples in the notebooks available in the :ref:`tutorials` page.
 
 
 .. _fft-filtering:
@@ -224,8 +214,8 @@ You can find more detailed examples in the notebooks available in the :ref:`tuto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. warning::
-  FFT filtering is available only with ``surface_method='binning'``. It does **not**
-  filter each frame. 
+  FFT filtering is available only with ``surface_method='binning'``. Per-frame
+  ``results.z_surface``, ``results.mean``, and ``results.gaussian`` stay unfiltered.
   
 The order of operations is:
 
@@ -235,8 +225,9 @@ The order of operations is:
    ``results.average_mean`` and ``results.average_gaussian`` from the (possibly filtered)
    average height.
 
-Binning analyses use ``fft_filter='auto'`` by default (low-pass ``(0, 0.5 * q_Nyq)`` from
-``dx`` and ``dy``). Pass ``fft_filter=None`` to disable filtering on the average map.
+By default, binning uses ``fft_filter=None``. With the auto filtering mode ``fft_filter="auto"``,
+the brick-wall filter is set to ``(0, 0.5 * q_Nyq)``, where $q_{low}$ is set to 0 and $q_{high}$
+is set to 0.5 * q_Nyq from ``dx`` and ``dy``.
 
 
 .. code-block:: python
@@ -254,10 +245,11 @@ Binning analyses use ``fft_filter='auto'`` by default (low-pass ``(0, 0.5 * q_Ny
 
   As shown above, MembraneCurvature allows custom values for the FFT filtering by passing a
   tuple of ``(q_low, q_high)`` in rad/Å to ``fft_filter={'q': (q_low, q_high)}``.
-  **However, this is not recommended!** Custom values should be used with caution.
+  **However, this is not recommended unless you know what you are doing. Custom values should
+  be used with caution.**
   
-  The recommended way is to use the automatic mode ``fft_filter='auto'`` with the default
-  low-pass ``(0, 0.5 * q_Nyq)`` from ``dx`` and ``dy``.
+  When using the brick-wall filter, the recommended way is to use the automatic mode
+  ``fft_filter='auto'`` with the default low-pass ``(0, 0.5 * q_Nyq)`` from ``dx`` and ``dy``.
 
 .. _membrane-protein:
 

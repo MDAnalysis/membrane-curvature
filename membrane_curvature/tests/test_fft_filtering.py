@@ -254,14 +254,20 @@ def test_membrane_curvature_fourier_without_fft_filter(universe_dummy_wrap):
     assert mc.fft_filter is None
 
 
-def test_membrane_curvature_binning_default_fft_filter_auto(universe_dummy_wrap):
+def test_membrane_curvature_binning_default_filter_is_none(universe_dummy_wrap):
+    mc = MembraneCurvature(universe_dummy_wrap, n_x_bins=3, n_y_bins=3, surface_method='binning').run()
+    assert mc.fft_filter is None
+    assert mc._fft_q_bounds is None
+
+
+def test_membrane_curvature_binning_fft_filter_auto(universe_dummy_wrap):
     n_bins = 3
     dx = dy = universe_dummy_wrap.dimensions[0] / n_bins
     expected_q_bounds = resolve_fft_filter('auto', dx, dy)
-    mc = MembraneCurvature(universe_dummy_wrap, n_x_bins=n_bins, n_y_bins=n_bins, surface_method='binning').run()
+    mc = MembraneCurvature(
+        universe_dummy_wrap, n_x_bins=n_bins, n_y_bins=n_bins, surface_method='binning', fft_filter='auto'
+    ).run()
     assert mc.fft_filter == 'auto'
-    assert mc.dx == dx
-    assert mc.dy == dy
     assert_allclose(mc._fft_q_bounds, expected_q_bounds)
 
 

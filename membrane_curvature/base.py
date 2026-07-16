@@ -90,8 +90,8 @@ class MembraneCurvature(AnalysisBase):
         relative threshold on singular values.
     fft_filter : None, ``'auto'``, or dict, optional
         Brick-wall filter on the binned height field when ``surface_method='binning'``.
-        Default ``'auto'`` (low-pass ``(0, 0.5 * q_Nyq)`` from bin widths). Pass
-        ``None`` to disable. Pass ``{'q': (q_low, q_high)}`` for custom bounds in rad/Å.
+        Default is ``None``. Pass ``'auto'`` to enable automatic filtering with low-pass set
+        as ``(0, 0.5 * q_Nyq)``. For custom bounds in rad/Å, pass ``{'q': (q_low, q_high)}``.
         For **average** maps: time-average of ``z_surface``, filter once, then curvature
         on that filtered height. Per-frame arrays are not FFT-filtered. Ignored for
         ``surface_method='fourier'``.
@@ -215,7 +215,7 @@ class MembraneCurvature(AnalysisBase):
         fourier_m=2,
         fourier_n=2,
         fourier_rcond=None,
-        fft_filter='auto',
+        fft_filter=None,
         **kwargs,
     ):
 
