@@ -10,14 +10,14 @@ FFT filtering
 .. important::
 
     The brick-wall FFT filter is available only when :class:`~membrane_curvature.base.MembraneCurvature`
-    runs with ``surface_method='binning'``.
+    runs with ``surface_method='binning'``. Filtering defaults to ``fft_filter=None``.
+    Pass ``fft_filter='auto'`` to enable automatic filtering with low pass set as ``(0, 0.5 * q_Nyq)``.
 
     **Note that per-frame arrays are not FFT-filtered!**
 
     For average maps, :class:`~membrane_curvature.base.MembraneCurvature` applies the brick-wall
     filter once to the averaged ``z_surface`` and computes mean and Gaussian curvature on that filtered average.
 
-    For binning, filtering defaults to ``fft_filter='auto'``. Pass ``fft_filter=None`` to disable FFT filtering.
 
 This module implements a brick-wall filter on a binned height field in the reciprocal space.
 This implementation uses :func:`numpy.fft.fft2` with physical bin widths :math:`\Delta x` and
@@ -28,7 +28,11 @@ Usage
 
 Users can control filtering in three ways via the ``fft_filter`` argument:
 
-- **Automatic (default for binning):** ``fft_filter='auto'``
+- **Disabled (default for binning):** ``fft_filter=None``
+
+  No FFT filtering is applied to the time-averaged surface.
+
+- **Automatic:** ``fft_filter='auto'``
 
   Low-pass with ``q_high = 0.5 * q_Nyq``, resolved at runtime via
   :func:`resolve_fft_filter`.
@@ -36,10 +40,6 @@ Users can control filtering in three ways via the ``fft_filter`` argument:
 - **Manual:** ``fft_filter={'q': (q_low, q_high)}``
 
   Users explicitly specify the ``(q_low, q_high)`` pair in rad/Å.
-
-- **Disabled:** ``fft_filter=None``
-
-  No FFT filtering is applied to the time-averaged surface.
 
 .. warning::
 
