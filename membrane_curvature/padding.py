@@ -5,22 +5,26 @@ Edge padding
 
 .. versionadded:: 2.0.0
 
+Periodic edge padding for the binning surface method.
+
 .. warning::
 
-    This feature is optional and only available for orthorhombic boxes (angles 90°)
-    and when ``surface_method='binning'``.
+    This feature is optional and only available for ``surface_method='binning'``
+    and **orthorhombic** boxes (angles 90°).
 
-Module to apply periodic edge padding. A periodic buffer around the simulation
-box is created for the binning surface method. Mean and Gaussian curvature on
-the padded height field are evaluated in :mod:`~membrane_curvature.curvature`,
-then the border is clipped so results match the primary ``n_x_bins x n_y_bins``
-grid.
+Periodic images are tiled around the primary ``xy`` simulation box, creating a buffer
+region around the grid set by binning, with width ``edge_pad_bins``. This reduces
+finite difference edge artifacts from :func:`numpy.gradient`, which are often strongest
+in Gaussian curvature due to second derivatives.
+
+Mean and Gaussian curvature are computed on the padded grid and the buffer region is
+clipped back to the primary grid of size ``n_x_bins`` x ``n_y_bins``.
 
 .. note::
 
     Typically, a buffer of 2 to 3 bins is sufficient to fix finite difference
-    artifacts at edges and corners from ``numpy.gradient`` for second derivatives
-    in mean and Gaussian curvature.
+    artifacts at edges and corners from :func:`numpy.gradient` for second derivatives
+    in the:ref:`gaussian_curvature`.
 
 """
 

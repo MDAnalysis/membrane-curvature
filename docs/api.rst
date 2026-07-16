@@ -59,8 +59,8 @@ Surface Methods
 
    api/surface_methods/fourier_surface
    api/surface_methods/binning_surface
-   api/surface_methods/fft_filtering
    api/surface_methods/padding
+   api/surface_methods/fft_filtering
 
 :mod:`~membrane_curvature.fourier_surface` fits a periodic 2D Fourier sum to atom heights by linear least squares at each frame,
 evaluates the fitted surface, and obtains partial derivatives analytically from that sum.
@@ -68,13 +68,10 @@ evaluates the fitted surface, and obtains partial derivatives analytically from 
 :mod:`~membrane_curvature.binning_surface` assigns atoms to a regular grid, stores the mean height per cell, and estimates partial derivatives
 using the physical bin spacing with finite differences.
 
-The binning method supports a brick-wall filter to remove high-frequency noise from the height field.
-The filter is applied to the height field before calculating curvature.
-:mod:`~membrane_curvature.fft_filtering` provides the functions to apply the filter and to resolve the pass-band limits.
+The binning method supports:
 
-For orthorhombic boxes, binning can optionally pad the grid with a periodic buffer via ``padding=True``
-(buffer width ``edge_pad_bins``, default ``2``), reducing finite difference artifacts particularly visible in second derivatives
-for Gaussian curvature. :mod:`~membrane_curvature.padding` implements the pad, bin, differentiate, and clip workflow.
+- A :mod:`~membrane_curvature.padding` option for orthorhombic boxes, which reduces finite difference artifacts.
+- A :mod:`~membrane_curvature.fft_filtering` option to remove high-frequency noise from the height field.
 
 Curvature
 =========
