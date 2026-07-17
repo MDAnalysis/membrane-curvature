@@ -84,7 +84,8 @@ The functions in :mod:`~membrane_curvature.curvature` include both analytical an
    - With :mod:`~membrane_curvature.binning_surface`, **curvature is calculated numerically** from the discrete height
      field using finite differences.
 
-In both cases, the derivatives are then used to calculate mean and Gaussian curvature using the Monge-gauge formulas.
+In both cases, the derivatives are then used to calculate mean and Gaussian curvature using the Monge-gauge formulas
+for :eq:`mean curvature <mean-curvature-equation>` and :eq:`Gaussian curvature <gaussian-curvature-equation>`.
 
 .. toctree::
    :maxdepth: 1

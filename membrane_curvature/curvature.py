@@ -12,16 +12,30 @@ With the Monge gauge formulas, we map first derivatives :math:`(\partial_x, \par
 and mixed derivatives :math:`(\partial_{xx}, \partial_{yy}, \partial_{xy})` to the definitions of
 curvature.
 
-Mean curvature :math:`H`, defined by:
+Monge-gauge equations
+---------------------
 
-.. math:: H =
-    \frac{(1+\partial_x^2)\partial_{yy}+(1+\partial_y^2)\partial_{xx}-2\partial_x\partial_y\partial_{xy}}
-    {2(1+\partial_x^2+\partial_y^2)^{3/2}},
+Mean curvature
+^^^^^^^^^^^^^^
 
-and Gaussian curvature :math:`K`, defined by:
+Mean curvature :math:`H` is defined by:
 
-.. math:: K = \frac{\partial_{xx}\partial_{yy}-\partial_{xy}^2}
-   {(1+\partial_x^2+\partial_y^2)^2}.
+.. math::
+    :label: mean-curvature-equation
+
+    H = \frac{(1+\partial_x^2)\partial_{yy}+(1+\partial_y^2)\partial_{xx}-2\partial_x\partial_y\partial_{xy}}
+             {2(1+\partial_x^2+\partial_y^2)^{3/2}},
+
+Gaussian curvature
+^^^^^^^^^^^^^^^^^^
+
+Gaussian curvature :math:`K` is defined by:
+
+.. math::
+    :label: gaussian-curvature-equation
+
+    K = \frac{\partial_{xx}\partial_{yy}-\partial_{xy}^2}
+             {(1+\partial_x^2+\partial_y^2)^2}.
 
 
 The Monge gauge formulas are implemented separately in the helpers
@@ -51,11 +65,11 @@ and units of Gaussian curvature are [length] :sup:`-2`.
 
 .. warning::
 
-    Numpy cannot calculate the gradient for arrays with inner array of
-    `length==1` unless `axis=0` is specified. Therefore in the functions here included
-    for mean and Gaussian curvature, shape of arrays must be at least (2,2).
-    In general, to calculate a numerical gradients shape of arrays must be >=(`edge_order` +
-    1).
+    NumPy cannot calculate the gradient for arrays with an inner array of
+    ``length == 1`` unless ``axis=0`` is specified. Therefore, for the mean and
+    Gaussian curvature functions included here, the shape of arrays must be at
+    least ``(2, 2)``. In general, to calculate numerical gradients, the shape of
+    arrays must be at least ``edge_order + 1``.
 
 For a periodic **Fourier** fit to atom heights, use
 :func:`~membrane_curvature.fourier_surface.fourier_height_from_atoms` or

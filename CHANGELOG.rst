@@ -1,6 +1,7 @@
 Membranecurvature CHANGELOG
 =============================
 
+* Improve curvature API equation headings, references, and warning formatting (issue #241)
 * Set ``fft_filter`` to ``None`` as default (PR #239)
 * Refact: Calculate Fourier coeffs in SVD with `np.dot` instead of matmul (PR #223)
 * Remove side effect - MDAnalysis logging at import (PR #221)

@@ -542,7 +542,7 @@ associated functions.
 ^^^^^^^^^^^^^^^^^^^^
 
 Mean curvature :math:`H` is calculated from the five partial derivative
-arrays using the Monge-gauge formula:
+arrays using the Monge-gauge formula in :eq:`mean-curvature-equation`:
 
 .. math::
 
@@ -561,7 +561,7 @@ The result has units Å :sup:`-1` and is stored in
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Gaussian curvature :math:`K` is calculated from the same derivative
-arrays using:
+arrays using the Monge-gauge formula in :eq:`gaussian-curvature-equation`:
 
 .. math::
 
