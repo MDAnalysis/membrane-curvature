@@ -2,7 +2,7 @@ Membranecurvature CHANGELOG
 =============================
 
 ---
-
+* Expose and document ``nyquist_q`` to set manual FFT filter bounds (PR #241)
 * Enabled ``curvature_on`` kwarg to calculate curvature as ``per-frame`` average or as
   ``'average_surface'``.
 * Added ``surface_method='binning_nearest'`` as a new surface method (PR #246)
