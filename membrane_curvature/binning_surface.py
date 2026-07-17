@@ -29,30 +29,6 @@ Functions
 
 import numpy as np
 import warnings
-import logging
-
-logger = logging.getLogger('MDAnalysis.MDAKit.membrane_curvature')
-
-
-class WarnOnce:
-    """
-    Class to warn atoms out of grid boundaries only once with full message.
-    After the first occurrence, message will be generic.
-    """
-
-    def __init__(self, msg, msg_multiple) -> None:
-        self.msg = msg
-        self.warned = False
-        self.warned_multiple = False
-        self.msg_multiple = msg_multiple
-
-    def warn(self, *args):
-        if not self.warned:
-            self.warned = True
-            warnings.warn(self.msg.format(*args))
-            logger.warning(self.msg.format(*args))
-        elif not self.warned_multiple:
-            warnings.warn(self.msg_multiple)
 
 
 def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
@@ -84,24 +60,6 @@ def derive_surface(atoms, n_cells_x, n_cells_y, max_width_x, max_width_y):
     return get_z_surface(
         coordinates, n_x_bins=n_cells_x, n_y_bins=n_cells_y, x_range=(0, max_width_x), y_range=(0, max_width_y)
     )
-
-
-# messages for warnings, negative and positive coordinates.
-msg_exceeds = 'More than one atom exceed boundaries of grid.'
-negative_coord_warning = WarnOnce(
-    'Atom with negative coordinates falls '
-    'outside grid boundaries. Element '
-    "({},{}) in grid can't be assigned."
-    ' Skipping atom.',
-    msg_exceeds,
-)
-positive_coord_warning = WarnOnce(
-    'Atom coordinates exceed size of grid '
-    "and element ({},{}) can't be assigned. "
-    'Maximum (x,y) coordinates must be < ({}, {}). '
-    'Skipping atom.',
-    msg_exceeds,
-)
 
 
 def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_range=(0, 100)):
@@ -146,11 +104,8 @@ def get_z_surface(coordinates, n_x_bins=10, n_y_bins=10, x_range=(0, 100), y_ran
     np.add.at(grid_norm_unit, (cell_x_floor[valid_mask], cell_y_floor[valid_mask]), 1)
 
     if not np.all(valid_mask):
-        for index_l, index_m in zip(cell_x_floor[~valid_mask], cell_y_floor[~valid_mask]):
-            if index_l < 0 or index_m < 0:
-                negative_coord_warning.warn(index_l, index_m)
-            else:
-                positive_coord_warning.warn(index_l, index_m, x_range[1], y_range[1])
+        atoms_outside_grid = np.count_nonzero(~valid_mask)
+        warnings.warn(f'{atoms_outside_grid} atoms fall outside the grid boundaries. Skipping atoms.')
 
     z_surface = normalized_grid(grid_z_coordinates, grid_norm_unit)
 

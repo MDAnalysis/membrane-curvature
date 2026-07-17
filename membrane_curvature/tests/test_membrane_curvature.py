@@ -1299,7 +1299,7 @@ class TestMembraneCurvature(object):
     def test_positive_coordinates_exceed_grid(self, x_bin, y_bin, box_dim, dummy_array):
         u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
         u.dimensions = [box_dim, box_dim, 300, 90.0, 90.0, 90.0]
-        regex = r'exceed boundaries | size of grid'
+        regex = r'atoms fall outside the grid boundaries'
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(
                 u, select='all', surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin, wrap=False
@@ -1346,7 +1346,7 @@ class TestMembraneCurvature(object):
     def test_negative_coordinates_exceed_grid(self, x_bin, y_bin, box_dim, dummy_array):
         u = mda.Universe(dummy_array, n_atoms=len(dummy_array))
         u.dimensions = [box_dim, box_dim, 300, 90.0, 90.0, 90.0]
-        regex = r'exceed boundaries | coordinates falls'
+        regex = r'atoms fall outside the grid boundaries. Skipping atoms.'
         with pytest.warns(UserWarning, match=regex):
             MembraneCurvature(
                 u, select='all', surface_method='binning', fft_filter=None, n_x_bins=x_bin, n_y_bins=y_bin, wrap=False

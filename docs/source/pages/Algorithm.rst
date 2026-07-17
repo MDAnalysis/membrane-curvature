@@ -339,9 +339,8 @@ index:
 and similarly for :math:`y`. 
 
 Atoms that map outside the valid bin range
-(negative indices or indices ≥ ``n_x_bins``/``n_y_bins``) are skipped and
-trigger a one-time detailed warning. The function uses a WarnOnce helper so the full diagnostic
-is shown on first occurrence and a short message on subsequent occurrences.
+(negative indices or indices ≥ ``n_x_bins``/``n_y_bins``) are skipped. A
+warning is issued reporting how many atoms fall outside the grid boundaries.
 
 To populate the grid, :class:`~membrane_curvature.base.MembraneCurvature` wraps
 the coordinates of the :class:`~MDAnalysis.core.groups.AtomGroup` of reference
