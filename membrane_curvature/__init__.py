@@ -27,6 +27,7 @@ from .curvature import (
     gaussian_curvature_monge as gaussian_curvature_monge,
 )
 from .base import MembraneCurvature as MembraneCurvature
+from .fft_filtering import nyquist_q as nyquist_q
 
 # Handle version
 from importlib.metadata import version
