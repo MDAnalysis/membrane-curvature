@@ -3,17 +3,18 @@ MembraneCurvature's API Documentation
 **************************************
 
 The MembraneCurvature API is built around the :class:`~membrane_curvature.base.MembraneCurvature` class, which loads trajectory and coordinate
-data, and provides routines to derive a surface from atom positions. The resulting surface is then used to compute mean and Gaussian curvature,
+files, and provides routines to derive a surface from atom positions. The resulting surface is then used to compute mean and Gaussian curvature,
 either for individual frames or averaged across multiple frames of an MD trajectory.
 
 To use :class:`~membrane_curvature.base.MembraneCurvature`, users must provide at least two inputs: an MDAnalysis
 :class:`~MDAnalysis.core.universe.Universe`, and an :class:`~MDAnalysis.core.groups.AtomGroup` used as the reference to derive the surface and
 calculate curvature.
 
-:class:`~membrane_curvature.base.MembraneCurvature` supports two different methods to derive surfaces from reference atoms:
+:class:`~membrane_curvature.base.MembraneCurvature` supports three different methods to derive surfaces from reference atoms:
 
 - :mod:`~membrane_curvature.fourier_surface` — the default method.
 - :mod:`~membrane_curvature.binning_surface` — selected explicitly by ``surface_method='binning'``.
+- :mod:`~membrane_curvature.binning_nearest_surface` - selected explicitly by ``surface_method='binning_nearest'``.
 
 The height coordinates from the selected ``AtomGroup`` are extracted, and then used to reconstruct the surface using the specified surface derivation method.
 Once the surface has been generated, mean and Gaussian curvature are calculated.
@@ -27,7 +28,7 @@ MembraneCurvature class
 =======================
 
 The :class:`~membrane_curvature.base.MembraneCurvature` class provides the main entrypoint to calculate mean and Gaussian curvature from a
-surface derived from a reference atom selection. See the API docs for 
+surface derived from a reference atom selection.
 
 .. toctree::
    :maxdepth: 1
@@ -51,7 +52,8 @@ of the atoms in the selected ``AtomGroup`` of reference.
 Surface Methods
 ===============
 
-``MembraneCurvature`` supports two different methods to derive a surface from the selected reference atoms:
+:class:`~membrane_curvature.base.MembraneCurvature` supports three different methods to derive a surface from the selected
+reference atoms:
 
 .. toctree::
    :maxdepth: 1
@@ -59,19 +61,22 @@ Surface Methods
 
    api/surface_methods/fourier_surface
    api/surface_methods/binning_surface
+   api/surface_methods/binning_nearest_surface
    api/surface_methods/padding
    api/surface_methods/fft_filtering
 
-:mod:`~membrane_curvature.fourier_surface` fits a periodic 2D Fourier sum to atom heights by linear least squares at each frame,
-evaluates the fitted surface, and obtains partial derivatives analytically from that sum.
+- :mod:`~membrane_curvature.fourier_surface` fits a periodic 2D Fourier sum to atom heights by linear least squares fit at each frame,
+  evaluates the fitted surface, and obtains partial derivatives analytically from that sum.
 
-:mod:`~membrane_curvature.binning_surface` assigns atoms to a regular grid, stores the mean height per cell, and estimates partial derivatives
-using the physical bin spacing with finite differences.
+- :mod:`~membrane_curvature.binning_surface` assigns atoms to a regular grid, stores the mean height per cell, and estimates partial derivatives
+  using the physical bin spacing with finite differences.
 
-The binning method supports:
+- :mod:`~membrane_curvature.binning_nearest_surface` assigns each grid corner the ``z`` of the nearest lipid in the ``xy`` plane
+  (minimum-image distances) and estimates partial derivatives with finite differences using the physical bin spacing.
 
-- A :mod:`~membrane_curvature.padding` option for orthorhombic boxes, which reduces finite difference artifacts.
-- A :mod:`~membrane_curvature.fft_filtering` option to remove high-frequency noise from the height field.
+Binning methods support a :mod:`~membrane_curvature.padding` option for orthorhombic boxes, which reduces finite difference artifacts, and a
+a brick-wall filter to remove high-frequency noise from the height field. The filter is applied to the height field before calculating curvature.
+:mod:`~membrane_curvature.fft_filtering` provides the functions to apply the filter and to resolve the pass-band limits.
 
 Curvature
 =========
@@ -83,8 +88,8 @@ The functions in :mod:`~membrane_curvature.curvature` include both analytical an
    The calculation of mean and Gaussian curvature differs between the two methods:
 
    - With :mod:`~membrane_curvature.fourier_surface`, **curvature is calculated analytically** from the fitted surface.
-   - With :mod:`~membrane_curvature.binning_surface`, **curvature is calculated numerically** from the discrete height
-     field using finite differences.
+   - With :mod:`~membrane_curvature.binning_surface` or :mod:`~membrane_curvature.binning_nearest_surface`, **curvature is calculated numerically**
+     from the discrete height field using finite differences.
 
 In both cases, the derivatives are then used to calculate mean and Gaussian curvature using the Monge-gauge formulas.
 
