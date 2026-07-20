@@ -97,20 +97,15 @@ def tile_xy_buffer(positions, box_length_x, box_length_y, pad_x, pad_y):
     j_hi = np.ceil((y_max - ys) / box_length_y).astype(np.int64) - 1
 
     atom_i, i_vals = _expand_inclusive_ranges(i_lo, i_hi)
-    if atom_i.size == 0:
-        return np.empty((0, 3), dtype=float)
 
     # Each (atom, i) image is paired with all j images of that atom.
     j_counts = np.maximum(j_hi[atom_i] - j_lo[atom_i] + 1, 0)
     total = int(j_counts.sum())
-    if total == 0:
-        return np.empty((0, 3), dtype=float)
 
     atom_ij = np.repeat(atom_i, j_counts)
     i_ij = np.repeat(i_vals, j_counts)
 
-    starts = np.empty(atom_i.size, dtype=np.int64)
-    starts[0] = 0
+    starts = np.zeros(atom_i.size, dtype=np.int64)
     if atom_i.size > 1:
         np.cumsum(j_counts[:-1], out=starts[1:])
     j_offsets = np.arange(total, dtype=np.int64) - np.repeat(starts, j_counts)

@@ -16,6 +16,7 @@ from membrane_curvature.curvature import (
     mean_curvature_monge,
 )
 from membrane_curvature.padding import (
+    _expand_inclusive_ranges,
     clip_padded_grid,
     get_z_surface_padded,
     get_z_surface_with_edge_pad,
@@ -123,6 +124,11 @@ class TestPaddingValidators:
 
 
 class TestPaddingHelpers:
+    def test_expand_inclusive_ranges_empty(self):
+        item, values = _expand_inclusive_ranges(np.array([1]), np.array([0]))
+        assert item.shape == (0,)
+        assert values.shape == (0,)
+
     def test_padded_grid_spec(self):
         spec = padded_grid_spec(10, 20, (0.0, 100.0), (0.0, 200.0), 2)
         assert spec['n_x_bins_pad'] == 14
