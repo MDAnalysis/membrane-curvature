@@ -85,7 +85,6 @@ def nearest_surface(box_100, grid_2x2):
 
 
 def test_get_z_surface_nearest_upper_leaflet_mic(bilayer_universe, nearest_surface):
-    # Lipid at x=90 wraps to corner (0, 0) under minimum-image.
     z_surface, grid_axes = nearest_surface(bilayer_universe.atoms[[0]])
     assert_allclose(z_surface[0, 0], 80.0)
     assert_allclose(z_surface[1, 1], 80.0)
@@ -94,12 +93,12 @@ def test_get_z_surface_nearest_upper_leaflet_mic(bilayer_universe, nearest_surfa
 
 
 def test_get_z_surface_nearest_lower_leaflet(bilayer_universe, nearest_surface):
-    z_surface, _ = nearest_surface(bilayer_universe.atoms[[1]])
+    z_surface, _grid_axes = nearest_surface(bilayer_universe.atoms[[1]])
     assert_allclose(z_surface[0, 0], 20.0)
 
 
 def test_get_z_surface_nearest_uses_xy_distance_only(xy_nearest_universe, nearest_surface):
-    z_surface, _ = nearest_surface(xy_nearest_universe.atoms)
+    z_surface, _grid_axes = nearest_surface(xy_nearest_universe.atoms)
     assert_allclose(z_surface[0, 0], 105.0)
 
 
@@ -109,13 +108,21 @@ def test_get_z_surface_nearest_requires_box(bilayer_universe, grid_2x2):
 
 
 def test_get_z_surface_nearest_range_override(bilayer_universe, nearest_surface):
-    _, grid_axes = nearest_surface(
+    _z_surface, grid_axes = nearest_surface(
         bilayer_universe.atoms[[0]],
         x_range=(10.0, 90.0),
         y_range=(20.0, 80.0),
     )
     assert_allclose(grid_axes['dx'], 40.0)
     assert_allclose(grid_axes['dy'], 30.0)
+
+
+def test_get_z_surface_nearest_lipid_bbox_extent(xy_nearest_universe, nearest_surface):
+    _z_surface, grid_axes = nearest_surface(xy_nearest_universe.atoms, grid_origin='lipid_bbox')
+    assert_allclose(grid_axes['left_x'], 5.0)
+    assert_allclose(grid_axes['left_y'], 5.0)
+    assert_allclose(grid_axes['dx'], 12.5)
+    assert_allclose(grid_axes['dy'], 12.5)
 
 
 @pytest.mark.parametrize(
@@ -156,6 +163,10 @@ def test_membrane_curvature_binning_nearest_runs(bilayer_universe, grid_2x2):
             dict(select='index 0', grid_origin='lipid_bbox', fft_filter='auto'),
             r"grid_origin='lipid_bbox' cannot be combined with fft_filter",
         ),
+        (
+            dict(select='index 0', grid_origin='lipid_bbox', padding=True),
+            r"grid_origin='lipid_bbox' cannot be combined with padding",
+        ),
         (dict(grid_origin='invalid'), r"grid_origin must be 'box' or 'lipid_bbox'"),
     ],
 )
@@ -175,3 +186,35 @@ def test_membrane_curvature_binning_nearest_resolves_fft_filter(bilayer_universe
     )
     assert mc._fft_q_bounds is not None
     assert mc._fft_q_bounds[0] == 0.0
+
+
+def test_membrane_curvature_binning_nearest_with_padding(bilayer_universe, grid_2x2):
+    mc = MembraneCurvature(
+        bilayer_universe,
+        select='index 0',
+        surface_method='binning_nearest',
+        grid_origin='box',
+        fft_filter=None,
+        padding=True,
+        edge_pad_bins=1,
+        **grid_2x2,
+    ).run()
+    assert mc.padding is True
+    assert mc.results.z_surface.shape == (1, 2, 2)
+    assert mc.results.mean.shape == (1, 2, 2)
+    assert mc.results.gaussian.shape == (1, 2, 2)
+    assert np.any(np.isfinite(mc.results.mean))
+
+
+def test_membrane_curvature_binning_nearest_lipid_bbox_runs(xy_nearest_universe, grid_2x2):
+    mc = MembraneCurvature(
+        xy_nearest_universe,
+        select='all',
+        surface_method='binning_nearest',
+        grid_origin='lipid_bbox',
+        fft_filter=None,
+        **grid_2x2,
+    ).run()
+    assert mc.results.z_surface.shape == (1, 2, 2)
+    assert np.all(np.isfinite(mc.results.z_surface))
+    assert np.all(np.isfinite(mc.results.mean))
