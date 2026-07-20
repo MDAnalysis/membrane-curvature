@@ -343,9 +343,11 @@ Atoms that map outside the valid bin range
 warning is issued reporting how many atoms fall outside the grid boundaries.
 
 To populate the grid, :class:`~membrane_curvature.base.MembraneCurvature` wraps
-the coordinates of the :class:`~MDAnalysis.core.groups.AtomGroup` of reference
-using :meth:`~MDAnalysis.core.groups.AtomGroup.wrap` only when ``wrap=True`` is
-set (the default for ``surface_method='binning'``).
+``x`` and ``y`` of the reference :class:`~MDAnalysis.core.groups.AtomGroup`
+into the unit cell when ``wrap=True`` (the default for
+``surface_method='binning'``), while leaving ``z`` unchanged. Internally this
+calls :meth:`~MDAnalysis.core.groups.AtomGroup.wrap` and then restores the
+original ``z`` coordinates.
 
 Empty bins (zero samples) are represented as :data:`numpy.nan` in the returned
 ``(n_x_bins, n_y_bins)`` array: the implementation replaces zero counts
@@ -355,19 +357,21 @@ trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
 
 .. warning::
   
-  The binning routine itself does not apply periodic wrapping;
-  :class:`~membrane_curvature.base.MembraneCurvature` applies
-  ``AtomGroup.wrap()`` only when ``wrap=True`` is set. 
+  The binning routine itself does not wrap coordinates;
+  :class:`~membrane_curvature.base.MembraneCurvature` wraps ``x`` and ``y`` only
+  when ``wrap=True`` is set.
   
-  - Set ``wrap=True`` to pack atoms back into the grid if you are calculating
-    curvature on a **raw trajectory**.
-  - Set ``wrap=False`` to omit atoms from the simulation box that fall outside
-    the grid when you are calculating curvature on:
+  - Set ``wrap=True`` to wrap atoms back into the grid in ``x`` and``y`` if you are
+    calculating curvature on a **raw trajectory**. Heights in ``z`` are preserved.
+  - Set ``wrap=False`` to leave atoms outside the primary cell in ``x`` and ``y``
+    out of the bins when you are calculating curvature on:
       - a trajectory (membrane only or membrane-protein with position restraints) that
         already **pre-processed periodic boundary conditions**. 
       - a membrane-protein system that already **pre-processes rotational and translational
         fit for the protein**.
-
+  - With ``padding=True``, periodic images in ``x`` and ``y`` are tiled into the
+    buffer even if ``wrap=False``, so the usual ``wrap == False`` warning is not
+    emitted.
 
 .. _derive-surface-curvature:
 
@@ -461,9 +465,65 @@ For details on the binning method, see API documentation in
 :mod:`~membrane_curvature.binning_surface` that describes every
 associated functions.
 
+.. _binning-edge-padding:
+
+3.2.1.1. Edge padding (``padding=True``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When ``padding=True`` with ``surface_method='binning'``,
+:class:`~membrane_curvature.base.MembraneCurvature` expands the primary grid by a
+periodic buffer of width :math:`\Delta` on each side. The buffer width is set by
+``edge_pad_bins`` (default ``2``), so
+:math:`\Delta_x = \mathrm{edge\_pad\_bins}\cdot dx` and
+:math:`\Delta_y = \mathrm{edge\_pad\_bins}\cdot dy`.
+
+The padded domain ``box + \Delta`` is then filled as follows:
+
+1. Tile periodic atom images into the buffer via
+   :func:`~membrane_curvature.padding.tile_xy_buffer`.
+2. Bin mean heights on the expanded
+   ``(n_x_bins + 2 * edge_pad_bins) x (n_y_bins + 2 * edge_pad_bins)``
+   grid.
+3. Evaluate mean and Gaussian curvature with finite differences on that padded
+   height field.
+4. Clip the buffer so returned arrays match the primary ``n_x_bins x n_y_bins``
+   grid.
+
+|padding|
+
+.. warning::
+
+  Padding is available for ``surface_method='binning'`` and **orthorhombic boxes only**.
+
+  The binning grid is defined on the simulation $x$ and $y$ axes. Padding builds an
+  expanded domain ``box + Δ`` by tiling axis-aligned periodic images
+  :math:`(x + i L_x,\ y + j L_y,\ z)` into the buffer. The padded grid is then
+  binned and evaluated, and the buffer is clipped back to the primary
+  ``n_x_bins x n_y_bins`` grid. This axis-aligned tiling matches boxes whose
+  in-plane vectors are orthogonal and aligned with the simulation axes, that is,
+  orthorhombic boxes only.
+
+  **Tilted or triclinic boxes need lattice-vector replicas and are not supported yet.**
+
+The padding approach supplies edge and corner cells with periodic neighbors for
+:func:`numpy.gradient`, which reduces finite difference artifacts that are
+especially visible in second derivatives for Gaussian curvature. However, since 
+the finite difference calculations access only the first neighbouring bins (`i-1`` and `i+1``),
+padding by two bins (``edge_pad_bins``=2) is sufficient to evaluate derivatives at the boundaries
+without introducing additional artifacts. Values of ``edge_pad_bins`` above ``4`` are unlikely
+to change curvature and mainly increase computational cost.
+
+Padding alone is usually enough to reduce edge artifacts, so you do not need
+``fft_filter`` for that purpose. If you enable both ``padding`` and
+``fft_filter``, the code filters the time-averaged primary height, then
+computes average curvature from the filtered height. In that case the
+filtered average is processed with a wrap-pad before curvature is evaluated,
+rather than by tiling atom images. See :ref:`binning-fft-filter` for details.
+
+
 .. _binning-fft-filter:
 
-3.2.1.1. FFT filtering on the averaged surface (``fft_filter``)
+3.2.1.2. FFT filtering on the averaged surface (``fft_filter``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A brick-wall filter is available when running with ``surface_method='binning'`` and the argument
@@ -590,14 +650,23 @@ every frame and the result has units Å :sup:`-2` and is stored in
 The attributes :attr:`MembraneCurvature.results.average_mean` and
 :attr:`MembraneCurvature.results.average_gaussian` contain the computed
 values of mean and Gaussian curvature averaged over all the 
-:attr:`~n_frames` in the trajectory. 
+:attr:`~n_frames` in the trajectory.
 
-After performing the average over frames, the information of average surface,
-mean, and Gaussian curvature are stored in the 
+After the trajectory is processed, MembraneCurvature stores the averaged maps in
 :attr:`MembraneCurvature.results.average_z_surface<membrane_curvature.base.MembraneCurvature.results.average_z_surface>`,
 :attr:`MembraneCurvature.results.average_mean`, and
 :attr:`MembraneCurvature.results.average_gaussian` arrays, respectively.
 Each array has shape ``(n_x_bins, n_y_bins)``.
+
+How those averages are built depends on ``fft_filter``:
+
+- With the default ``fft_filter=None``, the average maps are time averages of the
+  per-frame arrays ``z_surface``, ``mean``, and ``gaussian``.
+- With ``fft_filter`` enabled (``'auto'`` or a manual ``{'q': ...}`` dict),
+  MembraneCurvature first time-averages ``z_surface``, applies one brick-wall
+  filter to that average, and then computes ``average_mean`` and
+  ``average_gaussian`` from the filtered average height.
+  The per-frame arrays stay unfiltered.
 
 |avg_frames|
 
@@ -612,6 +681,10 @@ Each array has shape ``(n_x_bins, n_y_bins)``.
 .. |grid| image:: ../_static/grid.png
   :width: 600
   :alt: Grid
+
+.. |padding| image:: ../_static/padding.png
+  :width: 700
+  :alt: PeriodicEdgePadding
 
 .. |fft_filter_plot| image:: ../_static/fft_filter.png
   :width: 800

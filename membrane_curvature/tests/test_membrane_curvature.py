@@ -1189,6 +1189,7 @@ class TestMembraneCurvature(object):
         'x_bin, y_bin, box_dim, dummy_array, expected_surface',
         [
             # test with negative z coordinates with 3 bins
+            # wrap packs x/y only; z heights below 0 are preserved
             (
                 3,
                 3,
@@ -1206,7 +1207,7 @@ class TestMembraneCurvature(object):
                         [200.0, 200.0, 120.0],
                     ]
                 ),
-                np.array([[150.0, 150.0, 120.0], [150.0, 120.0, 120.0], [150.0, 120.0, 120.0]]),
+                np.array([[-150.0, -150.0, 120.0], [-150.0, 120.0, 120.0], [-150.0, 120.0, 120.0]]),
             ),
             # test with negative z coordinates with 4 bins
             (
@@ -1235,10 +1236,10 @@ class TestMembraneCurvature(object):
                 ),
                 np.array(
                     [
-                        [150.0, 150.0, 120.0, 150.0],
-                        [150.0, 120.0, 120.0, 150.0],
-                        [150.0, 120.0, 120.0, 150.0],
-                        [150.0, 150.0, 150.0, 150.0],
+                        [-150.0, -150.0, 120.0, -150.0],
+                        [-150.0, 120.0, 120.0, -150.0],
+                        [-150.0, 120.0, 120.0, -150.0],
+                        [-150.0, -150.0, -150.0, -150.0],
                     ]
                 ),
             ),
@@ -1389,3 +1390,84 @@ class TestMembraneCurvature(object):
             getattr(mc.results, result_attr)[0],
             ref_fields[ref_index],
         )
+
+    # --- padding -------------------------------------------------------------
+
+    @pytest.mark.parametrize('padding', ['yes', 1, None])
+    def test_padding_must_be_bool(self, universe_dummy_full, padding):
+        with pytest.raises(ValueError, match=r'padding must be True or False'):
+            MembraneCurvature(
+                universe_dummy_full,
+                select='all',
+                surface_method='binning',
+                fft_filter=None,
+                padding=padding,
+            )
+
+    def test_padding_true_sets_edge_pad_bins(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            padding=True,
+            edge_pad_bins=2,
+            n_x_bins=3,
+            n_y_bins=3,
+        )
+        assert mc.padding is True
+        assert mc.edge_pad_bins == 2
+        assert mc._pad_spec is not None
+        assert mc._pad_spec['n_x_bins_pad'] == 7
+        assert mc._pad_spec['n_y_bins_pad'] == 7
+
+    def test_padding_true_rejected_fourier(self, universe_fourier_defaults):
+        with pytest.raises(ValueError, match=r"padding=True is only valid when surface_method='binning'"):
+            MembraneCurvature(universe_fourier_defaults, padding=True)
+
+    def test_padding_rejects_non_orthorhombic_box(self, universe_dummy_full):
+        universe_dummy_full.dimensions = [300, 300, 300, 90.0, 90.0, 60.0]
+        with pytest.raises(ValueError, match=r'orthorhombic'):
+            MembraneCurvature(
+                universe_dummy_full,
+                select='all',
+                surface_method='binning',
+                fft_filter=None,
+                padding=True,
+            )
+
+    def test_analysis_binning_with_padding(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            padding=True,
+            edge_pad_bins=1,
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        assert mc.results.z_surface.shape == (1, 3, 3)
+        assert mc.results.mean.shape == (1, 3, 3)
+        assert mc.results.gaussian.shape == (1, 3, 3)
+        assert mc.results.average_z_surface.shape == (3, 3)
+        assert mc.results.average_mean.shape == (3, 3)
+        assert mc.results.average_gaussian.shape == (3, 3)
+        assert np.any(np.isfinite(mc.results.z_surface))
+
+    def test_analysis_binning_padding_with_fft_filter(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter='auto',
+            padding=True,
+            edge_pad_bins=1,
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        assert mc.results.average_z_surface.shape == (3, 3)
+        assert mc.results.average_mean.shape == (3, 3)
+        assert mc.results.average_gaussian.shape == (3, 3)
+        assert np.any(np.isfinite(mc.results.average_mean))
+        assert np.any(np.isfinite(mc.results.average_gaussian))

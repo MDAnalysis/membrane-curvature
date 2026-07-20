@@ -45,7 +45,8 @@ MembraneCurvature allows you to:
 
 - Derive 2D surface profiles from MD simulations using an atom selection as reference with two
   different methods: binning or Fourier.
-   - With optional brick-wall FFT filter on averaged surface maps (binning method only).
+   - Optional periodic edge padding to reduce finite difference artifacts (binning method only).
+   - Optional brick-wall FFT filter on averaged surface maps (binning method only).
 - Calculate the mean and Gaussian curvatures of the derived surfaces.
 - Get per-frame or averaged results for surface, mean and Gaussian curvature.
 

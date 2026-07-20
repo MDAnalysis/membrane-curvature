@@ -23,7 +23,8 @@ With MembraneCurvature you can:
 
 - Derive 2D surface profiles from MD simulations using an atom selection as reference with two
   different methods: binning or Fourier.
-  - With optional brick-wall FFT filter on averaged surface maps (binning method only).
+  - Optional periodic edge padding to reduce finite difference artifacts (binning method only).
+  - Optional brick-wall FFT filter on averaged surface maps (binning method only).
 - Calculate the mean and Gaussian curvatures of the derived surfaces.
 - Get per-frame or averaged results for surface, mean and Gaussian curvature.
 - Live a happier life.
@@ -142,24 +143,49 @@ curvature_upper_leaflet_binning = MembraneCurvature(universe,
                                                    surface_method='binning',
                                                    n_x_bins=8,
                                                    n_y_bins=8,
+                                                   wrap=True
                                                    ).run()
 
-# extract average surface
 surface_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
 
-# extract average mean curvature
 mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mean
 
-# extract average Gaussian curvature
 gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
 ```
 
-> [!TIP]
-> The default filtering is disabled. Omit the `fft_filter` argument to use the default.
+#### Binning with padding
+
+> [!WARNING]
+> Padding is only available with `surface_method='binning'` and **requires orthorhombic boxes**.
+
+To reduce finite difference edge artifacts, you can enable padding with the `padding` argument:
+
+```python
+import MDAnalysis as mda
+from membrane_curvature import MembraneCurvature
+from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+universe = mda.Universe(Martini_membrane_gro)
+
+# run with padding to reduce finite difference artifacts
+curvature_upper_leaflet_padded = MembraneCurvature(universe,
+                                                   select='resid 1-225 and name PO4',
+                                                   surface_method='binning',
+                                                   n_x_bins=8,
+                                                   n_y_bins=8,
+                                                   padding=True).run()
+
+surface_upper_leaflet_padded = curvature_upper_leaflet_padded.results.average_z_surface
+
+mean_upper_leaflet_padded = curvature_upper_leaflet_padded.results.average_mean
+
+gaussian_upper_leaflet_padded = curvature_upper_leaflet_padded.results.average_gaussian
+```
 
 #### Binning with FFT filtering
 
-Alternatively, to apply filtering to the surface, pass ``fft_filter='auto'``:
+FFT filtering is disabled by default with `fft_filter=None`. To enable automatic
+filtering, pass `fft_filter='auto'`:
 
 ```python
 import MDAnalysis as mda
@@ -169,27 +195,28 @@ from MDAnalysis.tests.datafiles import Martini_membrane_gro
 universe = mda.Universe(Martini_membrane_gro)
 
 # run with the binning surface_method with automatic FFT filtering
-curvature_upper_leaflet_binning = MembraneCurvature(universe,
-                                                    select='resid 1-225 and name PO4',
-                                                    surface_method='binning',
-                                                    n_x_bins=8,
-                                                    n_y_bins=8,
-                                                    fft_filter='auto',
-                                                    wrap=True).run()
+curvature_upper_leaflet_filtered = MembraneCurvature(universe,
+                                                     surface_method='binning',
+                                                     select='resid 1-225 and name PO4',
+                                                     n_x_bins=8,
+                                                     n_y_bins=8,
+                                                     fft_filter='auto',
+                                                     ).run()
 
-# extract average surface
-surface_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
+surface_upper_leaflet_filtered = curvature_upper_leaflet_filtered.results.average_z_surface
 
-# extract average mean curvature
-mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mean
+mean_upper_leaflet_filtered = curvature_upper_leaflet_filtered.results.average_mean
 
-# extract average Gaussian curvature
-gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
+gaussian_upper_leaflet_filtered = curvature_upper_leaflet_filtered.results.average_gaussian
 ```
 
 > [!NOTE]
 >
-> FFT filtering is only available with `surface_method='binning'`. Per-frame `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered. With filtering enabled, `results.average_z_surface`, `results.average_mean`, and `results.average_gaussian` are computed from the filtered average height. Check the [Algorithm] page for more details on empty bins, periodic boundaries, and manual $q_{low} > 0$ caveats.
+> FFT filtering is only available with `surface_method='binning'`. Per-frame
+> `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered.
+> With filtering enabled, `results.average_z_surface` contains the filtered
+> average height. `results.average_mean` and `results.average_gaussian` are
+> calculated from that filtered height.
 
 You can find more examples on how to run MembraneCurvature in the [Usage] page.
 To plot results from MembraneCurvature please check the [Visualization] page.
