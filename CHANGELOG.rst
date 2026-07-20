@@ -3,9 +3,10 @@ Membranecurvature CHANGELOG
 
 ---
 
-* Refactored binning surface method to use `np.add.at` for improved performance (PR #240)
+* Feature: Added periodic edge padding for the binning surface method (PR #238)
+* Refactored binning surface method to use ``np.add.at`` for improved performance (PR #240)
 * Set ``fft_filter`` to ``None`` as default (PR #239)
-* Refact: Calculate Fourier coeffs in SVD with `np.dot` instead of matmul (PR #223)
+* Refact: Calculate Fourier coeffs in SVD with ``np.dot`` instead of matmul (PR #223)
 * Remove side effect - MDAnalysis logging at import (PR #221)
 * Fixed stale project metadata and updated README files (PR #218)
 * Replaced action version with specific commit hash in github actions and added dependabot cfg file (PR #224 #234)
