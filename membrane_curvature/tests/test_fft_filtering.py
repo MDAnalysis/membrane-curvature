@@ -4,7 +4,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from membrane_curvature.binning_surface import get_z_surface
-from membrane_curvature.curvature import mean_curvature
+from membrane_curvature.curvature import mean_curvature, gaussian_curvature
 from membrane_curvature.fft_filtering import (
     _height_for_fft,
     _squared_radius_grid,
@@ -286,3 +286,127 @@ def test_membrane_curvature_binning_fft_filter_none(universe_dummy_wrap):
 
     assert mc.fft_filter is None
     assert_allclose(mc.results.average_z_surface, expected, rtol=0)
+
+
+@pytest.mark.parametrize(
+    'fft_filter, expected',
+    [
+        (None, MembraneCurvature.CurvatureOn.PER_FRAME),
+        ('auto', MembraneCurvature.CurvatureOn.AVERAGE_SURFACE),
+    ],
+)
+def test_curvature_on_default_follows_fft_filter(universe_dummy_wrap, fft_filter, expected):
+    mc = MembraneCurvature(
+        universe_dummy_wrap,
+        n_x_bins=3,
+        n_y_bins=3,
+        surface_method='binning',
+        fft_filter=fft_filter,
+    )
+    assert mc.curvature_on == expected
+
+
+@pytest.mark.parametrize('curvature_on', ['per_frame', 'average_surface'])
+def test_curvature_on_explicit_overrides_default(universe_dummy_wrap, curvature_on):
+    mc_no_filter = MembraneCurvature(
+        universe_dummy_wrap,
+        n_x_bins=3,
+        n_y_bins=3,
+        surface_method='binning',
+        fft_filter=None,
+        curvature_on=curvature_on,
+    )
+    mc_with_filter = MembraneCurvature(
+        universe_dummy_wrap,
+        n_x_bins=3,
+        n_y_bins=3,
+        surface_method='binning',
+        fft_filter='auto',
+        curvature_on=curvature_on,
+    )
+    assert mc_no_filter.curvature_on == MembraneCurvature.CurvatureOn(curvature_on)
+    assert mc_with_filter.curvature_on == MembraneCurvature.CurvatureOn(curvature_on)
+
+
+def test_curvature_on_rejects_invalid_value(universe_dummy_wrap):
+    with pytest.raises(ValueError, match=r"curvature_on must be None or one of .*got 'frames'"):
+        MembraneCurvature(
+            universe_dummy_wrap,
+            n_x_bins=3,
+            n_y_bins=3,
+            surface_method='binning',
+            curvature_on='frames',
+        )
+
+
+def test_curvature_on_per_frame_is_time_mean_of_per_frame_maps(universe_dummy_wrap):
+    mc = MembraneCurvature(
+        universe_dummy_wrap,
+        n_x_bins=3,
+        n_y_bins=3,
+        surface_method='binning',
+        fft_filter=None,
+        curvature_on='per_frame',
+    ).run()
+    assert_allclose(mc.results.average_mean, np.nanmean(mc.results.mean, axis=0), equal_nan=True)
+    assert_allclose(mc.results.average_gaussian, np.nanmean(mc.results.gaussian, axis=0), equal_nan=True)
+
+
+def test_curvature_on_average_surface_is_curvature_of_average_z(universe_dummy_wrap):
+    mc = MembraneCurvature(
+        universe_dummy_wrap,
+        n_x_bins=3,
+        n_y_bins=3,
+        surface_method='binning',
+        fft_filter=None,
+        curvature_on='average_surface',
+    ).run()
+    assert_allclose(
+        mc.results.average_mean,
+        mean_curvature(mc.results.average_z_surface, mc.dx, mc.dy),
+        equal_nan=True,
+    )
+    assert_allclose(
+        mc.results.average_gaussian,
+        gaussian_curvature(mc.results.average_z_surface, mc.dx, mc.dy),
+        equal_nan=True,
+    )
+
+
+def test_curvature_on_per_frame_with_fft_filter_keeps_unfiltered_H(universe_dummy_wrap):
+    """With fft_filter, 'per_frame' averages unfiltered H; 'average_surface' uses filtered ⟨S⟩."""
+    n_bins = 3
+    dx = dy = universe_dummy_wrap.dimensions[0] / n_bins
+    q_bounds = resolve_fft_filter('auto', dx, dy)
+    common = dict(
+        universe=universe_dummy_wrap,
+        n_x_bins=n_bins,
+        n_y_bins=n_bins,
+        surface_method='binning',
+        fft_filter='auto',
+    )
+    mc_average = MembraneCurvature(**common, curvature_on='average_surface').run()
+    mc_per_frame = MembraneCurvature(**common, curvature_on='per_frame').run()
+
+    assert_allclose(mc_average.results.average_z_surface, mc_per_frame.results.average_z_surface, equal_nan=True)
+    assert_allclose(
+        mc_average.results.average_mean,
+        mean_curvature(mc_average.results.average_z_surface, dx, dy),
+        equal_nan=True,
+    )
+    assert_allclose(
+        mc_per_frame.results.average_mean,
+        np.nanmean(mc_per_frame.results.mean, axis=0),
+        equal_nan=True,
+    )
+    assert not np.allclose(mc_average.results.average_mean, mc_per_frame.results.average_mean, equal_nan=True)
+    assert not np.allclose(
+        mc_per_frame.results.average_z_surface,
+        mc_per_frame.results.z_surface[0],
+        equal_nan=True,
+    )
+    assert_allclose(
+        apply_fft_filter(mc_per_frame.results.z_surface[0], dx, dy, q_bounds),
+        mc_per_frame.results.average_z_surface,
+        equal_nan=True,
+    )

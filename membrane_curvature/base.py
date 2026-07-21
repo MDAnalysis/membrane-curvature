@@ -111,9 +111,13 @@ class MembraneCurvature(AnalysisBase):
         ``surface_method='binning_nearest'``. Default is ``None``. Pass ``'auto'`` to enable
         automatic filtering with low-pass set to ``(0, 0.5 * q_Nyq)``. For custom bounds in
         rad/Å, pass ``{'q': (q_low, q_high)}``. For **average** maps: time-average of
-        ``z_surface``, filter once, then curvature on that filtered height.
+        ``z_surface``, filter once, then curvature on that filtered height when
+        ``curvature_on`` resolves to ``'average_surface'``.
         Per-frame arrays are not FFT-filtered. Ignored for ``surface_method='fourier'``.
         Compatible with ``padding``. Not allowed with ``grid_origin='lipid_bbox'``.
+    curvature_on : str, optional, default: None
+        Where to evaluate curvature for ``results.average_mean`` and ``results.average_gaussian``.
+        See :class:`CurvatureOn` for more details.
     padding : bool, optional
         Apply periodic edge padding for binning surface methods. Default ``False``.
         For ``surface_method='binning'``, pads the simulation box using periodic images
@@ -144,14 +148,16 @@ class MembraneCurvature(AnalysisBase):
         temporal mean of ``z_surface``, not the mean of per-frame filtered surfaces.
         Each array has shape (`n_x_bins`, `n_y_bins`)
     results.average_mean : ndarray
-        Average of the array elements in `mean_curvature`. With ``binning`` or
-        ``binning_nearest`` and ``fft_filter`` enabled, curvature of the filtered
-        time-averaged height (not the time average of per-frame ``results.mean``).
+        Mean curvature map for analysis and plotting.
+        With ``curvature_on='per_frame'``, the time average of ``results.mean``.
+        With ``curvature_on='average_surface'``, mean curvature of
+        ``results.average_z_surface``.
         Each array has shape (`n_x_bins`, `n_y_bins`)
     results.average_gaussian : ndarray
-        Average of the array elements in `gaussian_curvature`. With ``binning`` or
-        ``binning_nearest`` and ``fft_filter`` enabled, curvature of the filtered
-        time-averaged height (not the time average of per-frame ``results.gaussian``).
+        Gaussian curvature map for analysis and plotting.
+        With ``curvature_on='per_frame'``, the time average of ``results.gaussian``.
+        With ``curvature_on='average_surface'``, Gaussian curvature of
+        ``results.average_z_surface``.
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
     Raises
@@ -167,8 +173,9 @@ class MembraneCurvature(AnalysisBase):
         ``surface_method='fourier'``, if a manual ``fft_filter`` dict is passed
         with ``surface_method='fourier'``, if ``padding=True`` with
         ``surface_method='fourier'``, if ``padding=True`` on a
-        non-orthorhombic box, or if ``edge_pad_bins`` is not an integer
-        ``>= 1`` when ``padding=True``.
+        non-orthorhombic box, if ``edge_pad_bins`` is not an integer
+        ``>= 1`` when ``padding=True``, or if ``curvature_on`` is not
+        ``None``, ``'per_frame'``, or ``'average_surface'``.
 
     See also
     --------
@@ -213,9 +220,15 @@ class MembraneCurvature(AnalysisBase):
 
     The attributes :attr:`~MembraneCurvature.results.average_mean` and
     :attr:`~MembraneCurvature.results.average_gaussian` contain mean and
-    Gaussian curvature maps for analysis and plotting. With ``fft_filter`` on
-    binning surfaces they are curvatures of the filtered average height, not the
-    time average of per-frame curvatures.
+    Gaussian curvature maps for analysis and plotting. With
+    ``curvature_on='per_frame'`` the arrays are time averages of the per-frame
+    curvature arrays. With ``curvature_on='average_surface'`` the arrays are curvatures
+    of ``average_z_surface`` (including after ``fft_filter`` when that is set).
+    Leaving ``curvature_on=None`` preserves the previous defaults:
+    ``'per_frame'`` when ``fft_filter`` is ``None``, and ``'average_surface'`` when
+    ``fft_filter`` is set.
+
+
 
     Example
     -----------
@@ -244,11 +257,29 @@ class MembraneCurvature(AnalysisBase):
     """
 
     class SurfaceMethod(StrEnum):
-        """Allowed values for ``surface_method``."""
+        """Supported values for ``surface_method``."""
 
         BINNING = 'binning'
         BINNING_NEAREST = 'binning_nearest'
         FOURIER = 'fourier'
+
+    class CurvatureOn(StrEnum):
+        r"""Supported values for ``curvature_on``.
+
+        Where to evaluate curvature for ``results.average_mean`` and ``results.average_gaussian``:
+
+        ``'per_frame'``
+            Time averages the per-frame curvature arrays (:math:`\langle H \rangle`, :math:`\langle K \rangle`).
+        ``'average_surface'``
+            Evaluates curvature on ``results.average_z_surface`` :math:`H(\langle S \rangle)`,
+            :math:`K(\langle S \rangle)`.
+        ``None`` (default)
+            Keeps prior behavior: ``'per_frame'`` when ``fft_filter`` is ``None``, and
+            ``'average_surface'`` when ``fft_filter`` is set.
+        """
+
+        PER_FRAME = 'per_frame'
+        AVERAGE_SURFACE = 'average_surface'
 
     def __init__(
         self,
@@ -264,6 +295,7 @@ class MembraneCurvature(AnalysisBase):
         fourier_n=2,
         fourier_rcond=None,
         fft_filter=None,
+        curvature_on=None,
         padding=False,
         edge_pad_bins=2,
         grid_origin='box',
@@ -370,6 +402,8 @@ class MembraneCurvature(AnalysisBase):
                     f'q_low={self._fft_q_bounds[0]:.6g}, q_high={self._fft_q_bounds[1]:.6g} (rad/A)',
                 )
 
+        self.curvature_on = self._resolve_curvature_on(curvature_on)
+
         # Only checks the first frame. NPT simulations not properly covered here.
         # Warning message if range doesn't cover entire dimensions of simulation box
         for dim_string, dim_range, num in [('x', self.x_range, 0), ('y', self.y_range, 1)]:
@@ -394,6 +428,18 @@ class MembraneCurvature(AnalysisBase):
             )
             warnings.warn(msg)
             logger.warning(msg)
+
+    def _resolve_curvature_on(self, curvature_on):
+        """Resolve curvature calculation mode depending on the value of `curvature_on`."""
+        if curvature_on is None:
+            if self._fft_q_bounds is not None:
+                return self.CurvatureOn.AVERAGE_SURFACE
+            return self.CurvatureOn.PER_FRAME
+        try:
+            return self.CurvatureOn(curvature_on)
+        except ValueError as err:
+            allowed = ', '.join(repr(method.value) for method in self.CurvatureOn)
+            raise ValueError(f'curvature_on must be None or one of ({allowed}), got {curvature_on!r}') from err
 
     def _wrap_xy(self):
         """Wrap x,y into the unit cell and leave z unchanged."""
@@ -485,20 +531,23 @@ class MembraneCurvature(AnalysisBase):
 
     def _conclude(self):
         z_average = np.nanmean(self.results.z_surface, axis=0)
-        # apply filter when enabled
         if self._fft_q_bounds is not None:
             self.results.average_z_surface = apply_fft_filter(z_average, self.dx, self.dy, self._fft_q_bounds)
-            z_filtered = self.results.average_z_surface
-            if self.padding:
-                _, avg_mean, avg_gauss = curvature_from_primary_with_edge_pad(
-                    z_filtered, self.dx, self.dy, self.edge_pad_bins
-                )
-                self.results.average_mean = avg_mean
-                self.results.average_gaussian = avg_gauss
-            else:
-                self.results.average_mean = mean_curvature(z_filtered, self.dx, self.dy)
-                self.results.average_gaussian = gaussian_curvature(z_filtered, self.dx, self.dy)
         else:
             self.results.average_z_surface = z_average
+
+        if self.curvature_on == self.CurvatureOn.PER_FRAME:
             self.results.average_mean = np.nanmean(self.results.mean, axis=0)
             self.results.average_gaussian = np.nanmean(self.results.gaussian, axis=0)
+            return
+
+        z_for_curvature = self.results.average_z_surface
+        if self.padding:
+            _, avg_mean, avg_gauss = curvature_from_primary_with_edge_pad(
+                z_for_curvature, self.dx, self.dy, self.edge_pad_bins
+            )
+            self.results.average_mean = avg_mean
+            self.results.average_gaussian = avg_gauss
+        else:
+            self.results.average_mean = mean_curvature(z_for_curvature, self.dx, self.dy)
+            self.results.average_gaussian = gaussian_curvature(z_for_curvature, self.dx, self.dy)
