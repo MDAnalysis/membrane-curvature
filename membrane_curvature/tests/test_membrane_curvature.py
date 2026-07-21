@@ -1422,7 +1422,10 @@ class TestMembraneCurvature(object):
         assert mc._pad_spec['n_y_bins_pad'] == 7
 
     def test_padding_true_rejected_fourier(self, universe_fourier_defaults):
-        with pytest.raises(ValueError, match=r"padding=True is only valid when surface_method='binning'"):
+        with pytest.raises(
+            ValueError,
+            match=r"padding=True is only valid when surface_method='binning' | surface_method='binning_nearest'",
+        ):
             MembraneCurvature(universe_fourier_defaults, padding=True)
 
     def test_padding_rejects_non_orthorhombic_box(self, universe_dummy_full):

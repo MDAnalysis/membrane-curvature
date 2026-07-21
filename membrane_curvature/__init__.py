@@ -16,6 +16,10 @@ from .binning_surface import (
     derive_surface as derive_surface,
     get_z_surface as get_z_surface,
 )
+from .binning_nearest_surface import (
+    get_z_surface_nearest as get_z_surface_nearest,
+    lipid_center_positions as lipid_center_positions,
+)
 from .curvature import (
     mean_curvature as mean_curvature,
     gaussian_curvature as gaussian_curvature,
