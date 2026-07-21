@@ -3,6 +3,7 @@ Membranecurvature CHANGELOG
 
 ---
 
+* Added ``surface_method='binning_nearest'`` as a new surface method (PR #246)
 * Feature: Added periodic edge padding for the binning surface method (PR #238)
 * Refactored binning surface method to use ``np.add.at`` for improved performance (PR #240)
 * Set ``fft_filter`` to ``None`` as default (PR #239)
