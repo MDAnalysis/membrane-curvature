@@ -264,18 +264,18 @@ class MembraneCurvature(AnalysisBase):
         FOURIER = 'fourier'
 
     class CurvatureOn(StrEnum):
-        """Supported values for ``curvature_on``.
+        r"""Supported values for ``curvature_on``.
 
-        Where to evaluate curvature for ``results.average_mean`` and ``results.average_gaussian``.
+        Where to evaluate curvature for ``results.average_mean`` and ``results.average_gaussian``:
 
-        -  ``'per_frame'`` time-averages the per-frame curvature arrays
-            (:math:`\langle H \rangle`, :math:`\langle K \rangle`).
-
-        - ``'average_surface'`` evaluates curvature on ``results.average_z_surface``
-            (:math:`H(\langle S \rangle)`, :math:`K(\langle S \rangle)`).
-
-        - ``None`` (default) keeps prior behavior: ``'per_frame'`` when ``fft_filter`` is
-            ``None``, and ``'average_surface'`` when ``fft_filter`` is set.
+        ``'per_frame'``
+            Time averages the per-frame curvature arrays (:math:`\langle H \rangle`, :math:`\langle K \rangle`).
+        ``'average_surface'``
+            Evaluates curvature on ``results.average_z_surface`` :math:`H(\langle S \rangle)`,
+            :math:`K(\langle S \rangle)`.
+        ``None`` (default)
+            Keeps prior behavior: ``'per_frame'`` when ``fft_filter`` is ``None``, and
+            ``'average_surface'`` when ``fft_filter`` is set.
         """
 
         PER_FRAME = 'per_frame'
