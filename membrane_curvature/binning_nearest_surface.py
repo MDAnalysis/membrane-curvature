@@ -7,19 +7,32 @@ Binning Nearest Surface
 .. versionadded:: 2.0.0
 
 With ``surface_method='binning_nearest'``, :class:`~membrane_curvature.base.MembraneCurvature`
-derives a surface by assigning each grid point the ``z`` of the nearest lipid in
+builds a grid to derive a surface by assigning each grid point the ``z`` of the nearest lipid in
 the ``xy`` plane following the minimum-image convention. Grid points sit at bin corners
-(``left + i * bin_size``), following the nearest-lipid assignment in g_lomepro
-[CAG2009]_.
+(``left + i * bin_size``). This is the same algorithm used in `g_lomepro`_ to derive surfaces
+from lipid centers as described in [CAG2009]_.
 
 This height field is then used to calculate mean and Gaussian curvature using
 finite differences.
 
+Note that this method is different from the ``binning`` and ``fourier`` methods, which evaluate
+the surface on bin centres. For the same bin counts and box extent, the ``binning_nearest``
+method's maps are offset by half a bin relative to the ``binning`` and ``fourier`` methods.
+
 .. [CAG2009] Vytautas Gapsys, Bert L. de Groot, Rodolfo Briones,
     *Computational analysis of local membrane properties*,
-    Journal of Computer-Aided Molecular Design (2013), doi: `doi:10.1007/s10822-013-9684-0`_.
+    Journal of Computer-Aided Molecular Design (2013), doi: `10.1007/s10822-013-9684-0`_.
 
 .. _`10.1007/s10822-013-9684-0`: https://doi.org/10.1007/s10822-013-9684-0
+
+.. _g_lomepro: https://github.com/vgapsys/g_lomepro
+
+.. warning::
+
+    Running with ``surface_method='binning_nearest'`` does NOT mean that
+    :class:`~membrane_curvature.base.MembraneCurvature` reproduces the results from `g_lomepro`_.
+    The ``binning_nearest`` method reproduces the grid construction and nearest-lipid assignment
+    as implemented in [CAG2009]_.
 
 .. note::
 
@@ -27,13 +40,6 @@ finite differences.
     high-frequency noise from the height field. The filter is applied to the
     height field before calculating curvature. For more details, check the API
     documentation for the :ref:`fft_filtering` module.
-
-
-.. warning::
-
-    ``binning`` and ``fourier`` evaluate the surface on bin centres, so for the
-    same bin counts and box extent their maps are offset by half a bin relative
-    to ``binning_nearest``.
 
 Functions
 ---------

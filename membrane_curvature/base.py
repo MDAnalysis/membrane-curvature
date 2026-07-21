@@ -90,7 +90,7 @@ class MembraneCurvature(AnalysisBase):
         each frame and evaluates Monge-gauge curvature from analytic derivatives
         on the same bin grid (bin centers). ``binning`` derives the surface by creating
         a grid and assigning atoms to bins. It uses :func:`numpy.gradient` for derivatives.
-        ``binning_nearest`` assigns each bin the ``z`` of the nearest lipid in
+        ``binning_nearest`` assigns each grid corner the ``z`` of the nearest lipid in
         ``xy`` (minimum-image).
     grid_origin : {'box', 'lipid_bbox'}, optional
         xy grid extent for ``surface_method='binning_nearest'``. Default ``'box'``
@@ -107,13 +107,13 @@ class MembraneCurvature(AnalysisBase):
         when ``surface_method='fourier'``. The cutoff is interpreted as a
         relative threshold on singular values.
     fft_filter : None, ``'auto'``, or dict, optional
-        Brick-wall filter on the binned height field when ``surface_method='binning'``.
-        Default is ``None``. Pass ``'auto'`` to enable automatic filtering with low-pass set
-        as ``(0, 0.5 * q_Nyq)``. For custom bounds in rad/Å, pass ``{'q': (q_low, q_high)}``.
-        For **average** maps: time-average of ``z_surface``, filter once, then curvature
-        on that filtered height. Per-frame arrays are not FFT-filtered. Ignored for
-        ``surface_method='fourier'``. Compatible with ``padding``.
-        Not allowed with ``grid_origin='lipid_bbox'``.
+        Brick-wall filter on the binned height field for ``surface_method='binning'`` and
+        ``surface_method='binning_nearest'``. Default is ``None``. Pass ``'auto'`` to enable
+        automatic filtering with low-pass set to ``(0, 0.5 * q_Nyq)``. For custom bounds in
+        rad/Å, pass ``{'q': (q_low, q_high)}``. For **average** maps: time-average of
+        ``z_surface``, filter once, then curvature on that filtered height.
+        Per-frame arrays are not FFT-filtered. Ignored for ``surface_method='fourier'``.
+        Compatible with ``padding``. Not allowed with ``grid_origin='lipid_bbox'``.
     padding : bool, optional
         Apply periodic edge padding for binning surface methods. Default ``False``.
         For ``surface_method='binning'``, pads the simulation box using periodic images
@@ -130,7 +130,7 @@ class MembraneCurvature(AnalysisBase):
     ----------
     results.z_surface : ndarray
         Per-frame height field from the atom selection (unfiltered when
-        ``fft_filter`` is used with `surface_method='binning'`).
+        ``fft_filter`` is used with ``binning`` or ``binning_nearest``).
         Shape (`n_frames`, `n_x_bins`, `n_y_bins`).
     results.mean : ndarray
         Per-frame mean curvature associated with the surface.
@@ -139,19 +139,19 @@ class MembraneCurvature(AnalysisBase):
         Per-frame Gaussian curvature associated with the surface.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.average_z_surface : ndarray
-        Average of the array elements in `z_surface`. With binning and
-        ``fft_filter`` enabled, this is the FFT-filtered temporal mean of ``z_surface``,
-        not the mean of per-frame filtered surfaces.
+        Average of the array elements in `z_surface`. With ``binning`` or
+        ``binning_nearest`` and ``fft_filter`` enabled, this is the FFT-filtered
+        temporal mean of ``z_surface``, not the mean of per-frame filtered surfaces.
         Each array has shape (`n_x_bins`, `n_y_bins`)
     results.average_mean : ndarray
-        Average of the array elements in `mean_curvature`. With binning
-        and ``fft_filter`` enabled, curvature of the filtered time-averaged height
-        (not the time average of per-frame ``results.mean``).
+        Average of the array elements in `mean_curvature`. With ``binning`` or
+        ``binning_nearest`` and ``fft_filter`` enabled, curvature of the filtered
+        time-averaged height (not the time average of per-frame ``results.mean``).
         Each array has shape (`n_x_bins`, `n_y_bins`)
     results.average_gaussian : ndarray
-        Average of the array elements in `gaussian_curvature`. With
-        binning and ``fft_filter`` enabled, curvature of the filtered time-averaged
-        height (not the time average of per-frame ``results.gaussian``).
+        Average of the array elements in `gaussian_curvature`. With ``binning`` or
+        ``binning_nearest`` and ``fft_filter`` enabled, curvature of the filtered
+        time-averaged height (not the time average of per-frame ``results.gaussian``).
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
     Raises
