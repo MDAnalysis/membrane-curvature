@@ -658,10 +658,40 @@ After the trajectory is processed, MembraneCurvature stores the averaged maps in
 :attr:`MembraneCurvature.results.average_gaussian` arrays, respectively.
 Each array has shape ``(n_x_bins, n_y_bins)``.
 
-How those averages are built depends on ``fft_filter``:
+4.1 Curvature averaging modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Curvature is a **nonlinear** function of the height field, so the time
+average of per-frame curvatures :math:`\langle H \rangle` is in general
+**not** equal to the curvature evaluated on the time-averaged surface
+:math:`H(\langle S \rangle)`:
+
+.. math:: \langle H \rangle \neq H(\langle S \rangle)
+
+The ``curvature_average`` parameter controls which quantity is stored in
+``results.average_mean`` and ``results.average_gaussian``:
+
+- ``curvature_average='per_frame'`` (default):
+  :math:`\langle H \rangle` — the time average of the per-frame curvature
+  arrays.  This preserves the contribution of instantaneous thermal
+  fluctuations.  When ``fft_filter`` is also active, backward-compatible
+  behaviour computes curvature from the filtered average height instead.
+
+- ``curvature_average='surface'``:
+  :math:`H(\langle S \rangle)` — curvature evaluated on the time-averaged
+  (and optionally FFT-filtered) surface.  By averaging the height field
+  first, thermal fluctuations that cancel over the trajectory are suppressed
+  before curvature is evaluated.
+
+4.2 Interaction with ``fft_filter``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+How those averages are built also depends on ``fft_filter``:
 
 - With the default ``fft_filter=None``, the average maps are time averages of the
-  per-frame arrays ``z_surface``, ``mean``, and ``gaussian``.
+  per-frame arrays ``z_surface``, ``mean``, and ``gaussian`` (when
+  ``curvature_average='per_frame'``), or curvature of the average surface
+  (when ``curvature_average='surface'``).
 - With ``fft_filter`` enabled (``'auto'`` or a manual ``{'q': ...}`` dict),
   MembraneCurvature first time-averages ``z_surface``, applies one brick-wall
   filter to that average, and then computes ``average_mean`` and

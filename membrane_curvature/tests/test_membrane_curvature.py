@@ -1474,3 +1474,125 @@ class TestMembraneCurvature(object):
         assert mc.results.average_gaussian.shape == (3, 3)
         assert np.any(np.isfinite(mc.results.average_mean))
         assert np.any(np.isfinite(mc.results.average_gaussian))
+
+    # --- curvature_average ------------------------------------------------
+
+    def test_default_curvature_average_is_per_frame(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            n_x_bins=3,
+            n_y_bins=3,
+        )
+        assert mc.curvature_average == 'per_frame'
+
+    def test_invalid_curvature_average(self, universe_dummy_full):
+        with pytest.raises(ValueError, match=r'curvature_average must be one of'):
+            MembraneCurvature(
+                universe_dummy_full,
+                select='all',
+                surface_method='binning',
+                fft_filter=None,
+                curvature_average='invalid',
+            )
+
+    def test_curvature_average_surface_binning(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            curvature_average='surface',
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        expected_mean = mean_curvature(mc.results.average_z_surface, mc.dx, mc.dy)
+        expected_gaussian = gaussian_curvature(mc.results.average_z_surface, mc.dx, mc.dy)
+        assert_almost_equal(mc.results.average_mean, expected_mean)
+        assert_almost_equal(mc.results.average_gaussian, expected_gaussian)
+
+    def test_curvature_average_per_frame_differs_from_surface(self, universe_dummy_full):
+        mc_pf = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            curvature_average='per_frame',
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        mc_sf = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            curvature_average='surface',
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        assert_almost_equal(mc_pf.results.average_z_surface, mc_sf.results.average_z_surface)
+        assert mc_pf.results.average_mean.shape == (3, 3)
+        assert mc_sf.results.average_mean.shape == (3, 3)
+
+    def test_curvature_average_surface_with_padding(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            curvature_average='surface',
+            padding=True,
+            edge_pad_bins=1,
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        assert mc.results.average_mean.shape == (3, 3)
+        assert mc.results.average_gaussian.shape == (3, 3)
+        assert np.any(np.isfinite(mc.results.average_mean))
+
+    def test_curvature_average_surface_with_fft_filter(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter='auto',
+            curvature_average='surface',
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        assert mc.results.average_mean.shape == (3, 3)
+        assert mc.results.average_gaussian.shape == (3, 3)
+        assert np.any(np.isfinite(mc.results.average_mean))
+
+    def test_curvature_average_surface_fourier(self, universe_fourier_defaults):
+        mc = MembraneCurvature(
+            universe_fourier_defaults,
+            curvature_average='surface',
+        ).run()
+        assert mc.results.average_mean.shape == (100, 100)
+        assert mc.results.average_gaussian.shape == (100, 100)
+        expected = mean_curvature(mc.results.average_z_surface, mc.dx, mc.dy)
+        assert_almost_equal(mc.results.average_mean, expected)
+
+    def test_curvature_average_explicit_per_frame_matches_default(self, universe_dummy_full):
+        mc_default = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        mc_explicit = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            surface_method='binning',
+            fft_filter=None,
+            curvature_average='per_frame',
+            n_x_bins=3,
+            n_y_bins=3,
+        ).run()
+        assert_almost_equal(mc_default.results.average_mean, mc_explicit.results.average_mean)
+        assert_almost_equal(mc_default.results.average_gaussian, mc_explicit.results.average_gaussian)

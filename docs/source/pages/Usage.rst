@@ -330,6 +330,53 @@ passing a tuple of ``(q_low, q_high)`` in rad/Å to ``fft_filter={'q': (q_low, q
   When using the brick-wall filter, the recommended way is to use the automatic mode
   ``fft_filter='auto'`` with the default low-pass ``(0, 0.5 * q_Nyq)`` from ``dx`` and ``dy``.
 
+.. _curvature-averaging:
+
+2.1.3 Curvature averaging modes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, :attr:`results.average_mean` and :attr:`results.average_gaussian`
+store the time average of per-frame curvatures :math:`\langle H \rangle`.
+Because curvature is a nonlinear function of the height field,
+:math:`\langle H \rangle \neq H(\langle S \rangle)` in general.
+
+The ``curvature_average`` parameter lets you choose which quantity to compute:
+
+- ``curvature_average='per_frame'`` (default): :math:`\langle H \rangle` —
+  the time average of instantaneous curvature maps.
+- ``curvature_average='surface'``: :math:`H(\langle S \rangle)` —
+  curvature evaluated on the time-averaged surface. This suppresses thermal
+  fluctuations that cancel in height but survive in per-frame curvature.
+
+.. code-block:: python
+
+    # Average the curvature computed for each frame.
+    mc_fluct = MembraneCurvature(universe,
+                                 select='name PO4',
+                                 surface_method='binning',
+                                 curvature_average='per_frame').run()
+
+    H_avg = mc_fluct.results.average_mean
+
+    # Compute the curvature of the time-averaged membrane surface.
+    mc_shape = MembraneCurvature(universe,
+                                 select='name PO4',
+                                 surface_method='binning',
+                                 curvature_average='surface').run()
+
+    H_of_avg_surface = mc_shape.results.average_mean
+
+.. note::
+
+   Users can also compute :math:`H(\langle S \rangle)` manually::
+
+       from membrane_curvature.curvature import mean_curvature
+       H_of_S = mean_curvature(mc.results.average_z_surface, mc.dx, mc.dy)
+
+   The ``curvature_average='surface'`` option provides a convenient shortcut
+   that additionally handles ``padding`` and ``fft_filter`` correctly.
+
+
 .. _membrane-protein:
 
 2.2 Membrane-protein systems
