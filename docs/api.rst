@@ -4,7 +4,8 @@ MembraneCurvature's API Documentation
 
 The MembraneCurvature API is built around the :class:`~membrane_curvature.base.MembraneCurvature` class, which loads trajectory and coordinate
 files, and provides routines to derive a surface from atom positions. The resulting surface is then used to compute mean and Gaussian curvature,
-either for individual frames or averaged across multiple frames of an MD trajectory.
+either for individual frames or averaged across multiple frames of an MD trajectory. Average maps can be computed as the time average of per-frame curvatures
+or evaluated directly on the time-averaged surface via the ``curvature_on`` argument.
 
 To use :class:`~membrane_curvature.base.MembraneCurvature`, users must provide at least two inputs: an MDAnalysis
 :class:`~MDAnalysis.core.universe.Universe`, and an :class:`~MDAnalysis.core.groups.AtomGroup` used as the reference to derive the surface and
@@ -92,6 +93,8 @@ The functions in :mod:`~membrane_curvature.curvature` include both analytical an
      from the discrete height field using finite differences.
 
 In both cases, the derivatives are then used to calculate mean and Gaussian curvature using the Monge-gauge formulas.
+
+Average curvature maps (:attr:`~membrane_curvature.base.MembraneCurvature.results.average_mean` and :attr:`~membrane_curvature.base.MembraneCurvature.results.average_gaussian`) can be calculated either as the time average of per-frame curvature maps (``curvature_on='per_frame'``: :math:`\langle H \rangle`, :math:`\langle K \rangle`) or evaluated directly on the time-averaged surface (``curvature_on='average_surface'``: :math:`H(\langle S \rangle)`, :math:`K(\langle S \rangle)`).
 
 .. toctree::
    :maxdepth: 1
