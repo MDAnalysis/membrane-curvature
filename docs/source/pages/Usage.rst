@@ -333,26 +333,12 @@ passing a tuple of ``(q_low, q_high)`` in rad/Å to ``fft_filter={'q': (q_low, q
 
 .. _curvature-on:
 
-2.1.2.3 Evaluating curvature on average surface vs. per-frame (``curvature_on``)
+2.1.2.3 Calculating curvature on average surface vs. per-frame (``curvature_on``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default, :class:`~membrane_curvature.base.MembraneCurvature` computes average mean and Gaussian curvature maps as the time average of per-frame curvature maps:
+By default, :class:`~membrane_curvature.base.MembraneCurvature` computes average mean and Gaussian curvature maps as the time average of per-frame curvature maps.
 
-.. math::
-
-   \langle H \rangle = \frac{1}{N_{\text{frames}}} \sum_{i=1}^{N_{\text{frames}}} H_i, \qquad \langle K \rangle = \frac{1}{N_{\text{frames}}} \sum_{i=1}^{N_{\text{frames}}} K_i
-
-Because curvature is a non-linear function of the surface height field :math:`z(x, y)`, evaluating curvature on the time-averaged surface :math:`H(\langle S \rangle)` produces a mathematically distinct result:
-
-.. math::
-
-   \langle H \rangle \neq H(\langle S \rangle), \qquad \langle K \rangle \neq K(\langle S \rangle)
-
-To explicitly choose where curvature is evaluated for :attr:`~membrane_curvature.base.MembraneCurvature.results.average_mean` and :attr:`~membrane_curvature.base.MembraneCurvature.results.average_gaussian`, pass the ``curvature_on`` parameter:
-
-- ``curvature_on='per_frame'``: Evaluates curvature per frame and time-averages the resulting curvature maps (:math:`\langle H \rangle`, :math:`\langle K \rangle`). This retains the mean contribution of instantaneous thermal fluctuations.
-- ``curvature_on='average_surface'``: Time-averages the surface height field first (:attr:`~membrane_curvature.base.MembraneCurvature.results.average_z_surface`), and evaluates curvature on that average surface (:math:`H(\langle S \rangle)`, :math:`K(\langle S \rangle)`). Thermal fluctuations cancel out over the trajectory, isolating the curvature of the persistent equilibrium membrane shape.
-- ``curvature_on=None`` (default): Resolves to ``'per_frame'`` when ``fft_filter=None``, and ``'average_surface'`` when ``fft_filter`` is enabled.
+To calculate curvature directly on the time-averaged surface, use ``curvature_on='average_surface'``. To calculate curvature for each frame individually and average the resulting maps over time, use ``curvature_on='per_frame'``.
 
 .. code-block:: python
 
@@ -362,29 +348,26 @@ To explicitly choose where curvature is evaluated for :attr:`~membrane_curvature
 
     universe = mda.Universe(Martini_membrane_gro)
 
-    # 1. Time average of per-frame curvatures <H> and <K> (curvature_on='per_frame')
     mc_fluct = MembraneCurvature(universe,
-                                 select='resid 1-225 and name PO4',
-                                 surface_method='binning',
-                                 n_x_bins=8,
-                                 n_y_bins=8,
-                                 curvature_on='per_frame',
-                                 ).run()
+                                         select='resid 1-225 and name PO4',
+                                         surface_method='binning',
+                                         n_x_bins=8,
+                                         n_y_bins=8,
+                                         ).run()
 
-    H_avg = mc_fluct.results.average_mean       # <H>
-    K_avg = mc_fluct.results.average_gaussian   # <K>
+    H_avg = mc_fluct.results.average_mean       
+    K_avg = mc_fluct.results.average_gaussian   
 
-    # 2. Curvature of the time-averaged surface H(<S>) and K(<S>) (curvature_on='average_surface')
-    mc_shape = MembraneCurvature(universe,
-                                 select='resid 1-225 and name PO4',
-                                 surface_method='binning',
-                                 n_x_bins=8,
-                                 n_y_bins=8,
-                                 curvature_on='average_surface',
-                                 ).run()
+   mc_shape = MembraneCurvature(universe,
+                                       select='resid 1-225 and name PO4',
+                                       surface_method='binning',
+                                       n_x_bins=8,
+                                       n_y_bins=8,
+                                       curvature_on='average_surface',
+                                       ).run()
 
-    H_of_S = mc_shape.results.average_mean      # H(<S>)
-    K_of_S = mc_shape.results.average_gaussian  # K(<S>)
+    H_of_S = mc_shape.results.average_mean
+    K_of_S = mc_shape.results.average_gaussian
 
 .. _membrane-protein:
 
