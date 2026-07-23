@@ -348,15 +348,15 @@ To calculate curvature directly on the time-averaged surface, use ``curvature_on
 
     universe = mda.Universe(Martini_membrane_gro)
 
-    mc_fluct = MembraneCurvature(universe,
+    mc_avg_per_frame = MembraneCurvature(universe,
                                          select='resid 1-225 and name PO4',
                                          surface_method='binning',
                                          n_x_bins=8,
                                          n_y_bins=8,
                                          ).run()
 
-    H_avg = mc_fluct.results.average_mean       
-    K_avg = mc_fluct.results.average_gaussian   
+    H_avg = mc_avg_per_frame.results.average_mean       
+    K_avg = mc_avg_per_frame.results.average_gaussian   
 
    mc_shape = MembraneCurvature(universe,
                                        select='resid 1-225 and name PO4',
