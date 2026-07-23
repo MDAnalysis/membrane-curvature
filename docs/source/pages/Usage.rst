@@ -279,21 +279,18 @@ If you want to apply a brick-wall passband to the averaged height field,
 :class:`~membrane_curvature.base.MembraneCurvature` has the parameter ``fft_filter``.
 
 .. warning::
+
   FFT filtering is available only with ``surface_method='binning'``. Per-frame
   ``results.z_surface``, ``results.mean``, and ``results.gaussian`` stay unfiltered.
 
-By default, binning uses ``fft_filter=None`` and no brick-wall filter is applied.
-In that case, ``results.average_z_surface``, ``results.average_mean``, and
-``results.average_gaussian`` are time averages of the per-frame arrays.
+Three filtering modes are available:
 
-When ``fft_filter`` is enabled, by passing ``'auto'`` or a manual dict, the filter
-runs the following steps:
+- ``fft_filter=None`` (default): no FFT filtering applied..
+- ``fft_filter='auto'``: low-pass with pass band ``(0, 0.5 * q_Nyq)``, where
+  :math:`q_{\mathrm{Nyq}} = \min(\pi/\Delta x,\ \pi/\Delta y)` from bin widths ``dx`` and ``dy``.
+- ``fft_filter={'q': (q_low, q_high)}``: custom pass band in the reciprocal space ``(q_low, q_high)`` range in rad/Å (advanced).
 
-1. Per frame: bin atoms into ``results.z_surface`` and store per-frame curvatures.
-   Those per-frame arrays stay unfiltered.
-2. After the trajectory: time-average ``z_surface``, apply one brick-wall filter
-   to that average, then compute ``results.average_mean`` and
-   ``results.average_gaussian`` from the filtered average height.
+Note that the filter runs on the averaged height field, while the per-frame arrays stay unfiltered.
 
 .. tip::
 
@@ -308,27 +305,66 @@ from ``dx`` and ``dy``.
 Running membrane curvature with FFT filtering is done by setting ``fft_filter='auto'``, or by 
 passing a tuple of ``(q_low, q_high)`` in rad/Å to ``fft_filter={'q': (q_low, q_high)}``.
 
+An example of running an analysis with the auto filtering mode (``fft_filter='auto'``) looks like this:
+
 .. code-block:: python
+
+    import MDAnalysis as mda
+    from membrane_curvature.base import MembraneCurvature
+    from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+    universe = mda.Universe(Martini_membrane_gro)
+    fft_auto_upper_leaflet = MembraneCurvature(universe,
+                                               select='resid 1-225 and name PO4',
+                                               surface_method='binning',
+                                               n_x_bins=8,
+                                               n_y_bins=8,
+                                               wrap=True,
+                                               fft_filter='auto').run()
+
+
+Advanced: Tuning the brick-wall filter (``fft_filter={'q': (q_low, q_high)}``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The brick-wall filter can be configured with custom cutoff values by passing a tuple
+``(q_low, q_high)`` in rad/Å as ``fft_filter={'q': (q_low, q_high)}`` to define a custom
+filter band. These values define the filter passband directly in reciprocal space.
+
+To set the pass band relative to the Nyquist magnitude :math:`q_{\mathrm{Nyq}}`, compute
+it with :func:`~membrane_curvature.fft_filtering.nyquist_q` from the bin widths ``dx`` and ``dy``,
+then scale to set the pass band. For example, to set the passband to ``(0, 0.25 * q_Nyq)``:
+
+.. code-block:: python
+
+    import MDAnalysis as mda
+    from membrane_curvature import nyquist_q
+    from membrane_curvature.base import MembraneCurvature
+    from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+    universe = mda.Universe(Martini_membrane_gro)
+    n_x_bins = 8
+    n_y_bins = 8
+    dx = universe.dimensions[0] / n_x_bins
+    dy = universe.dimensions[1] / n_y_bins
+    q_Nyq = nyquist_q(dx, dy)
 
     curvature_upper_leaflet = MembraneCurvature(universe,
                                                 select='resid 1-225 and name PO4',
                                                 surface_method='binning',
-                                                n_x_bins=8,
-                                                n_y_bins=8,
+                                                n_x_bins=n_x_bins,
+                                                n_y_bins=n_y_bins,
                                                 wrap=True,
                                                 fft_filter='auto' # automatic mode
-                                                # fft_filter={'q': (0, 0.5 * q_Nyq)} - manual mode
+                                                # fft_filter={'q': (0, 0.5 * q_Nyq)} for manual mode
                                                 ).run()
+
+You can also obtain the same bin widths from an existing analysis instance as
+``nyquist_q(mc.dx, mc.dy)``.
 
 .. warning::
 
-  As shown above, MembraneCurvature allows custom values for the FFT filtering by passing a
-  tuple of ``(q_low, q_high)`` in rad/Å to ``fft_filter={'q': (q_low, q_high)}``.
-  **However, this is not recommended unless you know what you are doing. Custom values should
-  be used with caution.**
-  
-  When using the brick-wall filter, the recommended way is to use the automatic mode
-  ``fft_filter='auto'`` with the default low-pass ``(0, 0.5 * q_Nyq)`` from ``dx`` and ``dy``.
+  **Custom** ``fft_filter={'q': (q_low, q_high)}`` **values should be used with caution.**
+  We recommend ``fft_filter='auto'`` when enabling the brick-wall filter.
 
 .. _membrane-protein:
 
