@@ -358,7 +358,7 @@ To calculate curvature directly on the time-averaged surface, use ``curvature_on
     H_avg = mc_avg_per_frame.results.average_mean       
     K_avg = mc_avg_per_frame.results.average_gaussian   
 
-   mc_shape = MembraneCurvature(universe,
+    mc_avg_surface = MembraneCurvature(universe,
                                        select='resid 1-225 and name PO4',
                                        surface_method='binning',
                                        n_x_bins=8,
@@ -366,8 +366,8 @@ To calculate curvature directly on the time-averaged surface, use ``curvature_on
                                        curvature_on='average_surface',
                                        ).run()
 
-    H_of_S = mc_shape.results.average_mean
-    K_of_S = mc_shape.results.average_gaussian
+    H_of_S = mc_avg_surface.results.average_mean
+    K_of_S = mc_avg_surface.results.average_gaussian
 
 .. _membrane-protein:
 
