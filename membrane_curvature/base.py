@@ -236,7 +236,7 @@ class MembraneCurvature(AnalysisBase):
     :func:`~matplotlib.pyplot.imshow`.
 
     For specific examples visit the :ref:`usage` page.
-    Check the :ref:`visualization` page for more examples to plot
+    Check the :ref:`visualization` page for examples on how to plot
     MembraneCurvature results.
 
     """
