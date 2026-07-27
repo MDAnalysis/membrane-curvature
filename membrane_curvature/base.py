@@ -7,15 +7,15 @@ MembraneCurvature
 :Copyright: GNU Public License v3
 
 :class:`~membrane_curvature.base.MembraneCurvature` is the main analysis class
-for calculating mean and Gaussian curvature from atom selections.
+for calculating mean and Gaussian curvature from Molecular Dynamics (MD) simulations.
 
-Users must provided at least two parameters: an MDAnalysis :class:`~MDAnalysis.core.universe.Universe`,
-and an :class:`~MDAnalysis.core.groups.AtomGroup` used as the reference to derive the surface and calculate curvature.
+Users must provide at least two inputs: an MDAnalysis :class:`~MDAnalysis.core.universe.Universe`,
+and an :class:`~MDAnalysis.core.groups.AtomGroup` defining the reference atoms used to derive a height surface
+from which curvature is calculated.
 
-:class:`~membrane_curvature.base.MembraneCurvature` derives a height surface from the selected reference atoms using
-either the ``'fourier'`` method (default) or a binning method (``'binning'`` or ``'binning_nearest'``). Curvature is
-then computed according to the mode specified by :attr:`~membrane_curvature.base.MembraneCurvature.curvature_on`.
-The specific calculation depends on these two parameters.
+The height surface is derived from the selected reference atoms using a method specified by
+:attr:`~membrane_curvature.base.MembraneCurvature.surface_method`. This can be either the ``'fourier'`` method
+(default) or one of the binning methods (``'binning'`` or ``'binning_nearest'``).
 
 Depending on the selected ``surface_method`` more parameters are required:
 
@@ -23,7 +23,7 @@ Depending on the selected ``surface_method`` more parameters are required:
 
     Uses ``fourier_m`` and ``fourier_n`` to define the number of Fourier modes. Fourier modes default to 2.
 
-    - Optional parameters include a singular-value cutoff for the Fourier fit via truncated SVD with ``fourier_rcond``.
+    - Optional (advanced) ``fourier_rcond`` uses a singular-value cutoff for the Fourier fit.
 
 
 - **Binning methods**:
@@ -32,11 +32,16 @@ Depending on the selected ``surface_method`` more parameters are required:
 
     - Optional ``padding`` applies a periodic buffer before finite differences to avoid edge artifacts.
       Available for orthorhombic boxes only.
-    - Optional ``wrap`` parameter to control whether to wrap the coordinates exceeding the simulation box dimensions.
-    - Optional ``fft_filter`` applies a brick-wall FFT filter to reduce noisy signals.
+    - Optional ``wrap`` to control whether to wrap the coordinates exceeding the simulation box dimensions.
+    - Optional (adavanced) ``fft_filter`` applies a brick-wall FFT filter to reduce noisy signals.
       Manual and auto modes are available.
 
     This applies for the two binning methods: ``'binning'`` and ``'binning_nearest'``.
+
+Once the height surface is derived, mean and Gaussian curvature are computed according to the mode specified by
+:attr:`~membrane_curvature.base.MembraneCurvature.curvature_on`. With ``'per_frame'``, curvature is calculated
+as the mean of the per-frame curvature values. With ``'average_surface'``, curvature is computed directly
+from the average height surface.
 
 Mean curvature is calculated in units of Å :sup:`-1` and Gaussian curvature in units of Å :sup:`-2`.
 """
@@ -100,16 +105,16 @@ class MembraneCurvature(AnalysisBase):
         Apply periodic edge padding for binning surface methods.
     edge_pad_bins : int, optional, [``2``]
         Buffer width in bins on each side when ``padding=True``.
-    x_range : tuple of (float, float), optional, [``(0, universe.dimensions[0])``]
-        Range of coordinates (min, max) in the $x$ dimension.
-    y_range : tuple of (float, float), optional, [``(0, `universe.dimensions[1]`)``]
-        Range of coordinates (min, max) in the $y$ dimension.
     fft_filter : None, str, or dict, optional, [``None``]
         Mode to apply brick-wall filter on.
     fourier_rcond : float, optional, [``None``]
         Singular-value cutoff for the Fourier fit via truncated SVD.
     grid_origin : {'box', 'lipid_bbox'}, optional, [``'box'``]
         Grid origin for binning nearest surface method.
+    x_range : tuple of (float, float), optional, [``(0, universe.dimensions[0])``]
+        Range of coordinates (min, max) in the $x$ dimension.
+    y_range : tuple of (float, float), optional, [``(0, `universe.dimensions[1]`)``]
+        Range of coordinates (min, max) in the $y$ dimension.
 
     Attributes
     ----------
@@ -163,9 +168,8 @@ class MembraneCurvature(AnalysisBase):
     **Fourier surface method (default)**
 
     ``surface_method='fourier'`` uses ``fourier_m = fourier_n = 2`` as default.
-    Do not modify the default values unless you need shorter wavelengths.
     Since the method performs periodic boundary conditions by itself, ``wrap`` defaults
-    to ``False`` and is not required. Curvature is calculated using a Fourier sum fit to the
+    to ``False`` and it is not required. Curvature is calculated using a Fourier sum fit to the
     atom positions and the derivatives are computed analytically.
 
     **Binning methods**
