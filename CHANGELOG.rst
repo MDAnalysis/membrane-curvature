@@ -2,6 +2,8 @@ Membranecurvature CHANGELOG
 =============================
 
 ---
+
+* Improve API documentation - MembraneCurvature class docstring (PR #258)
 * Expose and document ``nyquist_q`` to set manual FFT filter bounds (PR #241)
 * Enabled ``curvature_on`` kwarg to calculate curvature as ``per-frame`` average or as
   ``'average_surface'``.
