@@ -330,6 +330,45 @@ passing a tuple of ``(q_low, q_high)`` in rad/Å to ``fft_filter={'q': (q_low, q
   When using the brick-wall filter, the recommended way is to use the automatic mode
   ``fft_filter='auto'`` with the default low-pass ``(0, 0.5 * q_Nyq)`` from ``dx`` and ``dy``.
 
+
+.. _curvature-on:
+
+2.1.2.3 Calculating curvature on average surface vs. per-frame (``curvature_on``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, :class:`~membrane_curvature.base.MembraneCurvature` computes average mean and Gaussian curvature maps as the time average of per-frame curvature maps.
+
+To calculate curvature directly on the time-averaged surface, use ``curvature_on='average_surface'``. To calculate curvature for each frame individually and average the resulting maps over time, use ``curvature_on='per_frame'``.
+
+.. code-block:: python
+
+    import MDAnalysis as mda
+    from membrane_curvature.base import MembraneCurvature
+    from MDAnalysis.tests.datafiles import Martini_membrane_gro
+
+    universe = mda.Universe(Martini_membrane_gro)
+
+    mc_avg_per_frame = MembraneCurvature(universe,
+                                         select='resid 1-225 and name PO4',
+                                         surface_method='binning',
+                                         n_x_bins=8,
+                                         n_y_bins=8,
+                                         ).run()
+
+    H_avg = mc_avg_per_frame.results.average_mean       
+    K_avg = mc_avg_per_frame.results.average_gaussian   
+
+    mc_avg_surface = MembraneCurvature(universe,
+                                       select='resid 1-225 and name PO4',
+                                       surface_method='binning',
+                                       n_x_bins=8,
+                                       n_y_bins=8,
+                                       curvature_on='average_surface',
+                                       ).run()
+
+    H_of_S = mc_avg_surface.results.average_mean
+    K_of_S = mc_avg_surface.results.average_gaussian
+
 .. _membrane-protein:
 
 2.2 Membrane-protein systems

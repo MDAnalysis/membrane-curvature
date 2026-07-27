@@ -93,6 +93,8 @@ The functions in :mod:`~membrane_curvature.curvature` include both analytical an
 
 In both cases, the derivatives are then used to calculate mean and Gaussian curvature using the Monge-gauge formulas.
 
+:class:`~membrane_curvature.base.MembraneCurvature` supports two different approaches to obtain average curvature maps: as the time average of per-frame curvatures, or by calculating curvature directly on the time-averaged surface.
+
 .. toctree::
    :maxdepth: 1
    :hidden:

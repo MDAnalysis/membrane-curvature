@@ -365,10 +365,10 @@ trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
     calculating curvature on a **raw trajectory**. Heights in ``z`` are preserved.
   - Set ``wrap=False`` to leave atoms outside the primary cell in ``x`` and ``y``
     out of the bins when you are calculating curvature on:
-      - a trajectory (membrane only or membrane-protein with position restraints) that
-        already **pre-processed periodic boundary conditions**. 
-      - a membrane-protein system that already **pre-processes rotational and translational
-        fit for the protein**.
+    - a trajectory (membrane only or membrane-protein with position restraints) that
+      already **pre-processed periodic boundary conditions**. 
+    - a membrane-protein system that already **pre-processes rotational and translational
+      fit for the protein**.
   - With ``padding=True``, periodic images in ``x`` and ``y`` are tiled into the
     buffer even if ``wrap=False``, so the usual ``wrap == False`` warning is not
     emitted.
@@ -658,15 +658,45 @@ After the trajectory is processed, MembraneCurvature stores the averaged maps in
 :attr:`MembraneCurvature.results.average_gaussian` arrays, respectively.
 Each array has shape ``(n_x_bins, n_y_bins)``.
 
-How those averages are built depends on ``fft_filter``:
+How those averages are built depends on ``curvature_on`` and ``fft_filter``:
 
-- With the default ``fft_filter=None``, the average maps are time averages of the
-  per-frame arrays ``z_surface``, ``mean``, and ``gaussian``.
-- With ``fft_filter`` enabled (``'auto'`` or a manual ``{'q': ...}`` dict),
-  MembraneCurvature first time-averages ``z_surface``, applies one brick-wall
-  filter to that average, and then computes ``average_mean`` and
-  ``average_gaussian`` from the filtered average height.
-  The per-frame arrays stay unfiltered.
+- With ``curvature_on='per_frame'``, the average curvature maps are the time average of the per-frame curvatures.
+- With ``curvature_on='average_surface'``, the average curvature maps are calculated directly on the time-averaged surface height field.
+
+When ``curvature_on=None`` (the default), curvature is calculated on the time-averaged surface if an FFT filter is specified, or as a per-frame average if no filter is used.
+
+4.1 Calculating curvature from average surface vs. average of per-frame curvatures
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Per-frame time averaging calculates curvature maps for each frame :math:`H_i` and :math:`K_i` before averaging across frames:
+
+.. math::
+
+   \langle H \rangle = \frac{1}{N_{\text{frames}}} \sum_{i=1}^{N_{\text{frames}}} H_i, \qquad \langle K \rangle = \frac{1}{N_{\text{frames}}} \sum_{i=1}^{N_{\text{frames}}} K_i
+
+Because curvature is a non-linear function of the surface height field :math:`z(x, y)`,
+deriving curvature from a time-averaged surface is different from calculating curvature by time averaging curvature maps on every frame:
+
+.. math::
+
+   \langle H \rangle \neq H(\langle S \rangle), \qquad \langle K \rangle \neq K(\langle S \rangle)
+
+where :math:`\langle H \rangle` and :math:`\langle K \rangle` are the time-averaged per-frame curvatures, while :math:`H(\langle S \rangle)` and :math:`K(\langle S \rangle)` represent the mean and Gaussian curvatures calculated directly on the time-averaged surface height field.
+
+The two approaches capture distinct physical quantities:
+
+- **Per-frame average**: Calculates curvature for each frame individually and then averages over time. This preserves the mean contribution of instantaneous thermal fluctuations.
+- **Average surface curvature**: Time-averages the surface height field :math:`z(x,y)` over the trajectory first (allowing uncorrelated thermal fluctuations to cancel out), and then calculates curvature on the resulting smooth time-averaged surface.
+
+4.2 Curvature calculation mode (``curvature_on``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The calculation of :attr:`~membrane_curvature.base.MembraneCurvature.results.average_mean` and :attr:`~membrane_curvature.base.MembraneCurvature.results.average_gaussian` is controlled by the ``curvature_on`` parameter:
+
+- ``curvature_on='per_frame'``: Calculates average curvatures as the temporal mean of per-frame curvature maps (``results.mean`` and ``results.gaussian``).
+- ``curvature_on='average_surface'``: Calculates average curvatures on ``results.average_z_surface``.
+
+Note that with the brick-wall FFT filter, curvature is calculated on the time-averaged surface. Without it, the default is a per-frame average.
 
 |avg_frames|
 
