@@ -7,29 +7,41 @@ MembraneCurvature
 :Copyright: GNU Public License v3
 
 :class:`~membrane_curvature.base.MembraneCurvature` is the main analysis class
-for calculating mean and Gaussian curvature from atom selections.
+for calculating mean and Gaussian curvature from Molecular Dynamics (MD) simulations.
 
-It derives a height surface from the selected reference atoms using either the
-``"fourier"`` method (default) or binning methods (``"binning"`` or ``"binning_nearest"``),
-method, then evaluates curvature on the resulting surface. The specific operations used to derive
-the surface depend on the method selected by the user in the parameter
-:attr:`~membrane_curvature.base.MembraneCurvature.surface_method`.
+Users must provide at least two inputs: an MDAnalysis :class:`~MDAnalysis.core.universe.Universe`,
+and an :class:`~MDAnalysis.core.groups.AtomGroup` defining the reference atoms used to derive a height surface
+from which curvature is calculated.
 
-The set of required parameters to run :class:`~membrane_curvature.base.MembraneCurvature` varies depending
-on the selected ``surface_method``:
+The height surface is derived from the selected reference atoms using a method specified by
+:attr:`~membrane_curvature.base.MembraneCurvature.surface_method`. This can be either the ``'fourier'`` method
+(default) or one of the binning methods (``'binning'`` or ``'binning_nearest'``).
+
+Depending on the selected ``surface_method`` more parameters are required:
 
 - **Fourier method**:
 
-    Required parameters are the maximum Fourier mode indices ``fourier_m`` and ``fourier_n`` (Default: ``2``).
-    Optional parameters include a singular-value cutoff for the Fourier fit via truncated SVD with ``fourier_rcond``.
+    Uses ``fourier_m`` and ``fourier_n`` to define the number of Fourier modes. Fourier modes default to 2.
 
-- **Binning method**:
+    - Optional (advanced) ``fourier_rcond`` uses a singular-value cutoff for the Fourier fit.
 
-    Required parameters are the number of bins in the x and y directions ``n_x_bins`` and ``n_y_bins``.
-    Optional ``wrap`` parameter to control whether to wrap the coordinates exceeding the simulation box dimensions.
-    Optional ``padding`` applies a periodic buffer before finite differences (in orthorhombic boxes only);
-    ``edge_pad_bins`` sets the buffer width in bins (default ``2``). Also available for
-    ``surface_method='binning_nearest'`` (wrap-pad of the nearest-lipid height field).
+
+- **Binning methods**:
+
+    Required parameters are the number of bins in the $x$ and $y$ directions ``n_x_bins`` and ``n_y_bins``.
+
+    - Optional ``padding`` applies a periodic buffer before finite differences to avoid edge artifacts.
+      Available for orthorhombic boxes only.
+    - Optional ``wrap`` to control whether to wrap the coordinates exceeding the simulation box dimensions.
+    - Optional (adavanced) ``fft_filter`` applies a brick-wall FFT filter to reduce noisy signals.
+      Manual and auto modes are available.
+
+    This applies for the two binning methods: ``'binning'`` and ``'binning_nearest'``.
+
+Once the height surface is derived, mean and Gaussian curvature are computed according to the mode specified by
+:attr:`~membrane_curvature.base.MembraneCurvature.curvature_on`. With ``'per_frame'``, curvature is calculated
+as the mean of the per-frame curvature values. With ``'average_surface'``, curvature is computed directly
+from the average height surface.
 
 Mean curvature is calculated in units of Å :sup:`-1` and Gaussian curvature in units of Å :sup:`-2`.
 """
@@ -72,115 +84,83 @@ class MembraneCurvature(AnalysisBase):
     select : str or iterable of str, optional.
         The selection string of an atom selection to use as a
         reference to derive a surface.
-    wrap : bool or None, optional
-        Wrap ``x``/``y`` into the unit cell for ``surface_method='binning'``
-        but leave ``z`` unchanged. Defaults to ``True`` for binning and must be
-        omitted or explicitly set to ``False`` for ``surface_method='fourier'``.
-        With ``padding=True``, lateral PBC are also handled by image tiling.
-    n_x_bins : int, optional, default: 100
-        Number of bins in grid in the x dimension.
-    n_y_bins : int, optional, default: 100
-        Number of bins in grid in the y dimension.
-    x_range : tuple of (float, float), optional, default: (0, `universe.dimensions[0]`)
-        Range of coordinates (min, max) in the x dimension.
-    y_range : tuple of (float, float), optional, default: (0, `universe.dimensions[1]`)
-        Range of coordinates (min, max) in the y dimension.
-    surface_method : {'binning', 'binning_nearest', 'fourier'}, optional
-        ``fourier`` (default) fits a periodic Fourier sum to atom positions at
-        each frame and evaluates Monge-gauge curvature from analytic derivatives
-        on the same bin grid (bin centers). ``binning`` derives the surface by creating
-        a grid and assigning atoms to bins. It uses :func:`numpy.gradient` for derivatives.
-        ``binning_nearest`` assigns each grid corner the ``z`` of the nearest lipid in
-        ``xy`` (minimum-image).
-    grid_origin : {'box', 'lipid_bbox'}, optional
-        xy grid extent for ``surface_method='binning_nearest'``. Default ``'box'``
-        (``[0, lx]``, ``[0, ly]``).
-    fourier_m : int, optional
-        Maximum Fourier mode index in ``x`` when ``surface_method='fourier'``.
-        Default ``2``.
-    fourier_n : int, optional
-        Maximum Fourier mode index in ``y`` when ``surface_method='fourier'``.
-        Default ``2``.
-    fourier_rcond : float, optional
-        Singular-value cutoff for the Fourier fit via truncated SVD
-        with :func:`~membrane_curvature.fourier_surface._solve_design_least_squares_svd`
-        when ``surface_method='fourier'``. The cutoff is interpreted as a
-        relative threshold on singular values.
-    fft_filter : None, ``'auto'``, or dict, optional
-        Brick-wall filter on the binned height field for ``surface_method='binning'`` and
-        ``surface_method='binning_nearest'``. Default is ``None``. Pass ``'auto'`` to enable
-        automatic filtering with low-pass set to ``(0, 0.5 * q_Nyq)``. For custom bounds in
-        rad/Å, pass ``{'q': (q_low, q_high)}``. For **average** maps: time-average of
-        ``z_surface``, filter once, then curvature on that filtered height when
-        ``curvature_on`` resolves to ``'average_surface'``.
-        Per-frame arrays are not FFT-filtered. Ignored for ``surface_method='fourier'``.
-        Compatible with ``padding``. Not allowed with ``grid_origin='lipid_bbox'``.
-    curvature_on : str, optional, default: None
-        Where to evaluate curvature for ``results.average_mean`` and ``results.average_gaussian``.
-        See :class:`CurvatureOn` for more details.
-    padding : bool, optional
-        Apply periodic edge padding for binning surface methods. Default ``False``.
-        For ``surface_method='binning'``, pads the simulation box using periodic images
-        in ``x`` and ``y``, computes surface and curvature on the padded grid, then
-        clips back to ``(n_x_bins, n_y_bins)``. For ``surface_method='binning_nearest'``,
-        builds the nearest-lipid height field on the primary grid and evaluates curvature
-        with a wrap-pad buffer of ``edge_pad_bins``. Requires an orthorhombic box.
-        Invalid with ``surface_method='fourier'`` and with ``grid_origin='lipid_bbox'``.
-    edge_pad_bins : int, optional
-        Buffer width in bins on each side when ``padding=True`` (default ``2``).
-        Ignored when ``padding=False``.
+    surface_method : {'binning', 'binning_nearest', 'fourier'}, optional, [``'fourier'``]
+        Method to derive the height surface.
+        See :class:`~membrane_curvature.base.MembraneCurvature.SurfaceMethod`
+        for more details.
+    fourier_m : int, optional, [``2``]
+        Maximum Fourier mode index in $x$ when ``surface_method='fourier'``.
+    fourier_n : int, optional, [``2``]
+        Maximum Fourier mode index in $y$ when ``surface_method='fourier'``.
+    wrap : bool or None, optional, [``True``]
+        Wrap $x$ and $y$ of the atom selection into the unit cell.
+    n_x_bins : int, optional, [``100``]
+        Number of bins in grid in the $x$ dimension.
+    n_y_bins : int, optional, [``100``]
+        Number of bins in grid in the $y$ dimension.
+    curvature_on : {None, 'per_frame', 'average'}, optional, [``None``]
+        Mode to calculate curvature on. ``None`` runs as 'per_frame'.
+        See :class:`~membrane_curvature.base.MembraneCurvature.CurvatureOn` for more details.
+    padding : bool, optional, [``False``]
+        Apply periodic edge padding for binning surface methods.
+    edge_pad_bins : int, optional, [``2``]
+        Buffer width in bins on each side when ``padding=True``.
+    fft_filter : None, str, or dict, optional, [``None``]
+        Mode to apply brick-wall filter on.
+    fourier_rcond : float, optional, [``None``]
+        Singular-value cutoff for the Fourier fit via truncated SVD.
+    grid_origin : {'box', 'lipid_bbox'}, optional, [``'box'``]
+        Grid origin for binning nearest surface method.
+    x_range : tuple of (float, float), optional, [``(0, universe.dimensions[0])``]
+        Range of coordinates (min, max) in the $x$ dimension.
+    y_range : tuple of (float, float), optional, [``(0, `universe.dimensions[1]`)``]
+        Range of coordinates (min, max) in the $y$ dimension.
 
     Attributes
     ----------
     results.z_surface : ndarray
-        Per-frame height field from the atom selection (unfiltered when
-        ``fft_filter`` is used with ``binning`` or ``binning_nearest``).
-        Shape (`n_frames`, `n_x_bins`, `n_y_bins`).
+        Surface derived from the atom selection in each frame.
+        Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`).
     results.mean : ndarray
-        Per-frame mean curvature associated with the surface.
+        Mean curvature associated with the surface. Derived on a per-frame basis.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.gaussian : ndarray
-        Per-frame Gaussian curvature associated with the surface.
+        Gaussian curvature associated with the surface. Derived on a per-frame basis.
         Array of shape (`n_frames`, `n_x_bins`, `n_y_bins`)
     results.average_z_surface : ndarray
-        Average of the array elements in `z_surface`. With ``binning`` or
-        ``binning_nearest`` and ``fft_filter`` enabled, this is the FFT-filtered
-        temporal mean of ``z_surface``, not the mean of per-frame filtered surfaces.
+        Average of the array elements in `z_surface`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
     results.average_mean : ndarray
-        Mean curvature map for analysis and plotting.
-        With ``curvature_on='per_frame'``, the time average of ``results.mean``.
-        With ``curvature_on='average_surface'``, mean curvature of
-        ``results.average_z_surface``.
+        Average of the array elements in `mean_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
-    results.average_gaussian : ndarray
-        Gaussian curvature map for analysis and plotting.
-        With ``curvature_on='per_frame'``, the time average of ``results.gaussian``.
-        With ``curvature_on='average_surface'``, Gaussian curvature of
-        ``results.average_z_surface``.
+    results.average_gaussian: ndarray
+        Average of the array elements in `gaussian_curvature`.
         Each array has shape (`n_x_bins`, `n_y_bins`)
 
     Raises
     ------
     ValueError
-        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
-        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`),
-        if the selection is empty, if ``surface_method`` is not one of
-        ``'binning'``, ``'binning_nearest'``, or ``'fourier'``, or, when
-        ``surface_method='fourier'``,
-        if ``fourier_m`` / ``fourier_n`` are negative or the selection has fewer
-        atoms than Fourier parameters, if ``wrap=True`` with
-        ``surface_method='fourier'``, if a manual ``fft_filter`` dict is passed
-        with ``surface_method='fourier'``, if ``padding=True`` with
-        ``surface_method='fourier'``, if ``padding=True`` on a
-        non-orthorhombic box, if ``edge_pad_bins`` is not an integer
-        ``>= 1`` when ``padding=True``, or if ``curvature_on`` is not
-        ``None``, ``'per_frame'``, or ``'average_surface'``.
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer.
+        If the atom selection is empty.
+        If ``surface_method`` is not one of ``'binning'``, ``'binning_nearest'``,
+        or ``'fourier'``.
+        If ``curvature_on`` is not ``None``, ``'per_frame'``, or ``'average_surface'``.
+        If ``surface_method='fourier'``, when: ``fourier_m``, ``fourier_n`` are negative
+        or the selection has fewer atoms than Fourier parameters, ``wrap=True``, or
+        ``fft_filter`` is passed.
+        If ``padding=True`` with ``surface_method='fourier'``, or passed with a
+        non-orthorhombic box, or with ``edge_pad_bins`` when it is not an integer ``>= 1``.
 
     See also
     --------
+    :class:`~MembraneCurvature.padding`
+        Apply periodic edge padding for binning surface methods.
+
     :class:`~MDAnalysis.transformations.wrap.wrap`
         Wrap/unwrap the atoms of a given AtomGroup in the unit cell.
+
+    :class:`~MembraneCurvature.fft_filtering`
+        Apply a brick-wall filter to the arrays.
 
     Notes
     -----
@@ -188,46 +168,37 @@ class MembraneCurvature(AnalysisBase):
     **Fourier surface method (default)**
 
     ``surface_method='fourier'`` uses ``fourier_m = fourier_n = 2`` as default.
-    Do not modify the default values unless you need shorter wavelengths.
     Since the method performs periodic boundary conditions by itself, ``wrap`` defaults
-    to ``False`` and is not required.
+    to ``False`` and it is not required. Curvature is calculated using a Fourier sum fit to the
+    atom positions and the derivatives are computed analytically.
 
-    **Binning mode**
+    **Binning methods**
 
-    ``surface_method='binning'`` runs with ``wrap`` set to ``True`` by default:
-    only ``x`` and ``y`` are wrapped into the unit cell while ``z`` remains unchanged.
-    Omit ``wrap`` or pass ``wrap=True`` for raw trajectories so atoms outside the unit
-    cell in ``x``/``y`` are included in the bins. Run with ``wrap=False`` for trajectories
-    already wrapped into the primary cell, or after rotational / translational fitting.
-    For membrane-protein systems without position restraints, preprocessing should include
-    rotational and translational fitting around the protein.
+    MembraneCurvature  supports two different binning methods: ``'binning'`` and ``'binning_nearest'``.
 
-    Padding is only available for orthorhombic boxes. With ``padding=True`` and
-    ``surface_method='binning'``, finite differences run on a padded height field built
-    from periodic atom images, then the buffer of ``edge_pad_bins`` on each side is
-    clipped so stored arrays keep the primary grid shape. With
-    ``surface_method='binning_nearest'``, the nearest-lipid height is built on the
-    primary grid and curvature uses a wrap-pad buffer of the same width.
-    The default ``edge_pad_bins=2``, which uses two bins on each side for padding, is enough to
-    reduce finite difference artifacts at edges and corners.
+    .. note::
 
-    For any method of choice, the derived surface and calculated curvatures are available
-    in the :attr:`results` attributes.
+        The two binning methods differ in how they assign the $z$ coordinate to the bins:
 
-    The attribute :attr:`~MembraneCurvature.results.average_z_surface` contains
-    the time-averaged derived surface. When ``fft_filter`` is set, the brick-wall filter
-    is applied to that averaged surface.
+        ``'binning'`` assigns atoms to bins and stores the mean $z$ coordinate at each
+        bin center. Empty bins are ``NaN``.
 
-    The attributes :attr:`~MembraneCurvature.results.average_mean` and
-    :attr:`~MembraneCurvature.results.average_gaussian` contain mean and
-    Gaussian curvature maps for analysis and plotting. With
-    ``curvature_on='per_frame'`` the arrays are time averages of the per-frame
-    curvature arrays. With ``curvature_on='average_surface'`` the arrays are curvatures
-    of ``average_z_surface`` (including after ``fft_filter`` when that is set).
-    Leaving ``curvature_on=None`` preserves the previous defaults:
-    ``'per_frame'`` when ``fft_filter`` is ``None``, and ``'average_surface'`` when
-    ``fft_filter`` is set.
+        ``'binning_nearest'`` assigns each bin corner the $z$ coordinate of the
+        nearest lipid in the $xy$ plane. For the same bin counts, its maps are offset
+        by half a bin relative to ``'binning'``.
 
+    Both methods run with ``wrap`` set to ``True`` by default. Curvature is calculated using finite
+    differences, and the derivatives are computed via numerical differentiation.
+
+    Two optional functionalities are supported by both binning methods:
+
+    - **Padding** (``padding``, ``edge_pad_bins``): Only available for orthorhombic boxes. Creates a padded height
+      field built from periodic atom images, then the buffer of ``edge_pad_bins`` on each side is clipped so stored
+      arrays keep the primary grid shape.
+
+    - **Brick-wall filter** (``fft_filter``): Applies a brick-wall filter to the height field to reduce noisy signals.
+      Available in manual and auto modes. The auto mode uses a heuristic to determine the filter parameters based on the
+      box dimensions and the number of bins. The manual mode allows the user to specify the filter values.
 
 
     Example
@@ -238,44 +209,75 @@ class MembraneCurvature(AnalysisBase):
         from membrane_curvature.base import MembraneCurvature
 
         u = mda.Universe(coordinates, trajectory)
-        mc = MembraneCurvature(u).run()
+        mc = MembraneCurvature(u, select='<atomgroup>').run()
 
         surface =  mc.results.average_z_surface
         mean_curvature =  mc.results.average_mean
         gaussian_curvature = mc.results.average_gaussian
 
-    The respective 2D curvature plots can be obtained using the `matplotlib`
+    **MembraneCurvature.results**
+
+    For any method of choice, the derived surface and calculated curvatures are available
+    in the :attr:`results` attributes. The attributes :attr:`~MembraneCurvature.results.average_mean` and
+    :attr:`~MembraneCurvature.results.average_gaussian` contain mean and
+    Gaussian curvature outputs.
+
+    .. warning::
+
+        With ``curvature_on='per_frame'``, the attributes ``results.average_mean`` and
+        ``results.average_gaussian`` contain averages of curvature calculated in every frame.
+
+        With ``curvature_on='average_surface'``,  the attributes ``results.average_mean`` and
+        ``results.average_gaussian`` contain the mean and Gaussian curvatures calculated from
+        the average surface.
+
+    The respective 2D curvature plots can be obtained using the :mod:`matplotlib`
     package for data visualization via :func:`~matplotlib.pyplot.contourf` or
     :func:`~matplotlib.pyplot.imshow`.
 
     For specific examples visit the :ref:`usage` page.
-    Check the :ref:`visualization` page for more examples to plot
-    MembraneCurvature results using :func:`~matplotlib.pyplot.contourf`
-    and :func:`~matplotlib.pyplot.imshow`.
-
+    Check the :ref:`visualization` page for examples on how to plot
+    MembraneCurvature results.
 
     """
 
     class SurfaceMethod(StrEnum):
-        """Supported values for ``surface_method``."""
+        """Supported values for ``surface_method``.
+
+        - ``'binning'``:
+            Derives the surface by creating a grid and assigning atoms to bins.
+            Calculates curvature using finite differences.
+            See :mod:`~membrane_curvature.binning_surface` for more details.
+
+
+        - ``'binning_nearest'``:
+            Assigns each grid corner the $z$ coordinate of the nearest lipid in a cell.
+            Calculates curvature using finite differences.
+            See :mod:`~membrane_curvature.binning_nearest_surface` for more details.
+
+        - ``'fourier'``:
+            Fits a periodic Fourier sum to atom positions at each frame and builds
+            a design matrix for the Fourier coefficients. Calculates curvature using
+            analytic derivatives.
+            See :mod:`~membrane_curvature.fourier_surface` for more details.
+
+        """
 
         BINNING = 'binning'
         BINNING_NEAREST = 'binning_nearest'
         FOURIER = 'fourier'
 
     class CurvatureOn(StrEnum):
-        r"""Supported values for ``curvature_on``.
-
-        Where to evaluate curvature for ``results.average_mean`` and ``results.average_gaussian``:
+        r"""Supported values for ``curvature_on``. Where to evaluate curvature.
 
         ``'per_frame'``
-            Time averages the per-frame curvature arrays (:math:`\langle H \rangle`, :math:`\langle K \rangle`).
+            Computes curvature as the mean of the per-frame curvature arrays:
+            :math:`\langle H \rangle`, :math:`\langle K \rangle`.
         ``'average_surface'``
-            Evaluates curvature on ``results.average_z_surface`` :math:`H(\langle S \rangle)`,
+            Computes curvature from the average surface: :math:`H(\langle S \rangle)`,
             :math:`K(\langle S \rangle)`.
         ``None`` (default)
-            Keeps prior behavior: ``'per_frame'`` when ``fft_filter`` is ``None``, and
-            ``'average_surface'`` when ``fft_filter`` is set.
+            Equivalent to ``'per_frame'``. Keeps behaviour from v1.1.2 and prior.
         """
 
         PER_FRAME = 'per_frame'
