@@ -1,31 +1,55 @@
 r"""
 --------------------
-Edge padding
+Padding
 --------------------
 
 .. versionadded:: 2.0.0
 
-Periodic edge padding for the binning surface method.
+Periodic edge padding to avoid finite difference artifacts.
 
-.. warning::
+.. important::
 
-    This feature is optional and only available for ``surface_method='binning'``
-    and **orthorhombic** boxes (angles 90°).
+    This feature is optional and available for binning methods: ``surface_method='binning'``
+    and ``surface_method='binning_nearest'`` and valid for **orthorhombic** boxes (angles 90°) only.
 
-Periodic images are tiled around the primary ``xy`` simulation box, creating a buffer
-region around the grid set by binning, with width ``edge_pad_bins``. This reduces
-finite difference edge artifacts from :func:`numpy.gradient`, which are often strongest
-in Gaussian curvature due to second derivatives.
+This module create periodic images tiled around the primary ``xy`` simulation box, creating a
+buffer region around the grid built with a binning surface method. The buffer region is built
+with a width ``edge_pad_bins``. Applying padding reduces finite differences artifacts
+at the edge of the grid, which are often strongest in Gaussian curvature due to second derivatives
+calculated via :func:`numpy.gradient`.
 
-Mean and Gaussian curvature are computed on the padded grid and the buffer region is
-clipped back to the primary grid of size ``n_x_bins`` x ``n_y_bins``.
+Mean and Gaussian curvature are computed on the padded grid. After calculating curvature, the buffer
+region is clipped back to the primary grid. The output array has size ``n_x_bins`` x ``n_y_bins``.
 
 .. note::
 
     Typically, a buffer of 2 to 3 bins is sufficient to fix finite difference
     artifacts at edges and corners from :func:`numpy.gradient` for second derivatives
-    in the:ref:`gaussian_curvature`.
+    in the :ref:`gaussian_curvature`.
 
+
+Usage
+------
+
+Users can control padding with two different parameters: ``padding`` and ``edge_pad_bins``.
+
+- **Disabled (default for binning):** ``padding=False``
+
+  No padding is applied to the primary grid. Edge artifacts are likely present in the curvature array,
+  particularly in Gaussian curvature.
+
+- **Enabled:** ``padding=True``
+
+  Padding is applied to the primary grid. The buffer region is built with a width 3 bins beyond each
+  edge.
+
+- **Manual:** ```padding=True`` with ``edge_pad_bins: n``
+
+  Padding is applied to the grid built with a binning surface method. The buffer region is built
+  with a width :math:`n` bins beyond each edge.
+
+Functions
+----------
 """
 
 import numpy as np
