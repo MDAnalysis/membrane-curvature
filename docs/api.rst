@@ -62,8 +62,6 @@ reference atoms:
    api/surface_methods/fourier_surface
    api/surface_methods/binning_surface
    api/surface_methods/binning_nearest_surface
-   api/surface_methods/padding
-   api/surface_methods/fft_filtering
 
 - :mod:`~membrane_curvature.fourier_surface` fits a periodic 2D Fourier sum to atom heights by linear least squares fit at each frame,
   evaluates the fitted surface, and obtains partial derivatives analytically from that sum.
@@ -74,9 +72,19 @@ reference atoms:
 - :mod:`~membrane_curvature.binning_nearest_surface` assigns each grid corner the ``z`` of the nearest lipid in the ``xy`` plane
   (minimum-image distances) and estimates partial derivatives with finite differences using the physical bin spacing.
 
+Optional
+--------
+
 Binning methods support a :mod:`~membrane_curvature.padding` option for orthorhombic boxes, which reduces finite difference artifacts, and a
-a brick-wall filter to remove high-frequency noise from the height field. The filter is applied to the height field before calculating curvature.
+brick-wall filter to remove high-frequency noise from the height field. The filter is applied to the height field before calculating curvature.
 :mod:`~membrane_curvature.fft_filtering` provides the functions to apply the filter and to resolve the pass-band limits.
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   api/optional/padding
+   api/optional/fft_filtering
 
 Curvature
 =========
