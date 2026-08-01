@@ -190,7 +190,7 @@ def resolve_fft_filter(fft_filter, dx, dy):
 
 
 def _auto_q_bounds(dx, dy):
-    """
+    r"""
     Calculates the default tuple ``(q_low, q_high)`` for ``fft_filter='auto'``.
     Keeps modes with :math:`|q| \leq 0.5\, q_{\mathrm{Nyq}}` (low-pass).
 
