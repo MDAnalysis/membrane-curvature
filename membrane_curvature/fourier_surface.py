@@ -6,103 +6,33 @@ Fourier Surface
 
 .. versionadded:: 2.0.0
 
-With ``surface_method='fourier'``, :class:`~membrane_curvature.base.MembraneCurvature` fits a smooth periodic
-surface to atomistic or bead height data using a truncated 2D Fourier series. The Fourier method comprises six steps:
+With ``surface_method='fourier'``, :class:`~membrane_curvature.base.MembraneCurvature` derives a surface by
+fitting a truncated 2D Fourier series to the :math:`z` coordinates of the reference atoms. The truncation is
+set by the maximum mode indices along :math:`x` and :math:`y` with ``fourier_m`` and ``fourier_n``.
 
-1. Choose a non-redundant set of Fourier modes:
-    - :func:`fourier_mode_list`
-    - :func:`n_fourier_parameters`
-2. Compute the corresponding wave numbers:
-    - :func:`_compute_wavevector`
-3. Build a design matrix from cosine and sine basis functions
-    - :func:`_build_fourier_matrix`
-4. Solve the least-squares problem for the Fourier coefficients
-    - :func:`_fourier_fit_from_atoms`
-    - :func:`_solve_design_least_squares_svd`
-    - :func:`_unpack_coefficients`
-5. Reconstruct the continuous surface on a grid:
-    - :func:`_bin_centre_mesh`
-    - :func:`_eval_fourier_surface` with ``derivatives=False``
-6. Evaluate partial derivatives analytically:
-    - :func:`_eval_fourier_surface` with ``derivatives=True``, or
-    - :func:`fourier_height_derivatives_from_atoms`
+The fitted parameters are the Fourier coefficients: the mean term :math:`A_{00}`, and a cosine and a sine
+amplitude, :math:`A_{mn}` and :math:`B_{mn}`, for each retained mode. ``MembraneCurvature`` evaluates the
+basis functions at the atom positions to build a design matrix, with one row per atom and one column per
+coefficient, and solves the resulting linear least squares system for the coefficients.
 
+The fitted series is evaluated at the centre of every bin on a regular ``n_x_bins x n_y_bins`` grid to form the
+height field. Because a Fourier series is a continuous function, every bin gets a value regardless of how many
+atoms fall inside it, hence avoiding ``NaN`` values. Mean and Gaussian curvature are then calculated on the same
+grid.
 
-Public entry points :func:`fourier_height_from_atoms` and
-:func:`fourier_height_derivatives_from_atoms` chain these steps on bin centres.
+.. note::
 
-Note that the use of a non-redundant set of Fourier modes is justified by the
-conjugate symmetry of Fourier coefficients for real-valued functions:
+    The Fourier method computes partial derivatives analytically from the fitted series.
+    Unlike the binning methods, it does not rely on finite differences and therefore avoids artifacts
+    at the edges of the box.
 
-.. math::
+.. warning::
 
-    F(-m, -n) = F(m, n)^*
+    Use ``fourier_m = fourier_n = 2``, the default values, unless you have a clear reason to resolve
+    shorter wavelengths.
 
-We therefore keep only the non-redundant half of the mode grid. The :math:`m = 0`
-row has the additional symmetry
-
-.. math::
-
-    F(0, -n) = F(0, n)^*
-
-so we keep only :math:`n \ge 0` there and store the mean term :math:`A_{00}`
-separately.
-
-A diagram of a non-redundant Fourier mode grid looks like::
-
-    n
-    ^
-    N  |  ✓  |  ✓  ✓  ✓ ... ✓  |
-    :  |  ✓  |  ✓  ✓  ✓ ... ✓  |
-    2  |  ✓  |  ✓  ✓  ✓ ... ✓  |
-    1  |  ✓  |  ✓  ✓  ✓ ... ✓  |
-    0  | A00 |  ✓  ✓  ✓ ... ✓  |   <- right block includes n=0; left cell is A00
-    -1 |  x  |  ✓  ✓  ✓ ... ✓  |
-    -2 |  x  |  ✓  ✓  ✓ ... ✓  |
-    :  |  x  |  ✓  ✓  ✓ ... ✓  |
-    -N |  x  |  ✓  ✓  ✓ ... ✓  |
-       +-----+-------------------+--> m
-          0     1   2   3  ...  M
-          ^           ^
-          |           |
-     modes_with_     modes_with_
-     m_equal_zero    m_positive
-     (n=1..N only)   (all n, -N..N)
-
-where the ✓ symbol denotes that the wave includes 2 parameters each:
-:math:`cos`, and :math:`sin` coefficients, and where the x symbols
-denotes that the wave is excluded to avoid redundancy by
-:math:`F(0,-n) = F(0,n)^*`, only occurs at :math:`m=0`.
-
-The associated wavevector for each mode is
-
-    .. math::
-
-        \mathbf{k}_{mn} = \left(\frac{2\pi m}{L_x}, \frac{2\pi n}{L_y}\right)
-
-
-.. important::
-
-    The simulation box defines the fundamental periodic domain and therefore
-    sets the largest allowed wavelength in the system.
-    The surface is represented as a sum of periodic waves that are compatible
-    with these boundary conditions, meaning all basis functions must fit
-    exactly within the box without discontinuities at the boundaries.
-
-    As a result, only discrete Fourier modes are allowed, corresponding to
-    integer wave numbers:
-
-    .. math::
-
-        k_x = \frac{2\pi m}{L_x}, \qquad k_y = \frac{2\pi n}{L_y}
-
-    with :math:`m, n \in \mathbb{Z}`.
-
-    The box size :math:`L_x` and :math:`L_y` therefore determines the spacing of
-    allowed wavevectors, while higher modes represent progressively shorter
-    wavelengths.
-
-For more details on the Fourier method, refer to the :ref:`fourier_method` section in the :ref:`algorithm` page.
+For more details on the Fourier method, refer to the :ref:`fourier_method` section in the
+:ref:`algorithm` page.
 
 References
 ----------
@@ -141,8 +71,6 @@ def fourier_mode_list(M: int, N: int) -> list[tuple[int, int]]:
     """
     Non-redundant 2D Fourier modes for a real-valued function on a periodic domain.
 
-    Implements step 1 of the module workflow (non-redundant mode grid).
-
     Modes are :math:`(m, n)` where:
 
     - :math:`m=1..M`, :math:`n=-N..N` (all n retained, no symmetry to exploit)
@@ -161,6 +89,11 @@ def fourier_mode_list(M: int, N: int) -> list[tuple[int, int]]:
     -------
     modes : list of tuple of int
         Non-redundant ``(m, n)`` indices, excluding ``(0, 0)``.
+
+    Raises
+    ------
+    ValueError
+        If ``M`` or ``N`` is negative.
     """
     if M < 0 or N < 0:
         raise ValueError('M and N must be non-negative')
@@ -179,17 +112,9 @@ def n_fourier_parameters(M: int, N: int) -> int:
     """
     Total number of scalar Fourier parameters for the truncated series.
 
-    Uses the same mode list as step 1 (:func:`fourier_mode_list`): one scalar
-    parameter for the mean term :math:`A_{00}` and two parameters per non-zero mode
-    (cosine and sine coefficients), so ``n = 1 + 2 * len(fourier_mode_list(M, N))``.
-
-    .. warning::
-
-        Use :math:`M = N = 2` unless you have a clear reason to resolve shorter wavelengths;
-        always ensure your leaflet has many more atoms than Fourier parameters
-        (:func:`~membrane_curvature.fourier_surface.n_fourier_parameters`), and increase
-        :math:`M` and :math:`N` only until curvature stops changing systematically and
-        starts chasing noise.
+    Uses the mode list from :func:`fourier_mode_list`: one scalar parameter for the mean
+    term :math:`A_{00}` and two parameters per non-zero mode (cosine and sine
+    coefficients). The total number of parameters is ``n = 1 + 2 * len(fourier_mode_list(M, N))``.
 
     Parameters
     ----------
@@ -210,7 +135,7 @@ def n_fourier_parameters(M: int, N: int) -> int:
 # Step 2: wave numbers
 def _compute_wavevector(mode_x, mode_y, kx_base, ky_base):
     r"""
-    Wavevector components for a single mode (step 2 of the module workflow).
+    Wavevector components for a single mode.
 
     Builds :math:`(k_x, k_y) = (m\, k_{x,\mathrm{base}}, n\, k_{y,\mathrm{base}})`
     used in the phase :math:`k_x x + k_y y` for that mode.
@@ -245,23 +170,12 @@ def _build_fourier_matrix(
     fourier_modes: list[tuple[int, int]],
 ) -> np.ndarray:
     r"""
-    Build the least-squares design matrix: basis functions evaluated at sample points.
+    Build the least-squares design matrix from the Fourier basis functions.
 
-    Implements step 3 (and uses :func:`_compute_wavevector` for step 2 inside the loop).
-    Each row is an atom position; columns are ``1``, then ``cos(k\cdot r)``, ``sin(k\cdot r)``
-    pairs for each mode, so that fitting recovers :math:`z(x,y)` at the atoms.
-
-    In the matrix, each row corresponds to a spatial point :math:`(x_i, y_i)`, and each
-    column corresponds to a basis function:
-
-    .. math::
-
-        [1,
-         cos(k·r), sin(k·r),
-         cos(k·r), sin(k·r),
-         ...]
-
-    where the wave vectors are given by :math:`k=(2\pi m/L_x, 2\pi n/L_y)`.
+    Each row is an atom position :math:`(x_i, y_i)` and each column is a basis function
+    evaluated at that position: a constant column for :math:`A_{00}`, then a
+    :math:`\cos(k \cdot r)` and :math:`\sin(k \cdot r)` pair per mode, with wavevectors
+    :math:`k = (2\pi m / L_x, 2\pi n / L_y)`.
 
     Parameters
     ----------
@@ -279,7 +193,12 @@ def _build_fourier_matrix(
     Returns
     -------
     design_matrix : ndarray, shape (n_points, 1 + 2 * n_modes)
-        Basis evaluated at each point; ``dtype`` is ``numpy.float64``.
+        Basis evaluated at each point. ``dtype`` is ``numpy.float64``.
+
+    Raises
+    ------
+    ValueError
+        If ``x_positions`` and ``y_positions`` do not have the same shape.
     """
     x_positions = np.asarray(x_positions, dtype=np.float64)
     y_positions = np.asarray(y_positions, dtype=np.float64)
@@ -336,16 +255,17 @@ def _solve_design_least_squares_svd(
     Returns
     -------
     theta : ndarray, shape (n_columns,)
-        Fitted coefficients.
+        Fitted coefficients, one per column of the design matrix. The number of columns
+        is the number of Fourier parameters.
     rank : int
-        Effective rank after truncation.
+        Number of singular values above the cutoff.
     singular_values : ndarray
         Singular values of ``design_matrix``.
 
-    .. note::
-
-        Here rank is the number of singular values greater than the cutoff.
-        The number of columns in the design matrix is the number of parameters.
+    Raises
+    ------
+    ValueError
+        If ``targets`` does not have shape ``(n_rows,)``.
     """
     design_matrix = np.asarray(design_matrix, dtype=np.float64)
     targets = np.asarray(targets, dtype=np.float64)
@@ -380,8 +300,7 @@ def _unpack_coefficients(
     """
     Split the least-squares coefficient vector into the mean and per-mode amplitudes.
 
-    Used after step 4 (:func:`_solve_design_least_squares_svd` in :func:`_fourier_fit_from_atoms`).
-    Index ``0`` is :math:`A_{00}`; remaining entries are cosine/sine pairs in ``modes`` order.
+    Index ``0`` is :math:`A_{00}`. Remaining entries are cosine/sine pairs in ``modes`` order.
 
     Parameters
     ----------
@@ -413,18 +332,18 @@ def _fourier_fit_from_atoms(
     rcond: float | None = None,
 ) -> tuple[float, float, float, dict[tuple[int, int], tuple[float, float]]]:
     r"""
-    Fit Fourier coefficients to atom heights (steps 1-4; no bin grid).
+    Fit Fourier coefficients to atom heights, without evaluating on a grid.
 
     Builds the design matrix, solves for :math:`A_{00}` and the mode amplitudes, and
-    returns domain sizes and coefficients for subsequent grid evaluation (steps 5-6).
+    returns the domain sizes and coefficients needed to evaluate the surface on a grid.
 
     Parameters
     ----------
     positions : ndarray, shape (n_atoms, 3)
-        Atom coordinates; the third column (``positions[:, 2]``) is the
-        height :math:`z`.
+        Atom coordinates in the same length unit as the box. The third
+        column (``positions[:, 2]``) is the height :math:`z`.
     x_range, y_range : tuple of float
-        ``(min, max)`` extents of the periodic domain.
+        ``(min, max)`` domain extents.
     M, N : int
         Maximum Fourier mode indices (see :func:`fourier_mode_list`).
     rcond : float or None, optional
@@ -444,18 +363,14 @@ def _fourier_fit_from_atoms(
     Raises
     ------
     ValueError
-        If ``positions`` cannot be converted to a float64 NumPy array, or
-        has the wrong shape
-        (see :func:`~membrane_curvature.fourier_validators.validate_positions`);
-        if ``x_range`` / ``y_range`` have non-positive width
-        (see :func:`~membrane_curvature.fourier_validators.validate_positive_domain_widths`);
-        or if ``M`` / ``N`` are negative (see :func:`fourier_mode_list`).
+        If ``positions`` cannot be converted to a float64 array or has the wrong shape,
+        if ``x_range`` or ``y_range`` have non-positive width, or if ``M`` or ``N`` are
+        negative.
 
     Warns
     -----
     UserWarning
-        If the design matrix is rank-deficient or underdetermined (same condition as
-        :func:`fourier_height_from_atoms` and :func:`fourier_height_derivatives_from_atoms`).
+        If the least-squares system is rank-deficient or underdetermined.
     """
     positions = _coerce_positions(positions)
     validate_positions(positions)
@@ -493,46 +408,29 @@ def _harmonic_height_and_phi_derivatives(
     sin_phase: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     r"""
-    Height and :math:`\phi`-derivatives for one mode
-    :math:`h(\phi)=A\cos\phi+B\sin\phi`.
+    Height and :math:`\phi`-derivatives for one mode :math:`h(\phi)=A\cos\phi+B\sin\phi`.
 
-    Used internally by :func:`_eval_fourier_surface` to accumulate
-    ``fx``, ``fy``, ``fxx``, ``fyy``, ``fxy`` using the chain rule.
-    For example, :math:`\partial_x h = (\partial_\phi h)\, \partial_x \phi`.
+    Derivatives are taken with respect to the phase :math:`\phi`, not with respect to
+    :math:`x` and :math:`y`. :func:`_eval_fourier_surface` turns them into spatial
+    derivatives with the chain rule, multiplying by :math:`k_x` and :math:`k_y`.
 
     Parameters
     ----------
     A, B : float
         Cosine and sine coefficients for this mode.
     cos_phase : ndarray
-        ``cos(\phi)``, same shape as ``sin_phase``.
+        :math:`\cos\phi`, same shape as ``sin_phase``.
     sin_phase : ndarray
-        ``sin(\phi)``.
-
-    Notes
-    -----
-    This helper returns derivatives with respect to phase :math:`\phi`
-    (``h_phi``, ``h_phiphi``), not spatial derivatives.
-    Spatial derivatives (``fx``, ``fy``, ``fxx``, ``fyy``, ``fxy``) are
-    accumulated in :func:`_eval_fourier_surface` via the chain rule
-    using :math:`k_x` and :math:`k_y`.
-
-    See Also
-    --------
-    :func:`_eval_fourier_surface`
-        Consumes these intermediate terms to accumulate ``fx``, ``fy``,
-        ``fxx``, ``fyy``, and ``fxy``.
+        :math:`\sin\phi`.
 
     Returns
     -------
     h : ndarray
         Contribution :math:`A\cos\phi + B\sin\phi`.
     h_phi : ndarray
-        Intermediate :math:`\partial h/\partial \phi` used for
-        ``fx`` and ``fy`` accumulation.
+        First derivative :math:`\partial h/\partial \phi`.
     h_phiphi : ndarray
-        Intermediate :math:`\partial^2 h/\partial \phi^2` used for
-        ``fxx``, ``fyy``, ``fxy`` accumulation.
+        Second derivative :math:`\partial^2 h/\partial \phi^2`.
     """
     h = A * cos_phase + B * sin_phase
     h_phi = -A * sin_phase + B * cos_phase
@@ -577,12 +475,12 @@ def _eval_fourier_surface(
     derivatives: bool,
 ) -> tuple[np.ndarray] | tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     r"""
-    Evaluate the fitted Fourier sum on a relative-coordinate grid (steps 5-6).
+    Evaluate the fitted Fourier sum on a relative-coordinate grid.
 
-    Step 5: reconstruct :math:`Z(x,y) = A_{00} + \sum_{(m,n)} A_{mn}\cos\phi_{mn}
-    + B_{mn}\sin\phi_{mn}` with :math:`\phi_{mn} = k_x x + k_y y`.
-    Step 6 (optional): accumulate first and second partial derivatives for Monge-gauge
-    curvature using the analytic derivatives of the same sum.
+    Reconstructs :math:`Z(x,y) = A_{00} + \sum_{(m,n)} A_{mn}\cos\phi_{mn}
+    + B_{mn}\sin\phi_{mn}` with :math:`\phi_{mn} = k_x x + k_y y`. When ``derivatives``
+    is ``True``, also accumulates the analytic first and second partial derivatives of
+    the same sum, used for Monge-gauge curvature.
 
     Parameters
     ----------
@@ -609,8 +507,8 @@ def _eval_fourier_surface(
 
     Notes
     -----
-    The ``derivatives=False`` branch returns ``(Z,)`` — a 1-tuple, not a bare
-    ``ndarray`` — to keep a single return type (``tuple[ndarray, ...]``)
+    The ``derivatives=False`` branch returns ``(Z,)``, a 1-tuple and not a bare
+    ``ndarray``, to keep a single return type (``tuple[ndarray, ...]``)
     regardless of the flag. Callers therefore unwrap with ``[0]``.
     """
     # TODO: the 1-tuple return when derivatives=False is awkward (callers do
@@ -657,9 +555,9 @@ def _eval_fourier_surface(
 
 def _bin_centre_mesh(Lx: float, Ly: float, n_x_bins: int, n_y_bins: int) -> tuple[np.ndarray, np.ndarray]:
     """
-    Relative-coordinate mesh at bin centres for surface reconstruction (step 5).
+    Relative-coordinate mesh at bin centres.
 
-    Bin centres lie at ``(i + 1/2) L / n_bins`` for each axis, compatible with the
+    Bin centres at ``(i + 1/2) L / n_bins`` for each axis, compatible with the
     periodic domain ``[0, L)``.
 
     Parameters
@@ -683,12 +581,9 @@ def _bin_centre_mesh(Lx: float, Ly: float, n_x_bins: int, n_y_bins: int) -> tupl
     Raises
     ------
     ValueError
-        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer. The public
-        entry points
-        (:func:`fourier_height_from_atoms`,
-        :func:`fourier_height_derivatives_from_atoms`,
-        :class:`~membrane_curvature.base.MembraneCurvature`) already validate
-        via :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`.
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer. The public entry points
+        already validate this with
+        :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`.
     """
     # Note: the wrapper stays here (not in fourier_validators) because the
     # message names this specific helper. Validators are caller-agnostic; this
@@ -697,7 +592,7 @@ def _bin_centre_mesh(Lx: float, Ly: float, n_x_bins: int, n_y_bins: int) -> tupl
         validate_positive_bin_counts(n_x_bins, n_y_bins)
     except ValueError as exc:
         raise ValueError(
-            '_bin_centre_mesh requires positive bin counts; reached with '
+            '_bin_centre_mesh requires positive bin counts. reached with '
             f'n_x_bins={n_x_bins}, n_y_bins={n_y_bins}. '
             'Callers must validate via validate_positive_bin_counts first.'
         ) from exc
@@ -707,7 +602,7 @@ def _bin_centre_mesh(Lx: float, Ly: float, n_x_bins: int, n_y_bins: int) -> tupl
     return X_rel, Y_rel
 
 
-# Steps 1 to 5; or 1 to 6 if derivatives are included
+# Steps 1 to 5, or 1 to 6 if derivatives are included
 def fourier_height_from_atoms(
     positions: np.ndarray,
     x_range: tuple[float, float],
@@ -719,22 +614,22 @@ def fourier_height_from_atoms(
     rcond: float | None = None,
 ) -> np.ndarray:
     """
-    Fourier height field on bin centres (module workflow steps 1-5).
+    Fourier height field on bin centres.
 
-    Runs steps 1-4 via :func:`_fourier_fit_from_atoms`, then step 5 via
-    :func:`_bin_centre_mesh` and :func:`_eval_fourier_surface` with ``derivatives=False``.
+    Fits the Fourier coefficients to the atom heights with :func:`_fourier_fit_from_atoms`,
+    then evaluates the fitted series at bin centres.
 
     Parameters
     ----------
     positions : ndarray, shape (n_atoms, 3)
-        Atom coordinates in the same length unit as the box; the third
+        Atom coordinates in the same length unit as the box. The third
         column (``positions[:, 2]``) is the height :math:`z`.
     x_range, y_range : tuple of float
         ``(min, max)`` domain extents.
     n_x_bins, n_y_bins : int
         Output grid size at bin centres.
     M, N : int
-        Maximum Fourier mode indices; see :func:`fourier_mode_list`.
+        Maximum Fourier mode indices, see :func:`fourier_mode_list`.
     rcond : float or None, optional
         Relative cutoff for small singular values in
         :func:`_solve_design_least_squares_svd`.
@@ -747,14 +642,9 @@ def fourier_height_from_atoms(
     Raises
     ------
     ValueError
-        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
-        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`);
-        if ``positions`` cannot be converted to a float64 array or has the
-        wrong shape
-        (see :func:`~membrane_curvature.fourier_validators.validate_positions`);
-        if ``x_range`` / ``y_range`` have non-positive width
-        (see :func:`~membrane_curvature.fourier_validators.validate_positive_domain_widths`);
-        or if ``M`` / ``N`` are negative.
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer, if ``positions`` cannot
+        be converted to a float64 array or has the wrong shape, if ``x_range`` or
+        ``y_range`` have non-positive width, or if ``M`` or ``N`` are negative.
 
     Warns
     -----
@@ -785,22 +675,22 @@ def fourier_height_derivatives_from_atoms(
     rcond: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Fourier height and analytic partial derivatives on bin centres (steps 1-6).
+    Fourier height and analytic partial derivatives on bin centres.
 
-    Same pipeline as :func:`fourier_height_from_atoms`, but also performs step 6 by
-    requesting analytic derivatives from :func:`_eval_fourier_surface` with ``derivatives=True``.
+    Same pipeline as :func:`fourier_height_from_atoms`, and also evaluates the analytic
+    first and second partial derivatives of the fitted series.
 
     Parameters
     ----------
     positions : ndarray, shape (n_atoms, 3)
-        Atom coordinates; the third column (``positions[:, 2]``) is
+        Atom coordinates. The third column (``positions[:, 2]``) is
         the height :math:`z`.
     x_range, y_range : tuple of float
         ``(min, max)`` domain extents.
     n_x_bins, n_y_bins : int
         Output grid size at bin centres.
     M, N : int
-        Maximum Fourier mode indices; see :func:`fourier_mode_list`.
+        Maximum Fourier mode indices, see :func:`fourier_mode_list`.
     rcond : float or None, optional
         Relative cutoff for small singular values in
         :func:`_solve_design_least_squares_svd`.
@@ -813,14 +703,9 @@ def fourier_height_derivatives_from_atoms(
     Raises
     ------
     ValueError
-        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer
-        (see :func:`~membrane_curvature.fourier_validators.validate_positive_bin_counts`);
-        if ``positions`` cannot be converted to a float64 array or has the
-        wrong shape
-        (see :func:`~membrane_curvature.fourier_validators.validate_positions`);
-        if ``x_range`` / ``y_range`` have non-positive width
-        (see :func:`~membrane_curvature.fourier_validators.validate_positive_domain_widths`);
-        or if ``M`` / ``N`` are negative.
+        If ``n_x_bins`` or ``n_y_bins`` is not a positive integer, if ``positions`` cannot
+        be converted to a float64 array or has the wrong shape, if ``x_range`` or
+        ``y_range`` have non-positive width, or if ``M`` or ``N`` are negative.
 
     Warns
     -----

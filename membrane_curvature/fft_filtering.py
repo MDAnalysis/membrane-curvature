@@ -7,21 +7,25 @@ FFT filtering
 
 .. versionadded:: 2.0.0
 
+Brick-wall FFT filter to remove high-frequency noise from the surface array.
+
 .. important::
 
-    The brick-wall FFT filter is available only when :class:`~membrane_curvature.base.MembraneCurvature`
-    runs with ``surface_method='binning'``. Filtering defaults to ``fft_filter=None``.
-    Pass ``fft_filter='auto'`` to enable automatic filtering with low pass set as ``(0, 0.5 * q_Nyq)``.
-
-    **Note that per-frame arrays are not FFT-filtered!**
-
-    For average maps, :class:`~membrane_curvature.base.MembraneCurvature` applies the brick-wall
-    filter once to the averaged ``z_surface`` and computes mean and Gaussian curvature on that filtered average.
-
+    This feature is optional and only available for binning methods:
+    ``binning_surface`` and ``binning_nearest``.
 
 This module implements a brick-wall filter on a binned height field in the reciprocal space.
 This implementation uses :func:`numpy.fft.fft2` with physical bin widths :math:`\Delta x` and
 :math:`\Delta y` in Å along the x and y dimensions, respectively.
+
+:class:`~membrane_curvature.base.MembraneCurvature` applies the brick-wall FFT filter once to
+the averaged ``z_surface`` and computes mean and Gaussian curvature on the resulting filtered
+array.
+
+.. note::
+
+    The FFT filtering is applied to the averaged surface array only.
+    **Per-frame arrays are not FFT-filtered**.
 
 Usage
 ------
@@ -57,16 +61,12 @@ Users can control filtering in three ways via the ``fft_filter`` argument:
       most grids. **Note that it is not a single correct value for every system**. Change ``q_high`` only
       if you know you need sharper or smoother results.
 
-    Filter cutoffs ``q_low`` and ``q_high`` are given in rad/Å. They describe how
-    rippled the membrane height can be along the grid: small :math:`|q|` represents a broad,
-    gentle undulation, while large :math:`|q|` represents fine, short-wavelength detail.
-    The finest detail the bin grid can represent is set by the Nyquist frequency
-    :func:`nyquist_q`, here in this module referred to as ``q_Nyq``, and which depends on
-    ``dx`` and ``dy``.
-
-The filter is applied in two steps. First, :func:`resolve_fft_filter` picks the pass band.
-Then :func:`apply_fft_filter` FFTs the height, zeros modes outside the band, and inverse-FFTs back
-to the surface in real space.
+Filter cutoffs ``q_low`` and ``q_high`` are given in rad/Å. They describe how
+rippled the membrane height can be along the grid: small :math:`|q|` represents a broad,
+gentle undulation, while large :math:`|q|` represents fine, short-wavelength detail.
+The finest detail the bin grid can represent is set by the Nyquist frequency
+:func:`nyquist_q`, here in this module referred to as ``q_Nyq``, and which depends on
+``dx`` and ``dy``.
 
 Limitations
 -----------
@@ -190,7 +190,7 @@ def resolve_fft_filter(fft_filter, dx, dy):
 
 
 def _auto_q_bounds(dx, dy):
-    """
+    r"""
     Calculates the default tuple ``(q_low, q_high)`` for ``fft_filter='auto'``.
     Keeps modes with :math:`|q| \leq 0.5\, q_{\mathrm{Nyq}}` (low-pass).
 
