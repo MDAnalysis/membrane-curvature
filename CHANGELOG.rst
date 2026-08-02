@@ -3,7 +3,8 @@ Membranecurvature CHANGELOG
 
 ---
 
-* Improve API documentation - MembraneCurvature class docstring (PR #258)
+* Improve API documentation: MembraneCurvature class docstring (PR #258), move optional params to subsection
+  in surface methods and simplify Fourier docstrings (PR #241)
 * Expose and document ``nyquist_q`` to set manual FFT filter bounds (PR #241)
 * Enabled ``curvature_on`` kwarg to calculate curvature as ``per-frame`` average or as
   ``'average_surface'``.
