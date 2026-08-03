@@ -41,9 +41,8 @@ reference.
 2. Choose surface method
 ------------------------
 
-Two surface-derivation methods are available, selected via the
-``surface_method`` argument of
-:class:`~membrane_curvature.base.MembraneCurvature`.
+Three surface-derivation methods are available, selected via the
+``surface_method`` argument of :class:`~membrane_curvature.base.MembraneCurvature`:
 
 - :ref:`fourier_method` (``surface_method='fourier'``, default method)
 
@@ -55,12 +54,19 @@ Two surface-derivation methods are available, selected via the
 
 - :ref:`binning_method` (``surface_method='binning'``)
 
-  Atoms are assigned to bins on a regular grid and the height of each bin
-  is set to the mean :math:`z`-coordinate of its atoms. Partial derivatives
+  Atoms are assigned to bins on a regular grid and the height at each bin centre
+  is set to the mean :math:`z`-coordinate of the atoms in that bin. Partial derivatives
   are estimated numerically from the discrete height field using
   :func:`numpy.gradient` with the physical bin spacing.
   See :mod:`~membrane_curvature.binning_surface` for details.
 
+- :ref:`binning_nearest_method` (``surface_method='binning_nearest'``)
+
+  Grid corners are placed on a regular grid and the height at each grid corner
+  is set to the :math:`z`-coordinate of the nearest lipid in the :math:`xy` plane.
+  Partial derivatives   are estimated numerically from the discrete height field using
+  :func:`numpy.gradient` with the physical bin spacing.
+  See :mod:`~membrane_curvature.binning_nearest_surface` for details.
 
 .. _fourier_method:
 
@@ -318,7 +324,7 @@ then determined by dividing these lengths by the number of bins.
 
 2.2.2. Populate grid
 ^^^^^^^^^^^^^^^^^^^^^
-Once the grid has been populated, the `z` coordinates of atoms assigned to each
+Once the grid has been set, the :math:`z` coordinates of atoms assigned to each
 cell are collected to form a height field over the grid.
 
 Coordinates are converted to integer bin indices via scale factors
@@ -372,6 +378,83 @@ trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
   - With ``padding=True``, periodic images in ``x`` and ``y`` are tiled into the
     buffer even if ``wrap=False``, so the usual ``wrap == False`` warning is not
     emitted.
+
+.. _binning_nearest_method:
+
+2.3. Binning nearest method
+---------------------------
+
+The binning nearest method derives a surface by assigning the :math:`z` coordinate
+of the nearest lipid in the :math:`xy` plane. In contrast to the binning method, the
+:math:`z` coordinate is assigned to each grid corner rather than the bin centre.
+However, partial derivatives are estimated identically to the binning method, by
+numerically differentiating the discrete height field using :func:`numpy.gradient`
+with the physical bin spacing.
+
+.. _set_grid_nearest:
+
+2.3.1. Set grid
+^^^^^^^^^^^^^^^
+
+With the binning nearest method, the grid is set similarly to the binning method
+(:ref:`set-grid`): the dimensions of the grid are determined by the size of the simulation
+box contained in the Universe, and the domain matches the x and y edges from the MDAnalysis'
+Universe. The grid also comprises ``n_x_bins x n_y_bins`` bins along the :math:`x` and
+:math:`y` directions.
+
+The difference is where the height field is sampled. Sample points sit at bin corners
+along each axis, rather than at bin centres.
+
+|binning_vs_nearest|
+
+As a result, for the same bin counts and box extent, the binning nearest method grid is
+offset by half a bin relative to the ``binning`` and ``fourier`` methods.
+
+Unlike the binning method, the grid extent can also be set with ``grid_origin``.
+With ``grid_origin='box'`` (default), the domain matches the simulation box in
+:math:`x` and :math:`y`. With ``grid_origin='lipid_bbox'``, the domain is the axis-aligned
+bounding box of the lipid reference points.
+
+
+.. _populate_grid_nearest:
+
+2.3.2. Populate grid
+^^^^^^^^^^^^^^^^^^^^^
+
+Once the corner grid has been set, each sample point is assigned the :math:`z`
+coordinate of the nearest lipid in the :math:`xy` plane to form the height field.
+This step is performed by the function 
+:func:`~membrane_curvature.binning_nearest_surface.get_z_surface_nearest`.
+
+The lipid reference points are built from the selected
+:class:`~MDAnalysis.core.groups.AtomGroup` with
+:func:`~membrane_curvature.binning_nearest_surface.lipid_center_positions`:
+one point per residue. For a one-atom reference, the point is that bead's position.
+When several atoms per residue are selected, they are reduced
+to their mass-weighted centre, or to the geometric centre when masses are unavailable.
+With the usual one-bead-per-lipid selection this matches the atoms used by
+``binning`` and ``fourier``. Those methods do not collapse multi-atom residues to a
+single centre.
+
+For every bin corner, MembraneCurvature finds the nearest lipid reference point
+in the :math:`xy` plane among all lipids in the selection, using
+:func:`~MDAnalysis.lib.distances.distance_array` with the simulation box. The corner
+then receives the :math:`z` of that lipid. Unlike the binning method, there is no
+averaging over lipids within a cell: only the nearest lipid is considered, and membership
+in a bin does not decide which lipids contribute.
+
+.. important::
+
+   Unlike the binning method, every sample point on the grid is assigned a value.
+   As a result, the height field contains no empty bins and therefore no
+   ``NaN`` values.
+
+.. note::
+
+   ``wrap=True`` is not valid with ``surface_method='binning_nearest'``.
+   Periodicity is handled in the distance calculation rather than by wrapping
+   atoms into the primary cell before the surface is built.
+
 
 .. _derive-surface-curvature:
 
@@ -681,6 +764,10 @@ How those averages are built depends on ``fft_filter``:
 .. |grid| image:: ../_static/grid.png
   :width: 600
   :alt: Grid
+
+.. |binning_vs_nearest| image:: ../_static/binning_vs_nearest.png
+  :width: 700
+  :alt: BinningVsNearest
 
 .. |padding| image:: ../_static/padding.png
   :width: 700
