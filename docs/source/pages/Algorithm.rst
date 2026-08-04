@@ -14,7 +14,7 @@ from atoms of reference in 4 steps:
 
 :ref:`choose-surface-method`
 
-:ref:`derive-surface-curvature` 
+:ref:`derive-surface-per-frame` 
 
 :ref:`iterate`
 
@@ -363,21 +363,21 @@ trajectory averages use :func:`numpy.nanmean` and therefore ignore empty bins.
 
 .. warning::
   
-  The binning routine itself does not wrap coordinates;
-  :class:`~membrane_curvature.base.MembraneCurvature` wraps ``x`` and ``y`` only
-  when ``wrap=True`` is set.
+  The binning routine itself does not wrap :math:`x` and :math:`y` coordinates!
+  :class:`~membrane_curvature.base.MembraneCurvature` wraps only when ``wrap=True`` is set.
   
-  - Set ``wrap=True`` to wrap atoms back into the grid in ``x`` and``y`` if you are
-    calculating curvature on a **raw trajectory**. Heights in ``z`` are preserved.
-  - Set ``wrap=False`` to leave atoms outside the primary cell in ``x`` and ``y``
+  - Set ``wrap=True`` to wrap atoms back into the grid in :math:`x` and :math:`y` if you
+    are calculating curvature on a **raw trajectory**. Heights in :math:`z` are preserved.
+  - Set ``wrap=False`` to leave atoms outside the primary cell in :math:`x` and :math:`y`
     out of the bins when you are calculating curvature on:
-      - a trajectory (membrane only or membrane-protein with position restraints) that
-        already **pre-processed periodic boundary conditions**. 
-      - a membrane-protein system that already **pre-processes rotational and translational
-        fit for the protein**.
-  - With ``padding=True``, periodic images in ``x`` and ``y`` are tiled into the
-    buffer even if ``wrap=False``, so the usual ``wrap == False`` warning is not
-    emitted.
+
+    - a trajectory (membrane only or membrane-protein with position restraints) that
+      already **pre-processed periodic boundary conditions**. 
+    - a membrane-protein system that already **pre-processes rotational and translational
+      fit for the protein**.
+  
+  Note that with ``padding=True``, periodic images in :math:`x` and :math:`y` are tiled into the
+  buffer even if ``wrap=False``, so the usual ``wrap == False`` warning is not triggered.
 
 .. _binning_nearest_method:
 
@@ -456,9 +456,9 @@ in a bin does not decide which lipids contribute.
    atoms into the primary cell before the surface is built.
 
 
-.. _derive-surface-curvature:
+.. _derive-surface-per-frame:
 
-3. Derive surface and calculate surface derivatives
+3. Derive surfaces per frame
 ---------------------------------------------------
 
 For every frame of the trajectory, the surface derived from the 
@@ -468,8 +468,8 @@ Similarly, the calculation of mean and Gaussian curvature is performed in every
 frame and stored in :attr:`MembraneCurvature.results.mean` and
 :attr:`MembraneCurvature.results.gaussian`, respectively.
 
-The following sections describe the details of the two methods used
-to derive the surface and calculate its derivatives.
+The following sections describe the details of the three methods: binning, Fourier, and binning nearest,
+used to derive the surface and calculate their respective surface derivatives.
 
 .. _derive-surface:
 
@@ -479,10 +479,10 @@ to derive the surface and calculate its derivatives.
 The surface is derived from atom positions using the selected method
 and stored in :attr:`~MembraneCurvature.results.z_surface` for each frame.
 
-With ``surface_method='binning'``, the height field is the discrete
-:math:`N_x \times N_y` array of per-cell mean :math:`z` coordinates
-assembled in :ref:`set-grid`. Bins containing no atoms are set to ``NaN``
-and excluded from trajectory averages.
+With ``surface_method='binning'`` and ``surface_method='binning_nearest'``,
+the height field is the discrete :math:`N_x \times N_y` array of per-cell,
+mean :math:`z` for `'binning'`  and nearest :math:`z` for `'binning_nearest'`.
+Bins containing no atoms are set to ``NaN`` and excluded from trajectory averages.
 
 With ``surface_method='fourier'``, the height field is the fitted Fourier
 series evaluated at bin centres after the least-squares fit described in
@@ -508,16 +508,16 @@ and :math:`\partial_{yy}`, and the mixed derivative :math:`\partial_{xy}`.
   
   **There is a key difference between the binning and Fourier methods when it comes to calculating the derivatives!**
   
-  - With the binning method, the derivatives are estimated numerically from
-    the discrete height field using :func:`numpy.gradient` with the physical
+  - With the binning methods (binning and binning nearest), the derivatives are estimated numerically
+    from the discrete height field using :func:`numpy.gradient` with the physical
     spacings :math:`\Delta x` and :math:`\Delta y`, so that curvature values are in physical units.
 
   - With the Fourier method, the derivatives are evaluated analytically from the fitted Fourier
     series, so they are not subject to finite-difference discretization error. Curvature accuracy
     is instead governed by the Fourier series truncation.
   
-  **Therefore, the two methods differ in what limits curvature accuracy:**
-  binning is sensitive to **finite-difference error** on the height grid (often worse when the grid is coarse),
+  **Therefore, the three methods differ in what limits curvature accuracy:**
+  The binning methods are sensitive to **finite-difference error** on the height grid,
   while the Fourier pipeline is sensitive to **how well the truncated series fits the atom data**; its
   derivatives are exact for that fitted surface at any output grid resolution, so refining the bin grid
   alone does not remove truncation or sampling limitations.
@@ -544,9 +544,9 @@ coarse grids may introduce discretization error.
   very coarse grids may still affect curvature estimates due to finite-difference
   discretization error.
 
-For details on the binning method, see API documentation in
-:mod:`~membrane_curvature.binning_surface` that describes every
-associated functions.
+For details on the binning methods, see API documentation in
+:mod:`~membrane_curvature.binning_surface` and :mod:`~membrane_curvature.binning_nearest_surface`
+that describe every associated function.
 
 .. _binning-edge-padding:
 
