@@ -64,7 +64,7 @@ jobs:
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Install uv and set Python 3.11
-      uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
       with:
         python-version: "3.11"
     - name: Create uv env with dev dependency group
@@ -100,7 +100,7 @@ jobs:
     # More info on options: https://github.com/conda-incubator/setup-miniconda
     # An environment for the minimum versions
     - name: setup micromamba
-      uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476 # v3.0.0
+      uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 # v3.1.0
       with:
         environment-file: devtools/conda-envs/test_${{ matrix.env_file }}.yaml
         environment-name: test
