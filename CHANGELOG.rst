@@ -3,6 +3,7 @@ Membranecurvature CHANGELOG
 
 ---
 
+* Update Algorithm doc page with three surface methods and optional padding/FFT filtering (PR #266)
 * Calculate analytic derivatives for curvature calculations in Fourier surface method for
   ``curvature_on='average_surface'`` (PR #272)
 * Improve API documentation: MembraneCurvature class docstring (PR #258), move optional params to subsection
