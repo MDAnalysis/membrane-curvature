@@ -236,6 +236,8 @@ available where you can find:
 
 Contributions are very welcome!
 
+MembraneCurvature follows the [MDAnalysis AI Policy][AI_policy]. As a scientific software package, contributions should show real understanding of the code and the science. Please read the [Contributing] page before opening a pull request. **Pull requests that are evidently LLM-generated may be closed at the maintainers' discretion.**
+
 If you are interested in contributing to MembraneCurvature, installation of the development dependencies is required.
 
 There are three dependency groups defined in `pyproject.toml`:
@@ -304,3 +306,4 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [Ruff]: https://docs.astral.sh/ruff/
 [uv]: https://docs.astral.sh/uv/
 [Contributing]: https://github.com/MDAnalysis/membrane-curvature/blob/main/.github/CONTRIBUTING.md
+[AI_policy]: https://github.com/MDAnalysis/mdanalysis/blob/develop/AI_POLICY.md

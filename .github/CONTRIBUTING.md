@@ -3,6 +3,17 @@
 We welcome contributions from external contributors, and this document
 describes how to merge code changes into this membrane_curvature.
 
+## AI Policy
+
+MembraneCurvature is part of the MDAnalysis organization and follows the
+[MDAnalysis AI Policy](https://github.com/MDAnalysis/mdanalysis/blob/develop/AI_POLICY.md).
+
+In short: substantial AI-generated content is not accepted. AI tools may be used in limited cases, for example when it is used for small amounts of AI-assisted code or for language translation purposes and must always be declared. Fully LLM-generated code, documentation, or PR descriptions are not accepted. Any use of LLMs or other AI-powered tools must be disclosed in the PR (see the PR template).
+
+MembraneCurvature is a scientific software package. For all PRs, maintainers expect a minimum understanding of the codebase and the science behind it. If you are not sure about something, please ask.
+
+**If a pull request is evidently LLM-generated, maintainers may close it at their discretion.**
+
 ## Getting Started
 
 * Make sure you have a [GitHub account](https://github.com/signup/free).
