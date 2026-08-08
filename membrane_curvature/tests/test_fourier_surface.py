@@ -127,7 +127,7 @@ def rank_deficient_design_system():
 def test_calculate_a00_2x2_grid(dummy_fourier_universe, dummy_fourier_fit):
     """Test A_00 matches np.mean of z coords"""
     expected_A00 = 9  # equivalent to np.mean(positions[:, 2])
-    _box_length_x, _box_length_y, calculated_A_00, _coeffs = dummy_fourier_fit
+    _box_length_x, _box_length_y, calculated_A_00, _coeffs, _theta = dummy_fourier_fit
     assert_almost_equal(calculated_A_00, expected_A00)
 
 
@@ -558,7 +558,7 @@ def test_fourier_height_derivatives_from_atoms(dummy_fourier_universe):
         M=1,
         N=0,
     )
-    Lx, Ly, A00, coeffs = _fourier_fit_from_atoms(
+    Lx, Ly, A00, coeffs, _theta = _fourier_fit_from_atoms(
         positions,
         x_range=(0.0, 2.0),
         y_range=(0.0, 2.0),

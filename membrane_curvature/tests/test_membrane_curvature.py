@@ -10,8 +10,9 @@ from numpy.testing import assert_almost_equal
 import MDAnalysis as mda
 from membrane_curvature.tests.datafiles import GRO_PO4_SMALL
 from membrane_curvature.base import MembraneCurvature
-from membrane_curvature.curvature import fourier_curvature
-from membrane_curvature.fourier_surface import n_fourier_parameters
+from MDAnalysis.coordinates.memory import MemoryReader
+from membrane_curvature.curvature import fourier_curvature, fourier_curvature_from_theta
+from membrane_curvature.fourier_surface import fourier_mode_list, n_fourier_parameters
 
 # Reference data from datafile
 MEMBRANE_CURVATURE_DATA = {
@@ -1390,6 +1391,186 @@ class TestMembraneCurvature(object):
             getattr(mc.results, result_attr)[0],
             ref_fields[ref_index],
         )
+
+    def test_fourier_average_surface_uses_analytic_averaged_coefficients(self, universe_dummy_full):
+        mc = MembraneCurvature(
+            universe_dummy_full,
+            select='all',
+            n_x_bins=4,
+            n_y_bins=4,
+            surface_method='fourier',
+            fourier_m=1,
+            fourier_n=1,
+            curvature_on='average_surface',
+        ).run()
+        # Single-frame trajectory: averaged coefficients match the frame fit.
+        assert_almost_equal(mc.results.average_z_surface, mc.results.z_surface[0])
+        assert_almost_equal(mc.results.average_mean, mc.results.mean[0])
+        assert_almost_equal(mc.results.average_gaussian, mc.results.gaussian[0])
+        fd_mean = mean_curvature(mc.results.average_z_surface, mc.dx, mc.dy)
+        assert not np.allclose(mc.results.average_mean, fd_mean)
+
+    def test_fourier_average_surface_multi_frame_accumulates_coefficients(self):
+        frame0 = np.array(
+            [
+                [0.0, 0.0, 150.0],
+                [100.0, 0.0, 150.0],
+                [200.0, 0.0, 150.0],
+                [0.0, 200.0, 150.0],
+                [100.0, 200.0, 120.0],
+                [200.0, 200.0, 120.0],
+                [0.0, 100.0, 120.0],
+                [100.0, 100.0, 120.0],
+                [200.0, 100.0, 120.0],
+            ]
+        )
+        frame1 = frame0.copy()
+        frame1[:, 2] = frame0[:, 2] + np.array([0.0, 5.0, -5.0, 10.0, -10.0, 15.0, -15.0, 20.0, -20.0])
+        universe = mda.Universe(frame0, n_atoms=9)
+        universe.dimensions = [300.0, 300.0, 300.0, 90.0, 90.0, 90.0]
+        universe.load_new(
+            np.stack([frame0, frame1], axis=0),
+            format=MemoryReader,
+            dimensions=np.tile(universe.dimensions, (2, 1)),
+        )
+
+        n_x_bins = n_y_bins = 4
+        fourier_m = fourier_n = 1
+        mc = MembraneCurvature(
+            universe,
+            select='all',
+            n_x_bins=n_x_bins,
+            n_y_bins=n_y_bins,
+            surface_method='fourier',
+            fourier_m=fourier_m,
+            fourier_n=fourier_n,
+            curvature_on='average_surface',
+        ).run()
+        assert mc.n_frames == 2
+
+        # Height is linear in theta, so the averaged surface is the mean of frames.
+        assert_almost_equal(
+            mc.results.average_z_surface,
+            np.mean(mc.results.z_surface, axis=0),
+        )
+
+        x_range = (0.0, universe.dimensions[0])
+        y_range = (0.0, universe.dimensions[1])
+        thetas = []
+        for _ts in universe.trajectory:
+            *_fields, theta = fourier_curvature(
+                universe.atoms.positions,
+                x_range,
+                y_range,
+                n_x_bins,
+                n_y_bins,
+                fourier_m,
+                fourier_n,
+                return_theta=True,
+            )
+            thetas.append(theta)
+        _z, avg_mean, avg_gauss = fourier_curvature_from_theta(
+            np.mean(thetas, axis=0),
+            fourier_mode_list(fourier_m, fourier_n),
+            x_range,
+            y_range,
+            n_x_bins,
+            n_y_bins,
+        )
+        assert_almost_equal(mc.results.average_mean, avg_mean)
+        assert_almost_equal(mc.results.average_gaussian, avg_gauss)
+        # Curvature is nonlinear in theta: not a plain mean of per-frame maps.
+        assert not np.allclose(mc.results.average_mean, np.mean(mc.results.mean, axis=0))
+
+    def test_fourier_average_surface_warns_when_nonfinite_frames_dropped(self):
+        frame0 = np.array(
+            [
+                [0.0, 0.0, 150.0],
+                [100.0, 0.0, 150.0],
+                [200.0, 0.0, 150.0],
+                [0.0, 200.0, 150.0],
+                [100.0, 200.0, 120.0],
+                [200.0, 200.0, 120.0],
+                [0.0, 100.0, 120.0],
+                [100.0, 100.0, 120.0],
+                [200.0, 100.0, 120.0],
+            ]
+        )
+        frame1 = frame0.copy()
+        frame1[0, 2] = np.nan
+        universe = mda.Universe(frame0, n_atoms=9)
+        universe.dimensions = [300.0, 300.0, 300.0, 90.0, 90.0, 90.0]
+        universe.load_new(
+            np.stack([frame0, frame1], axis=0),
+            format=MemoryReader,
+            dimensions=np.tile(universe.dimensions, (2, 1)),
+        )
+        mc = MembraneCurvature(
+            universe,
+            select='all',
+            n_x_bins=4,
+            n_y_bins=4,
+            surface_method='fourier',
+            fourier_m=1,
+            fourier_n=1,
+            curvature_on='average_surface',
+        )
+        with pytest.warns(
+            UserWarning,
+            match=(
+                r'1 of 2 frames were excluded from the average surface because '
+                r'their Fourier fit did not produce valid coefficients'
+            ),
+        ):
+            mc.run()
+        assert mc._fourier_theta_n_finite == 1
+        assert_almost_equal(mc.results.average_z_surface, mc.results.z_surface[0])
+
+    def test_fourier_average_surface_warns_when_all_frames_nonfinite(self):
+        frame = np.array(
+            [
+                [0.0, 0.0, 150.0],
+                [100.0, 0.0, 150.0],
+                [200.0, 0.0, 150.0],
+                [0.0, 200.0, 150.0],
+                [100.0, 200.0, 120.0],
+                [200.0, 200.0, 120.0],
+                [0.0, 100.0, 120.0],
+                [100.0, 100.0, 120.0],
+                [200.0, 100.0, 120.0],
+            ]
+        )
+        frame_bad = frame.copy()
+        frame_bad[0, 2] = np.nan
+        universe = mda.Universe(frame_bad, n_atoms=9)
+        universe.dimensions = [300.0, 300.0, 300.0, 90.0, 90.0, 90.0]
+        universe.load_new(
+            np.stack([frame_bad, frame_bad], axis=0),
+            format=MemoryReader,
+            dimensions=np.tile(universe.dimensions, (2, 1)),
+        )
+        mc = MembraneCurvature(
+            universe,
+            select='all',
+            n_x_bins=4,
+            n_y_bins=4,
+            surface_method='fourier',
+            fourier_m=1,
+            fourier_n=1,
+            curvature_on='average_surface',
+        )
+        with pytest.warns(
+            UserWarning,
+            match=(
+                r'All 2 frames were excluded from the average surface.*'
+                r'undefined \(NaN\)'
+            ),
+        ):
+            mc.run()
+        assert mc._fourier_theta_n_finite == 0
+        assert np.all(np.isnan(mc.results.average_z_surface))
+        assert np.all(np.isnan(mc.results.average_mean))
+        assert np.all(np.isnan(mc.results.average_gaussian))
 
     # --- padding -------------------------------------------------------------
 

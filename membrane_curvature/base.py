@@ -54,6 +54,7 @@ from .curvature import (
     mean_curvature,
     gaussian_curvature,
     fourier_curvature,
+    fourier_curvature_from_theta,
     curvature_from_primary_with_edge_pad,
     curvature_with_edge_pad,
 )
@@ -63,7 +64,10 @@ from .padding import (
 )
 from .padding_validators import validate_edge_pad_bins, validate_orthorhombic
 from .fft_filtering import apply_fft_filter, resolve_fft_filter
-from .fourier_surface import n_fourier_parameters
+from .fourier_surface import (
+    n_fourier_parameters,
+    fourier_mode_list,
+)
 from .fourier_validators import validate_positive_bin_counts
 
 from MDAnalysis.analysis.base import AnalysisBase
@@ -456,6 +460,15 @@ class MembraneCurvature(AnalysisBase):
         self.results.z_surface = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
         self.results.mean = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
         self.results.gaussian = np.full((self.n_frames, self.n_x_bins, self.n_y_bins), np.nan)
+        self._fourier_theta_sum = None
+        self._fourier_modes = None
+        if self.surface_method == self.SurfaceMethod.FOURIER and self.curvature_on == self.CurvatureOn.AVERAGE_SURFACE:
+            self._fourier_modes = fourier_mode_list(self.fourier_m, self.fourier_n)
+            self._fourier_theta_sum = np.zeros(
+                n_fourier_parameters(self.fourier_m, self.fourier_n),
+                dtype=np.float64,
+            )
+            self._fourier_theta_n_finite = 0
 
     def _single_frame(self):
         if self.surface_method == self.SurfaceMethod.BINNING:
@@ -517,7 +530,7 @@ class MembraneCurvature(AnalysisBase):
                 self.results.mean[self._frame_index] = mean_curvature(z_surface, frame_dx, frame_dy)
                 self.results.gaussian[self._frame_index] = gaussian_curvature(z_surface, frame_dx, frame_dy)
         else:
-            z_f, mean_f, gauss_f = fourier_curvature(
+            z_f, mean_f, gauss_f, theta = fourier_curvature(
                 self.ag.positions,
                 self.x_range,
                 self.y_range,
@@ -526,12 +539,54 @@ class MembraneCurvature(AnalysisBase):
                 self.fourier_m,
                 self.fourier_n,
                 rcond=self.fourier_rcond,
+                return_theta=True,
             )
+            if self.curvature_on == self.CurvatureOn.AVERAGE_SURFACE and np.all(np.isfinite(theta)):
+                self._fourier_theta_sum += theta
+                self._fourier_theta_n_finite += 1
             self.results.z_surface[self._frame_index] = z_f
             self.results.mean[self._frame_index] = mean_f
             self.results.gaussian[self._frame_index] = gauss_f
 
     def _conclude(self):
+        if self.surface_method == self.SurfaceMethod.FOURIER and self.curvature_on == self.CurvatureOn.AVERAGE_SURFACE:
+            n_kept = self._fourier_theta_n_finite
+            n_dropped = self.n_frames - n_kept
+            if n_kept == 0:
+                warnings.warn(
+                    f'All {self.n_frames} frames were excluded from the average '
+                    'surface because their Fourier fit did not produce valid '
+                    'coefficients (NaN or infinite values). The average surface '
+                    'and curvature are undefined (NaN).',
+                    UserWarning,
+                    stacklevel=2,
+                )
+                avg_theta = np.full_like(self._fourier_theta_sum, np.nan)
+            else:
+                if n_dropped:
+                    warnings.warn(
+                        f'{n_dropped} of {self.n_frames} frames were excluded from the '
+                        'average surface because their Fourier fit did not produce valid '
+                        f'coefficients (NaN or infinite values). The average curvature is '
+                        f'computed from the remaining {n_kept} frames.',
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                avg_theta = self._fourier_theta_sum / n_kept
+            z_avg, avg_mean, avg_gauss = fourier_curvature_from_theta(
+                avg_theta,
+                self._fourier_modes,
+                self.x_range,
+                self.y_range,
+                self.n_x_bins,
+                self.n_y_bins,
+            )
+            # Same averaged coefficients for height and analytic curvature.
+            self.results.average_z_surface = z_avg
+            self.results.average_mean = avg_mean
+            self.results.average_gaussian = avg_gauss
+            return
+
         z_average = np.nanmean(self.results.z_surface, axis=0)
         if self._fft_q_bounds is not None:
             self.results.average_z_surface = apply_fft_filter(z_average, self.dx, self.dy, self._fft_q_bounds)

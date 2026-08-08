@@ -1,93 +1,79 @@
 r"""
 
 --------------------
-Curvature
+Monge gauge formulas
 --------------------
 
-In MembraneCurvature, we calculate curvature from a height field :math:`z = f(x,y)`
-using the Monge gauge formulas, where partial derivatives are estimated from the
-derived surface.
+In MembraneCurvature, we calculate curvature from a derived surface
+:math:`z = f(x,y)` using the Monge gauge formulas. Partial derivatives of the
+surface are obtained numerically or analytically, depending on the surface
+method.
 
 With the Monge gauge formulas, we map first derivatives :math:`(\partial_x, \partial_y)`, and second
 and mixed derivatives :math:`(\partial_{xx}, \partial_{yy}, \partial_{xy})` to the definitions of
-curvature.
+curvature:
 
-Mean curvature :math:`H`, defined by:
+.. _mean_curvature_formula:
+
+Mean curvature (:math:`H`)
+--------------------------
+
+Defined by:
 
 .. math:: H =
     \frac{(1+\partial_x^2)\partial_{yy}+(1+\partial_y^2)\partial_{xx}-2\partial_x\partial_y\partial_{xy}}
-    {2(1+\partial_x^2+\partial_y^2)^{3/2}},
+    {2(1+\partial_x^2+\partial_y^2)^{3/2}}.
 
-and Gaussian curvature :math:`K`, defined by:
+.. _gaussian_curvature_formula:
+
+Gaussian curvature (:math:`K`)
+------------------------------
+
+Defined by:
 
 .. math:: K = \frac{\partial_{xx}\partial_{yy}-\partial_{xy}^2}
    {(1+\partial_x^2+\partial_y^2)^2}.
 
+In general, units of mean curvature are [length] :sup:`-1`,
+and units of Gaussian curvature are [length] :sup:`-2`.
+Mean curvature is the arithmetic mean of the two principal curvatures. The
+default units of :math:`H` are Å\ :sup:`-1`.
+Gaussian curvature is the product of the two principal curvatures. The
+default units of :math:`K` are Å\ :sup:`-2`.
 
 The Monge gauge formulas are implemented separately in the helpers
 :func:`mean_curvature_monge` and :func:`gaussian_curvature_monge`, which accept
 precomputed partial derivatives as arguments. This approach intends to separate the
-curvature algebra from the derivative estimation.
+curvature algebra from how the derivatives are obtained.
 
-To estimate partial derivatives, we use :func:`mean_curvature` and :func:`gaussian_curvature`
-from the discrete height field using :func:`numpy.gradient`, then pass them to the
-Monge gauge functions above. Optional spacing arguments (``dx``, ``dy``) are
-forwarded to :func:`numpy.gradient` for physical-unit calculations.
+.. important::
 
-Since the mean curvature calculates the arithmetic mean of two
-principal curvatures, the default units of :math:`H` are Å\ :sup:`-1`.
-On the other hand, Gaussian curvature calculates the geometric mean of the
-two principal curvatures. Therefore, the default units of :math:`K` are Å\ :sup:`-2`.
-In general, units of mean curvature are [length] :sup:`-1`,
-and units of Gaussian curvature are [length] :sup:`-2`.
+    Depending on the :attr:`~membrane_curvature.base.MembraneCurvature.surface_method`
+    selected, partial derivatives are obtained in two ways:
 
-.. note::
+    - :ref:`numerical_derivatives` calculate curvature from the discrete surface using
+      :func:`numpy.gradient`, then call the Monge gauge formulas.
 
-    When spacing is provided to :func:`numpy.gradient` (for example, ``dx`` and
-    ``dy`` from the simulation box and grid definition), curvature calculations are
-    performed in physical units and are less sensitive to grid bin count than with
-    implicit unit spacing. However, results are not exactly bin-independent because
-    finite-difference discretization error increases for coarse grids.
+    - :ref:`analytic_derivatives` calculate curvature from analytic derivatives of the
+      fitted Fourier series.
 
-.. warning::
-
-    Numpy cannot calculate the gradient for arrays with inner array of
-    `length==1` unless `axis=0` is specified. Therefore in the functions here included
-    for mean and Gaussian curvature, shape of arrays must be at least (2,2).
-    In general, to calculate a numerical gradients shape of arrays must be >=(`edge_order` +
-    1).
-
-For a periodic **Fourier** fit to atom heights, use
-:func:`~membrane_curvature.fourier_surface.fourier_height_from_atoms` or
-:func:`~membrane_curvature.fourier_surface.fourier_height_derivatives_from_atoms`
-(surface only in :mod:`~membrane_curvature.fourier_surface`), then
-:func:`fourier_curvature` for Monge :math:`H` and :math:`K`
-in one call.
-
-For binning with ``padding=True``, curvature is evaluated with
-:func:`curvature_with_edge_pad`.
-
-
-Functions
----------
-
+For details on curvature calculation, check the :ref:`algorithm` page.
 """
 
 import numpy as np
 
-from .fourier_surface import fourier_height_derivatives_from_atoms
+from .fourier_surface import (
+    _bin_centre_mesh,
+    _eval_fourier_surface,
+    _fourier_fit_from_atoms,
+    _unpack_coefficients,
+)
 from .padding import clip_padded_grid
 
 
 def mean_curvature_monge(fx, fy, fxx, fyy, fxy):
     r"""
-    Helper to calculate mean curvature :math:`H` from partial derivatives of :math:`z = f(x, y)`.
-
-    Same expression as in :func:`mean_curvature` once first derivatives
-    :math:`(\partial_x, \partial_y)` and second and mixed derivatives
-    :math:`(\partial_{xx}, \partial_{yy}, \partial_{xy})` of :math:`z` are known,
-    supplied as ``fx``, ``fy``, ``fxx``, ``fyy``, ``fxy`` (see the module equations
-    above). This function does not compute gradients.
+    Helper to calculate :ref:`mean_curvature_formula` from partial derivatives of :math:`z = f(x, y)`.
 
     Parameters
     ----------
@@ -115,13 +101,7 @@ def mean_curvature_monge(fx, fy, fxx, fyy, fxy):
 
 def gaussian_curvature_monge(fx, fy, fxx, fyy, fxy):
     r"""
-    Helper to calculate Gaussian curvature :math:`K` from partial derivatives of :math:`z = f(x, y)`.
-
-    Same expression as in :func:`gaussian_curvature` once first derivatives
-    :math:`(\partial_x, \partial_y)` and second and mixed derivatives
-    :math:`(\partial_{xx}, \partial_{yy}, \partial_{xy})` of :math:`z` are known,
-    supplied as ``fx``, ``fy``, ``fxx``, ``fyy``, ``fxy`` (see the module equations
-    above). This function does not compute gradients.
+    Helper to calculate :ref:`gaussian_curvature_formula` from partial derivatives of :math:`z = f(x, y)`.
 
     Parameters
     ----------
@@ -145,6 +125,158 @@ def gaussian_curvature_monge(fx, fy, fxx, fyy, fxy):
     return (fxx * fyy - (fxy**2)) / (1 + (fx**2) + (fy**2)) ** 2
 
 
+def gaussian_curvature(Z, *varargs):
+    """
+    Calculate :ref:`gaussian_curvature_formula` from a surface array.
+
+    Partial derivatives are estimated with :func:`numpy.gradient` and passed to
+    :func:`gaussian_curvature_monge`.
+
+    Parameters
+    ----------
+    Z : np.ndarray
+        Surface array of shape ``(n_x_bins, n_y_bins)``.
+    *varargs : list of scalar or array, optional
+        Spacing between values. Default unitary spacing for all dimensions.
+        See :func:`numpy.gradient` for more information.
+
+    Returns
+    -------
+    K : np.ndarray
+        Gaussian curvature, shape ``(n_x_bins, n_y_bins)``.
+
+    """
+
+    Zx, Zy = np.gradient(Z, *varargs)
+    Zxx, Zxy = np.gradient(Zx, *varargs)
+    _, Zyy = np.gradient(Zy, *varargs)
+
+    return gaussian_curvature_monge(Zx, Zy, Zxx, Zyy, Zxy)
+
+
+def mean_curvature(Z, *varargs):
+    """
+    Calculate :ref:`mean_curvature_formula` from a surface array.
+
+    Partial derivatives are estimated with :func:`numpy.gradient` and passed to
+    :func:`mean_curvature_monge`.
+
+    Parameters
+    ----------
+    Z : np.ndarray
+        Surface array of shape ``(n_x_bins, n_y_bins)``.
+    *varargs : list of scalar or array, optional
+        Spacing between values. Default unitary spacing for all dimensions.
+        See :func:`numpy.gradient` for more information.
+
+    Returns
+    -------
+    H : np.ndarray
+        Mean curvature, shape ``(n_x_bins, n_y_bins)``.
+
+    """
+
+    (
+        Zx,
+        Zy,
+    ) = np.gradient(Z, *varargs)
+    Zxx, Zxy = np.gradient(Zx, *varargs)
+    _, Zyy = np.gradient(Zy, *varargs)
+
+    return mean_curvature_monge(Zx, Zy, Zxx, Zyy, Zxy)
+
+
+def fourier_curvature_from_coefficients(
+    A00,
+    coeffs,
+    x_range,
+    y_range,
+    n_x_bins,
+    n_y_bins,
+):
+    r"""
+    Calculate the surface and mean and Gaussian curvature from Fourier
+    coefficients.
+
+    Partial derivatives are obtained analytically from the fitted series and
+    passed to :func:`mean_curvature_monge` and :func:`gaussian_curvature_monge`.
+
+    Parameters
+    ----------
+    A00 : float
+        Mean term :math:`A_{00}`.
+    coeffs : dict
+        Mapping ``(m, n) -> (A, B)`` cosine and sine coefficients per mode.
+    x_range, y_range : tuple of float
+        ``(min, max)`` domain extents.
+    n_x_bins, n_y_bins : int
+        Output grid size at bin centres.
+
+    Returns
+    -------
+    z_surface, mean_H, gaussian_K : ndarray
+        Each array has shape ``(n_x_bins, n_y_bins)``.
+    """
+    box_length_x = x_range[1] - x_range[0]
+    box_length_y = y_range[1] - y_range[0]
+    x_rel, y_rel = _bin_centre_mesh(box_length_x, box_length_y, n_x_bins, n_y_bins)
+    z_surface, fx, fy, fxx, fyy, fxy = _eval_fourier_surface(
+        x_rel,
+        y_rel,
+        box_length_x,
+        box_length_y,
+        A00,
+        coeffs,
+        derivatives=True,
+    )
+    mean_H = mean_curvature_monge(fx, fy, fxx, fyy, fxy)
+    gaussian_K = gaussian_curvature_monge(fx, fy, fxx, fyy, fxy)
+    return z_surface, mean_H, gaussian_K
+
+
+def fourier_curvature_from_theta(
+    theta,
+    modes,
+    x_range,
+    y_range,
+    n_x_bins,
+    n_y_bins,
+):
+    r"""
+    Calculate the surface and mean and Gaussian curvature from a Fourier
+    coefficient vector :math:`\theta`.
+
+    Splits :math:`\theta` with :func:`~membrane_curvature.fourier_surface._unpack_coefficients`
+    and calls :func:`fourier_curvature_from_coefficients`.
+
+    Parameters
+    ----------
+    theta : ndarray, shape (n_coefficients,)
+        Least-squares coefficient vector with mean at index 0, then pairs
+        :math:`(A_{mn}, B_{mn})` in the same order as ``modes``.
+    modes : list of tuple of int
+        Mode list from :func:`~membrane_curvature.fourier_surface.fourier_mode_list`.
+    x_range, y_range : tuple of float
+        ``(min, max)`` domain extents.
+    n_x_bins, n_y_bins : int
+        Output grid size at bin centres.
+
+    Returns
+    -------
+    z_surface, mean_H, gaussian_K : ndarray
+        Each array has shape ``(n_x_bins, n_y_bins)``.
+    """
+    A00, coeffs = _unpack_coefficients(theta, modes)
+    return fourier_curvature_from_coefficients(
+        A00,
+        coeffs,
+        x_range,
+        y_range,
+        n_x_bins,
+        n_y_bins,
+    )
+
+
 def fourier_curvature(
     positions,
     x_range,
@@ -154,12 +286,14 @@ def fourier_curvature(
     M,
     N,
     rcond=None,
+    return_theta=False,
 ):
-    """
-    Bin-centre height and Monge mean / Gaussian curvature from a Fourier fit to atoms.
+    r"""
+    Calculate the surface and mean and Gaussian curvature from a Fourier fit to
+    atom positions.
 
-    Runs :func:`~membrane_curvature.fourier_surface.fourier_height_derivatives_from_atoms`
-    once, then :func:`mean_curvature_monge` and :func:`gaussian_curvature_monge`.
+    Fits coefficients with :func:`~membrane_curvature.fourier_surface._fourier_fit_from_atoms`
+    and calls :func:`fourier_curvature_from_coefficients`.
 
     Parameters
     ----------
@@ -175,123 +309,67 @@ def fourier_curvature(
     rcond : float or None, optional
         Passed to singular-value truncation for the Fourier fit.
         See :func:`~membrane_curvature.fourier_surface._solve_design_least_squares_svd`.
+    return_theta : bool, optional
+        If ``True``, also return the coefficient vector :math:`\theta`.
 
     Returns
     -------
     z_surface, mean_H, gaussian_K : ndarray
         Each array has shape ``(n_x_bins, n_y_bins)``.
+    theta : ndarray, optional
+        Coefficient vector. Returned only when ``return_theta`` is ``True``.
 
     Warns
     -----
     UserWarning
         If the Fourier least-squares system is rank-deficient or underdetermined.
     """
-    Z, fx, fy, fxx, fyy, fxy = fourier_height_derivatives_from_atoms(
+    _box_length_x, _box_length_y, A00, coeffs, theta = _fourier_fit_from_atoms(
         positions,
         x_range,
         y_range,
-        n_x_bins,
-        n_y_bins,
         M,
         N,
         rcond=rcond,
     )
-    H = mean_curvature_monge(fx, fy, fxx, fyy, fxy)
-    K = gaussian_curvature_monge(fx, fy, fxx, fyy, fxy)
-    return Z, H, K
-
-
-def gaussian_curvature(Z, *varargs):
-    """
-    Calculate Gaussian curvature from Z cloud points.
-
-    Uses :func:`numpy.gradient` on `Z`, then :func:`gaussian_curvature_monge`.
-
-    Parameters
-    ----------
-    Z: np.ndarray.
-        Multidimensional array of shape (n,n).
-    varargs : list of scalar or array, optional
-        Spacing between f values. Default unitary spacing for all dimensions.
-        See np.gradient docs for more information.
-
-    Returns
-    -------
-    K : np.ndarray.
-        The result of Gaussian curvature of Z. Returns multidimensional
-        array object with values of Gaussian curvature of shape `(n, n)`.
-
-    """
-
-    Zx, Zy = np.gradient(Z, *varargs)
-    Zxx, Zxy = np.gradient(Zx, *varargs)
-    _, Zyy = np.gradient(Zy, *varargs)
-
-    return gaussian_curvature_monge(Zx, Zy, Zxx, Zyy, Zxy)
-
-
-def mean_curvature(Z, *varargs):
-    """
-    Calculates mean curvature from Z cloud points.
-
-    Uses :func:`numpy.gradient` on `Z`, then :func:`mean_curvature_monge`.
-
-    Parameters
-    ----------
-    Z: np.ndarray.
-        Multidimensional array of shape (n,n).
-    varargs : list of scalar or array, optional
-        Spacing between f values. Default unitary spacing for all dimensions.
-        See np.gradient docs for more information.
-
-    Returns
-    -------
-    H : np.ndarray.
-        The result of mean curvature of Z. Returns multidimensional
-        array object with values of mean curvature of shape `(n, n)`.
-
-    """
-
-    (
-        Zx,
-        Zy,
-    ) = np.gradient(Z, *varargs)
-    Zxx, Zxy = np.gradient(Zx, *varargs)
-    _, Zyy = np.gradient(Zy, *varargs)
-
-    return mean_curvature_monge(Zx, Zy, Zxx, Zyy, Zxy)
+    z_surface, mean_H, gaussian_K = fourier_curvature_from_coefficients(
+        A00,
+        coeffs,
+        x_range,
+        y_range,
+        n_x_bins,
+        n_y_bins,
+    )
+    if return_theta:
+        return z_surface, mean_H, gaussian_K, theta
+    return z_surface, mean_H, gaussian_K
 
 
 def curvature_with_edge_pad(z_surface_padded, dx, dy, edge_pad_bins):
-    """
-    Evaluate Monge curvature on a padded height field and clip to the primary box.
+    r"""
+    Calculate mean and Gaussian curvature from a padded surface and clip the
+    result to the primary box.
 
     Parameters
     ----------
     z_surface_padded : ndarray
-        Height field on the expanded grid, shape
+        Surface on the expanded grid, shape
         ``(n_x_bins + 2*edge_pad_bins, n_y_bins + 2*edge_pad_bins)``.
     dx : float
-        Bin spacing along ``x`` (Å).
+        Bin spacing along :math:`x` (Å).
     dy : float
-        Bin spacing along ``y`` (Å).
+        Bin spacing along :math:`y` (Å).
     edge_pad_bins : int
         Buffer width in bins.
 
     Returns
     -------
     z_surface : ndarray
-        Clipped height, shape ``(n_x_bins, n_y_bins)``.
+        Clipped surface, shape ``(n_x_bins, n_y_bins)``.
     mean : ndarray
         Clipped mean curvature, same shape.
     gaussian : ndarray
         Clipped Gaussian curvature, same shape.
-
-    .. note::
-
-        Function available only when running with ``padding=True``. Finite differences
-        run on the padded array and then clipped to the primary box. Gradients are
-        computed once and shared by mean and Gaussian curvature.
     """
     zx, zy = np.gradient(z_surface_padded, dx, dy)
     zxx, zxy = np.gradient(zx, dx, dy)
@@ -306,34 +384,33 @@ def curvature_with_edge_pad(z_surface_padded, dx, dy, edge_pad_bins):
 
 
 def curvature_from_primary_with_edge_pad(z_surface, dx, dy, edge_pad_bins):
-    """
-    Evaluate Monge curvature on a primary box height field using a wrap-pad buffer.
+    r"""
+    Calculate mean and Gaussian curvature from a primary surface with a periodic
+    buffer.
+
+    Adds a periodic buffer around the primary surface and calls
+    :func:`curvature_with_edge_pad`.
 
     Parameters
     ----------
     z_surface : ndarray
-        Primary height field, shape ``(n_x_bins, n_y_bins)``.
+        Surface in the primary box, shape ``(n_x_bins, n_y_bins)``.
     dx : float
-        Bin spacing along ``x`` (Å).
+        Bin spacing along :math:`x` (Å).
     dy : float
-        Bin spacing along ``y`` (Å).
+        Bin spacing along :math:`y` (Å).
     edge_pad_bins : int
         Buffer width in bins on each side.
 
     Returns
     -------
     z_surface : ndarray
-        Same primary height (clipped identity of the wrap-padded array).
+        The original surface, returned after removing the extra padding added for
+        calculation.
     mean : ndarray
         Mean curvature on the primary grid.
     gaussian : ndarray
         Gaussian curvature on the primary grid.
-
-    Notes
-    -----
-    Used for average maps after optional FFT filtering, when atom images are no
-    longer available and the height field is already periodic on the primary
-    grid. The buffer is built with :func:`numpy.pad` ``mode='wrap'``.
     """
     p = int(edge_pad_bins)
     if p < 1:
