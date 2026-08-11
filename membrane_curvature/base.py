@@ -563,6 +563,7 @@ class MembraneCurvature(AnalysisBase):
                 )
                 avg_theta = np.full_like(self._fourier_theta_sum, np.nan)
             else:
+                assert self._fourier_theta_sum is not None
                 if n_dropped:
                     warnings.warn(
                         f'{n_dropped} of {self.n_frames} frames were excluded from the '
