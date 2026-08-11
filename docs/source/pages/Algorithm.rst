@@ -100,12 +100,13 @@ where the retained mode set :math:`\mathcal{M}` is the non-redundant list built 
 
 .. math::
    \mathcal{M} =
-   \big\{(m,n):\; m=1,\ldots,M,\; n=-N,\ldots,N\big\}
+   \big\{(m,n):\; m=1,\ldots,M_{\max},\; n=-N_{\max},\ldots,N_{\max}\big\}
    \;\cup\;
-   \big\{(0,n):\; n=1,\ldots,N\big\},
+   \big\{(0,n):\; n=1,\ldots,N_{\max}\big\},
 
-and the mean term :math:`A_{00}` corresponds to :math:`(m,n)=(0,0)` and it is kept
-outside the sum.
+where :math:`M_{\max}` and :math:`N_{\max}` are set by ``fourier_m`` and
+``fourier_n``. The mean term :math:`A_{00}` corresponds to
+:math:`(m,n)=(0,0)` and is kept outside the sum.
 
 Here, :math:`k_x` and :math:`k_y` are the fundamental wavevector components:
 
@@ -123,7 +124,7 @@ The Fourier method in MembraneCurvature is conceptually related to Fourier
 surface modeling [CAG2009]_ and molecular Fourier shape descriptors [JMG1988]_,
 but it is not a direct implementation of either paper. The least-squares
 height-field fit used in MembraneCurvature is tailored to the AtomGroup of
-reference given their cordinates.
+reference given their coordinates.
 
 .. [CAG2009] Shen et al., *Fourier method for large-scale surface modeling and registration*,
    Computers & Graphics (2009), doi: `10.1016/j.cag.2009.03.002`_.
