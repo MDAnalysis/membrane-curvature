@@ -87,14 +87,25 @@ The basis is periodic on the simulation box with periods :math:`L_x` and :math:`
 so the fitted surface is consistent with periodic boundary conditions in :math:`x` and
 :math:`y`.
 
-The Fourier expansion used as a basis function is given by:
+The Fourier expansion used as a basis is given by:
 
 .. math::
-
-   z(x, y) = A_{00} + \sum_{m=1}^{M}\sum_{n=1}^{N}\left[
+   z(x, y) = A_{00} + \sum_{(m,n)\,\in\,\mathcal{M}}\left[
      A_{mn}\cos\!\big(k_x m x + k_y n y\big)
      +\,B_{mn}\sin\!\big(k_x m x + k_y n y\big)
-   \right].
+   \right],
+
+where the retained mode set :math:`\mathcal{M}` is the non-redundant list built by
+:func:`~membrane_curvature.fourier_surface.fourier_mode_list`:
+
+.. math::
+   \mathcal{M} =
+   \big\{(m,n):\; m=1,\ldots,M,\; n=-N,\ldots,N\big\}
+   \;\cup\;
+   \big\{(0,n):\; n=1,\ldots,N\big\},
+
+and the mean term :math:`A_{00}` corresponds to :math:`(m,n)=(0,0)` and it is kept
+outside the sum.
 
 Here, :math:`k_x` and :math:`k_y` are the fundamental wavevector components:
 
@@ -102,10 +113,11 @@ Here, :math:`k_x` and :math:`k_y` are the fundamental wavevector components:
 
   k_x = \frac{2\pi}{L_x}, \qquad k_y = \frac{2\pi}{L_y}
 
-therefore the phase for the mode ``(m,n)`` is
+so the phase for mode ``(m,n)`` is
 
-.. math ::
-  (k_x m x + k_y n y).
+.. math::
+
+  \phi_{mn} = k_x m x + k_y n y.
 
 The Fourier method in MembraneCurvature is conceptually related to Fourier
 surface modeling [CAG2009]_ and molecular Fourier shape descriptors [JMG1988]_,
