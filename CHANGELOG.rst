@@ -3,11 +3,13 @@ Membranecurvature CHANGELOG
 
 ---
 
+* Calculate analytic derivatives for curvature calculations in Fourier surface method for
+  ``curvature_on='average_surface'`` (PR #272)
 * Improve API documentation: MembraneCurvature class docstring (PR #258), move optional params to subsection
   in surface methods and simplify Fourier docstrings (PR #241)
 * Expose and document ``nyquist_q`` to set manual FFT filter bounds (PR #241)
 * Enabled ``curvature_on`` kwarg to calculate curvature as ``per-frame`` average or as
-  ``'average_surface'``.
+  ``'average_surface'`` (PR #250)
 * Added ``surface_method='binning_nearest'`` as a new surface method (PR #246)
 * Feature: Added periodic edge padding for the binning surface method (PR #238)
 * Refactored binning surface method to use ``np.add.at`` for improved performance (PR #240)

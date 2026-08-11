@@ -330,7 +330,7 @@ def _fourier_fit_from_atoms(
     M: int,
     N: int,
     rcond: float | None = None,
-) -> tuple[float, float, float, dict[tuple[int, int], tuple[float, float]]]:
+) -> tuple[float, float, float, dict[tuple[int, int], tuple[float, float]], np.ndarray]:
     r"""
     Fit Fourier coefficients to atom heights, without evaluating on a grid.
 
@@ -359,6 +359,9 @@ def _fourier_fit_from_atoms(
         Mean height coefficient :math:`A_{00}`.
     coeffs : dict[tuple[int, int], tuple[float, float]]
         Mapping ``(m, n) -> (A, B)`` cosine and sine coefficients per mode.
+    theta : ndarray, shape (n_coefficients,)
+        Coefficient vector (index ``0`` is :math:`A_{00}`, then cosine/sine
+        pairs in :func:`fourier_mode_list` order).
 
     Raises
     ------
@@ -398,7 +401,7 @@ def _fourier_fit_from_atoms(
             stacklevel=2,
         )
     A00, coeffs = _unpack_coefficients(theta, modes)
-    return Lx, Ly, A00, coeffs
+    return Lx, Ly, A00, coeffs, theta
 
 
 def _harmonic_height_and_phi_derivatives(
@@ -652,7 +655,7 @@ def fourier_height_from_atoms(
         If the least-squares system is rank-deficient or underdetermined.
     """
     validate_positive_bin_counts(n_x_bins, n_y_bins)
-    Lx, Ly, A00, coeffs = _fourier_fit_from_atoms(
+    Lx, Ly, A00, coeffs, _theta = _fourier_fit_from_atoms(
         positions,
         x_range,
         y_range,
@@ -713,7 +716,7 @@ def fourier_height_derivatives_from_atoms(
         If the least-squares system is rank-deficient or underdetermined.
     """
     validate_positive_bin_counts(n_x_bins, n_y_bins)
-    Lx, Ly, A00, coeffs = _fourier_fit_from_atoms(
+    Lx, Ly, A00, coeffs, _theta = _fourier_fit_from_atoms(
         positions,
         x_range,
         y_range,
