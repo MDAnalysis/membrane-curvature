@@ -68,7 +68,7 @@ has three methods available, selected via the ``surface_method`` argument:
 
   Grid corners are placed on a regular grid and the height at each grid corner
   is set to the :math:`z`-coordinate of the nearest lipid in the :math:`xy` plane.
-  Partial derivatives   are estimated numerically from the discrete height field using
+  Partial derivatives are estimated numerically from the discrete height field using
   :func:`numpy.gradient` with the physical bin spacing.
   See :mod:`~membrane_curvature.binning_nearest_surface` for details.
 
@@ -81,11 +81,18 @@ has three methods available, selected via the ``surface_method`` argument:
 
 ``surface_method='fourier'`` is the default method used in Membrane Curvature.
 The Fourier method fits a truncated periodic 2D Fourier series to atom heights
-by linear least squares at each frame. 
-The truncation is controlled by ``fourier_m`` and ``fourier_n`` (default ``2``).
-The basis is periodic on the simulation box with periods :math:`L_x` and :math:`L_y`,
-so the fitted surface is consistent with periodic boundary conditions in :math:`x` and
-:math:`y`.
+by linear least squares at each frame.
+
+The truncation is controlled by ``fourier_m`` and ``fourier_n``.
+The basis is periodic on the fitted domain with periods :math:`L_x` and
+:math:`L_y` from ``x_range`` and ``y_range``, by default matching the simulation box.
+Hence, the fitted surface is consistent with periodic boundary conditions in
+:math:`x` and :math:`y`.
+
+Note that ``wrap``, ``padding``, and ``fft_filter`` are not used with the Fourier method.
+``wrap`` defaults to ``False``. Setting ``wrap=True``, ``padding=True``, or an
+``fft_filter`` dictionary raises :class:`ValueError`. Periodicity is handled by
+the Fourier basis itself.
 
 The Fourier expansion used as a basis is given by:
 
@@ -132,9 +139,9 @@ reference given their coordinates.
 .. [JMG1988] Leicester et al., *Description of molecular surface shape using Fourier descriptors*,
    Journal of Molecular Graphics (1988), doi: `10.1016/0263-7855(88)85008-2`_.
 
-The full Fourier surface workflow comprises six steps, where the first four steps build and
+The full Fourier surface workflow comprises six steps. The first four build and
 solve a linear model that reconstructs the height field from plane-wave basis
-functions. The final two steps evaluate the fitted surface and its derivatives
+functions. The final two evaluate the fitted surface and its derivatives
 analytically on a grid of bin centres. In the following sections, we describe the
 overall workflow implemented in MembraneCurvature. For details on each step and
 the associated functions, see the API documentation in
@@ -148,30 +155,22 @@ total parameter count with :func:`~membrane_curvature.fourier_surface.n_fourier_
 This removes conjugate redundancy for real-valued surfaces and isolates the
 mean term.
 
+MembraneCurvature builds the mode list and parameter count from ``fourier_m``
+and ``fourier_n``, then validates that the
+:class:`~MDAnalysis.core.groups.AtomGroup` of reference contains at least that
+many atoms and raises a :class:`ValueError` if the selection is too small.
+
 |fourier_modes|
-
-2.1.2 Compute wavevectors
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-We then compute the wavevector components (:math:`k_x`, :math:`k_y`) for each mode
-using :func:`~membrane_curvature.fourier_surface._compute_wavevector`. These
-set the phase :math:`\phi = k_x x + k_y y` that appears in each cosine/sine
-basis function.
-
-MembraneCurvature builds the non-redundant mode list via :func:`~membrane_curvature.fourier_surface.fourier_mode_list(M, N)`
-and computes the total parameter count with :func:`~membrane_curvature.fourier_surface.n_fourier_parameters(M, N)`.
-MembraneCurvature then validates that the :class:`~MDAnalysis.core.groups.AtomGroup` of reference
-contains at least that many atoms and raises a :class:`ValueError` if the selection is too small.
-
 
 .. warning::
 
   The explanation above is for the users to understand how MembraneCurvature builds the mode list and parameter count internally.
 
-  **Do not pass the mode list** :func:`~membrane_curvature.fourier_surface.fourier_mode_list(M, N)`
-  **or parameter count** :func:`~membrane_curvature.fourier_surface.n_fourier_parameters(M, N)`
+  **Do not pass the mode list** :func:`~membrane_curvature.fourier_surface.fourier_mode_list`
+  **or parameter count** :func:`~membrane_curvature.fourier_surface.n_fourier_parameters`
   **directly. MembraneCurvature builds them internally.**
 
-  **Users choose the Fourier truncation via the constructor arguments** ``fourier_m`` **and** ``fourier_n``
+  **Users choose the Fourier truncation via the constructor arguments** ``fourier_m`` **and** ``fourier_n``.
   By passing the maximum mode indices, MembraneCurvature builds the actual mode list and computes the total
   parameter count.
 
@@ -185,23 +184,28 @@ contains at least that many atoms and raises a :class:`ValueError` if the select
   increase these values only while curvature improves systematically rather than
   becoming dominated by noise.
 
+2.1.2 Compute wavevectors
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+For each retained mode, :func:`~membrane_curvature.fourier_surface._compute_wavevector`
+computes the wavevector components that set the phase
+:math:`\phi_{mn} = k_x m x + k_y n y` in the cosine and sine basis functions.
 
 
 .. _build-design-matrix:
 
 2.1.3 Build design matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-We then build the design matrix with :func:`~membrane_curvature.fourier_surface._build_fourier_matrix`.
-Each row of the design matrix corresponds to an atom position and columns are the constant offset
-followed by :math:`\cos(\mathbf{k}\cdot\mathbf{r})`, :math:`\sin(\mathbf{k}\cdot\mathbf{r})`
-pairs for every retained mode. This matrix encodes the linear relation between the
-Fourier coefficients and the observed heights.
+:func:`~membrane_curvature.fourier_surface._build_fourier_matrix` builds the
+design matrix :math:`\mathbf{\Phi}` with shape :math:`(N,P)`. Here,
+:math:`N` is the number of atoms in the
+:class:`~MDAnalysis.core.groups.AtomGroup` of reference, and
+:math:`P = 1 + 2\,n_{\text{modes}}` is the number of Fourier parameters.
 
 The design matrix :math:`\mathbf{\Phi}` is a matrix of shape :math:`(N, P)` where
 :math:`N` is the number of atoms in the :class:`~MDAnalysis.core.groups.AtomGroup`
 of reference, and :math:`P` is the number of parameters. :math:`P` is defined
 as :math:`P = 1 + 2\,n_{\text{modes}}` where :math:`n_{\text{modes}}` is the number of
-the k retained Fourier modes. 
+the :math:`k` retained Fourier modes.
 
 We can conceptualize :math:`\mathbf{\Phi}` as a matrix with rows corresponding to atom positions
 and columns corresponding to the basis functions (cosine and sine of the wavevector :math:`k`)
@@ -257,7 +261,7 @@ so columns appear as ``1, cos_{(m1,n1)}, sin_{(m1,n1)}, cos_{(m2,n2)}, sin_{(m2,
 
 2.1.4 Solve least-squares system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-We then solve the least-squares system for the Fourier coefficients using
+MembraneCurvature solves for the Fourier coefficients with
 :func:`~membrane_curvature.fourier_surface._fourier_fit_from_atoms`, which
 calls :func:`~membrane_curvature.fourier_surface._solve_design_least_squares_svd`.
 The latter function solves the linear least-squares system via truncated SVD.
@@ -277,7 +281,8 @@ by minimizing the residual sum of squares between the observed heights and the f
    \operatorname{arg\,min}_{\boldsymbol{\theta}}
    \lVert \mathbf{\Phi}\,\boldsymbol{\theta} - \mathbf{z} \rVert_2^2
 
-via truncated SVD (:func:`~membrane_curvature.fourier_surface._solve_design_least_squares_svd`).
+via truncated SVD with :func:`~membrane_curvature.fourier_surface._solve_design_least_squares_svd`.
+
 Because the model is linear in
 :math:`\boldsymbol{\theta}`, no nonlinear optimisation is required.
 If the effective rank of :math:`\mathbf{\Phi}` is smaller than :math:`P`,
@@ -288,6 +293,23 @@ determined by the data.
 Overall, truncated SVD lets us fit the best surface even when the data can't uniquely
 determine every Fourier coefficient, and it reduces noise amplification in modes that
 are not well-determined by the data.
+
+2.1.5 Evaluate fitted surface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+With the fitted coefficients, MembraneCurvature evaluates the height field on a
+grid of bin centres with
+:func:`~membrane_curvature.fourier_surface._eval_fourier_surface`. The output
+surface has shape ``(n_x_bins, n_y_bins)``, matching the binning method grid.
+
+2.1.6 Evaluate analytic derivatives
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The same evaluation also returns the analytic first and second partial
+derivatives of the fitted series,
+:math:`\partial_x`, :math:`\partial_y`, :math:`\partial_{xx}`,
+:math:`\partial_{yy}`, and :math:`\partial_{xy}`, used for Monge-gauge
+curvature. These derivatives are exact for the fitted truncated series; they
+are not subject to finite-difference discretization error. Curvature accuracy
+still depends on how well that truncated series represents the atom heights.
 
 .. _binning_method:
 
@@ -438,7 +460,7 @@ offset by half a bin relative to the ``binning`` and ``fourier`` methods.
 Unlike the binning method, ``grid_origin`` can also determine the grid extent.
 With ``grid_origin='box'`` by default, the domain matches the simulation box.
 With ``grid_origin='lipid_bbox'``, the domain is the axis-aligned bounding box
-of the lipid reference points. Users can provided ``x_range`` and ``y_range`` to
+of the lipid reference points. Users can provide ``x_range`` and ``y_range`` to
 override the grid extent.
 
 
@@ -483,20 +505,21 @@ in a bin does not decide which lipids contribute.
 
 For every frame of the trajectory, the surface derived from the 
 :class:`~MDAnalysis.core.groups.AtomGroup` and according to the surface method selected (``'fourier'``, ``'binning'``,
-or ``'binning_nearest'``) is calculated and stored in the attribute :attr:`~MembraneCurvature.results.z_surface`.
+or ``'binning_nearest'``) is calculated and stored in the attribute
+:attr:`~membrane_curvature.base.MembraneCurvature.results.z_surface`.
 
 |derive_surfaces_comparison|
 
 Common to all methods is that the surface is derived from atom positions using the selected method
-and stored in :attr:`~MembraneCurvature.results.z_surface` for each frame.
+and stored in :attr:`~membrane_curvature.base.MembraneCurvature.results.z_surface` for each frame.
 
 However, the details of the surface derivation are different for each one of the three methods. 
 
 |per-frame-surface-paths|
 
 These per-frame surface arrays are fundamental to the calculation of mean and Gaussian curvature since they
-are the input for the two available paths to calculate curvature: by averaging the surface derivatives over
-the trajectory, or by calculating the surface from the surface obtained as an average over frames.
+are the input for the two available paths to calculate curvature: by averaging the per-frame curvature maps
+over the trajectory, or by calculating curvature once from the trajectory-averaged surface.
 
 In the following sections, we describe the details of surface derivation according to the selected method.
 
@@ -541,14 +564,22 @@ The final average curvature maps are stored in :attr:`MembraneCurvature.results.
     at every frame**.
 
   - With ``curvature_on='average_surface'``, **derivatives are calculated from the
-    average surface array**.
+    average surface array** :math:`\langle S \rangle`.
   
-  How these derivatives are obtained depends only on the
-  :attr:`~membrane_curvature.base.MembraneCurvature.surface_method` parameter: 
-  analytically from the Fourier series for ``fourier``, or with finite differences
-  for the ``binning`` and ``binning_nearest`` methods.
+  How :math:`\langle S \rangle` is built, and how its derivatives are obtained,
+  depends on the
+  :attr:`~membrane_curvature.base.MembraneCurvature.surface_method` parameter:
 
-  For more details, on the calculation of partial derivatives, see section
+  - With ``binning`` and ``binning_nearest``, :math:`\langle S \rangle` is the
+    time average of the per-frame height fields. Partial derivatives use finite
+    differences on that averaged array.
+
+  - With ``fourier``, MembraneCurvature averages the per-frame Fourier
+    coefficients :math:`\boldsymbol{\theta}` and rebuilds
+    :math:`\langle S \rangle = S(\langle\boldsymbol{\theta}\rangle)`. Partial
+    derivatives are evaluated analytically from that averaged series.
+
+  For more details on the calculation of partial derivatives, see section
   :ref:`calculate-derivatives`.
 
 In the following sections, we describe the details of the two paths to calculate curvature.
@@ -573,8 +604,28 @@ Both arrays have shape ``(n_frames, n_x_bins, n_y_bins)``.
 4.B Average surface (``curvature_on='average_surface'``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 With ``curvature_on='average_surface'``, :class:`~membrane_curvature.base.MembraneCurvature` calculates
-mean and Gaussian curvature once from the average surface, :math:`\langle S \rangle`, calculated
-over all frames in the trajectory.
+mean and Gaussian curvature once from the average surface, :math:`\langle S \rangle`.
+
+How :math:`\langle S \rangle` is obtained depends on ``surface_method``:
+
+- With ``binning`` or ``binning_nearest``, :math:`\langle S \rangle` is the time
+  average of the per-frame height fields stored in
+  :attr:`MembraneCurvature.results.z_surface`. Partial derivatives are estimated
+  with :func:`numpy.gradient` on that averaged array.
+
+- With ``fourier``, MembraneCurvature accumulates the per-frame Fourier
+  coefficient vectors :math:`\boldsymbol{\theta}`, averages the frames that
+  produce finite coefficients to :math:`\langle\boldsymbol{\theta}\rangle`, and
+  rebuilds the height field and its analytic derivatives from those averaged
+  coefficients. Because the Fourier height is linear in
+  :math:`\boldsymbol{\theta}`,
+
+  .. math::
+
+     \langle S \rangle = S(\langle\boldsymbol{\theta}\rangle).
+
+  The average surface and curvature therefore come from the same averaged
+  coefficients, so derivatives remain analytic.
 
 The resulting maps, :math:`H = H(\langle S \rangle)` and :math:`K = K(\langle S \rangle)`, are stored in
 :attr:`MembraneCurvature.results.average_mean` and :attr:`MembraneCurvature.results.average_gaussian`,
@@ -655,7 +706,9 @@ represents the atom heights.
 .. note::
 
   Because no finite-difference step is involved, the analytic derivatives
-  are exact for the fitted surface, regardless of grid resolution.
+  are exact for the fitted truncated series, regardless of grid resolution.
+  Curvature accuracy still depends on the truncation and the fit to the atom
+  heights.
 
 For details on the Fourier method, see API documentation in
 :mod:`~membrane_curvature.fourier_surface`.
@@ -728,6 +781,10 @@ How the average curvature maps are obtained depends on ``curvature_on``:
      \mathrm{average\_mean} = H(\langle S \rangle), \qquad
      \mathrm{average\_gaussian} = K(\langle S \rangle).
 
+  For ``fourier``, that average surface is
+  :math:`S(\langle\boldsymbol{\theta}\rangle)` as described in
+  :ref:`average_surface_path`.
+
 .. note::
 
    These paths are not equivalent because curvature is a non-linear function of
@@ -744,8 +801,10 @@ How the average curvature maps are obtained depends on ``curvature_on``:
    - ``curvature_on='average_surface'`` **reduces the contribution of transient
      thermal fluctuations and emphasizes persistent surface features**.
 
-   For both paths, :attr:`MembraneCurvature.results.average_z_surface` is the
-   time-averaged surface :math:`\langle S \rangle`.
+   For both paths, :attr:`MembraneCurvature.results.average_z_surface` stores
+   :math:`\langle S \rangle`: the time average of per-frame height fields for
+   the binning methods, or :math:`S(\langle\boldsymbol{\theta}\rangle)` for
+   ``fourier``.
 
 Optional
 --------
