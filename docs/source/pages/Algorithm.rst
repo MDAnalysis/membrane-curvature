@@ -781,19 +781,13 @@ How the average curvature maps are obtained depends on ``curvature_on``:
      \mathrm{average\_mean} = H(\langle S \rangle), \qquad
      \mathrm{average\_gaussian} = K(\langle S \rangle).
 
-  For ``fourier``, that average surface is
-  :math:`S(\langle\boldsymbol{\theta}\rangle)` as described in
-  :ref:`average_surface_path`.
+  .. note::
 
-.. note::
+    For ``surface_method='fourier'``, the average surface is
+    :math:`S(\langle\boldsymbol{\theta}\rangle)` as described in
+    :ref:`average_surface_path`.
 
-   These paths are not equivalent because curvature is a non-linear function of
-   the height field:
-
-   .. math::
-
-      \langle H \rangle \neq H(\langle S \rangle), \qquad
-      \langle K \rangle \neq K(\langle S \rangle).
+.. important::
 
    - ``curvature_on='per_frame'`` **preserves the mean contribution of
      instantaneous thermal fluctuations**.
@@ -806,20 +800,23 @@ How the average curvature maps are obtained depends on ``curvature_on``:
    the binning methods, or :math:`S(\langle\boldsymbol{\theta}\rangle)` for
    ``fourier``.
 
-Optional
---------
+Optional Parameters
+--------------------
 
 .. _binning-edge-padding:
 
-Edge padding (``padding=True``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Edge padding (``padding``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Padding is an optional step that can reduce finite difference artifacts at the
-edges of the grid. It is available for ``surface_method='binning'`` and
-``surface_method='binning_nearest'``, and for orthorhombic boxes only.
+Padding is an optional step that mitigates finite-difference artifacts at the grid edges.
+These artifacts are particularly pronounced for :ref:`gaussian-curvature`, where second-order
+derivatives amplify edge effects. Because padding is intended to reduce finite-difference
+artifacts, it is only available for ``surface_method='binning'`` and
+``surface_method='binning_nearest'``.
 
 .. warning::
 
+  **The padding option is only available for orthorhombic boxes only.**
   Tilted or triclinic boxes need lattice-vector replicas and are not supported.
   Running padding with other than orthorhombic boxes will raise an error.
 
@@ -840,7 +837,7 @@ Hence, the expanded grid has shape
 Mean and Gaussian curvature are evaluated on that padded height field, and the
 buffer is clipped back to the primary grid with
 :func:`~membrane_curvature.padding.clip_padded_grid`. The returned arrays have
-shape :math:`(n_{x\_bins}, n_{y\_bins})`, matching the primary grid size.
+shape ``(n_x_bins, n_y_bins)``, matching the primary grid size.
 
 |padding|
 
@@ -873,7 +870,7 @@ evaluate derivatives at the boundaries of the primary grid. Values of
 ``edge_pad_bins`` above 4 are unlikely to change curvature and mainly
 increase computational cost.
 
-Padding alone is usually enough to reduce edge artifacts, so ``fft_filter`` is not
+Since padding alone is usually enough to reduce edge artifacts, ``fft_filter`` is not
 needed for that purpose. Using both optional parameters is possible. In that case,
 MembraneCurvature first filters the time-averaged surface, then calculates
 average curvature from the filtered surface. At that stage the buffer is added
@@ -978,11 +975,11 @@ time averages of the per-frame curvature arrays.
   :alt: PerFrameSurfacesPaths
 
 .. |path-per-frame| image:: ../_static/path-per-frame.png
-  :width: 500
+  :width: 700
   :alt: PathPerFrame
 
 .. |path-average-surface| image:: ../_static/path-average-surface.png
-  :width: 500
+  :width: 700
   :alt: PathAvgSurface
 
 
