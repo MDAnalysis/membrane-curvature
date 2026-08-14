@@ -102,7 +102,7 @@ class MembraneCurvature(AnalysisBase):
         Number of bins in grid in the $x$ dimension.
     n_y_bins : int, optional, [``100``]
         Number of bins in grid in the $y$ dimension.
-    curvature_on : {None, 'per_frame', 'average'}, optional, [``None``]
+    curvature_on : {None, 'per_frame', 'average_surface'}, optional, [``None``]
         Mode to calculate curvature on. ``None`` runs as 'per_frame'.
         See :class:`~membrane_curvature.base.MembraneCurvature.CurvatureOn` for more details.
     padding : bool, optional, [``False``]
