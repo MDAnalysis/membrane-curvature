@@ -34,8 +34,9 @@ membrane-only systems are addressed in this `blog post`_.
 .. warning::
 
   MembraneCurvature does not identify leaflets. It relies on the user to pass
-  the correct :class:`~MDAnalysis.core.groups.AtomGroup` with ``select``. If
-  both leaflets are included in the selection, they are treated as a single surface.
+  the correct :class:`~MDAnalysis.core.groups.AtomGroup` with ``select``. Be aware 
+  of the selection you provide: if both leaflets are included in the selection,
+  they are treated as a single surface, hence producing incorrect results.
 
 1.1 Fourier surface method (default)
 ------------------------------------
@@ -53,6 +54,7 @@ to rely on the defaults:
 
     universe = mda.Universe(Martini_membrane_gro)
 
+    # run with all default values
     curvature_upper_leaflet = MembraneCurvature(universe,
                                                 select='resid 1-225 and name PO4',
                                                 ).run()
@@ -63,7 +65,7 @@ to rely on the defaults:
 
 .. warning::
 
-  Use ``fourier_m =2`` and ``fourier_n = 2`` (default values) unless you need shorter
+  Use ``fourier_m=2`` and ``fourier_n=2``, the default values, unless you need shorter
   wavelengths. Increasing ``fourier_m`` and ``fourier_n`` may introduce noise in the fit
   rather than improving curvature results.
 
@@ -73,7 +75,7 @@ to rely on the defaults:
   conditions are handled by the Fourier fit, passing ``wrap=True`` raises a :exc:`ValueError`.
 
 The code above is equivalent to running with explicit parameters for ``surface_method``,
-``fourier_m``, and ``fourier_n`` with the default values:
+``fourier_m``, ``fourier_n``, and ``curvature_on`` with the default values:
 
 .. code-block:: python
 
@@ -82,6 +84,7 @@ The code above is equivalent to running with explicit parameters for ``surface_m
                                                 surface_method='fourier',
                                                 fourier_m=2,
                                                 fourier_n=2,
+                                                curvature_on='per_frame',
                                                 ).run()
 
 Note that by default, MembraneCurvature runs with ``curvature_on='per_frame'`` when
@@ -155,7 +158,7 @@ Binning methods calculate curvature using finite differences on the derived surf
 Two binning methods are available: ``'binning'`` and ``'binning_nearest'``.
 
 For these methods, the optional parameter ``padding`` is available to reduce edge artifacts at the
-simulation box boundaries, particularly for Gaussian curvature given that second-order derivatives
+simulation box boundaries, particularly for Gaussian curvature given that second order derivatives
 amplify edge effects. Section :ref:`padding_usage` includes a usage example.
 
 The optional parameter ``fft_filter`` is also available for binning methods, with a different
@@ -271,8 +274,7 @@ The details of the difference between the two binning methods are described in t
 1.2.3 Periodic edge padding
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-With the parameter ``padding``,
-:class:`~membrane_curvature.base.MembraneCurvature` adds a buffer around the
+With the parameter ``padding``, MembraneCurvature adds a buffer around the
 primary grid, calculates curvature on the expanded grid, and then clips the
 results back to the initial ``n_x_bins`` x ``n_y_bins`` size.
 
@@ -282,7 +284,8 @@ results back to the initial ``n_x_bins`` x ``n_y_bins`` size.
   ``surface_method='binning_nearest'``, and only when the simulation box
   is orthorhombic.
 
-Padding is optional and is set to ``False`` by default. To use padding, set ``padding=True``:
+Padding is optional and is set to ``False`` by default. To apply edge periodic padding,
+run with ``padding=True``:
 
 .. code-block:: python
 
@@ -314,8 +317,8 @@ raise the usual ``wrap == False`` warning when padding is enabled.
 
   Padding runs with ``edge_pad_bins=2`` by default. A buffer of 2 bins on each side
   is usually enough to fix edge artifacts in the calculation of second derivatives of
-  Gaussian curvature. Values above ``4`` are unlikely to change the curvature values
-  and mainly increase runtime. In that case MembraneCurvature emits a
+  Gaussian curvature. Values above ``edge_pad_bins=4`` are unlikely to change the curvature
+  values and mainly increase runtime. In that case MembraneCurvature emits a
   :class:`UserWarning`. If ``edge_pad_bins`` is larger than ``n_x_bins`` or
   ``n_y_bins``, a :exc:`ValueError` is raised.
 
@@ -375,9 +378,8 @@ An example of running an analysis with the auto filtering mode (``fft_filter='au
 
 .. tip::
 
-  You can combine ``fft_filter`` with ``padding=True``. Padding handles
-  edge artifacts from finite differences. Enable ``fft_filter`` only if you
-  want to filter the averaged height field in reciprocal space to remove
+  You can combine ``fft_filter`` with ``padding=True``. Enable ``fft_filter``
+  only if you want to filter the averaged height field in reciprocal space to remove
   high-frequency noise.
 
 .. important::
@@ -386,8 +388,7 @@ An example of running an analysis with the auto filtering mode (``fft_filter='au
   MembraneCurvature selects ``curvature_on='average_surface'``. Therefore,
   :attr:`~membrane_curvature.base.MembraneCurvature.results.average_mean` and
   :attr:`~membrane_curvature.base.MembraneCurvature.results.average_gaussian`
-  are calculated from the filtered average surface. See section
-  :ref:`curvature-on` for the available averaging modes.
+  are calculated from the filtered average surface.
 
   With an explicit ``curvature_on='per_frame'``, the filtered surface is still
   stored in
@@ -495,7 +496,8 @@ or set it explicitly:
 
     gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
-To calculate curvature from the average surface instead:
+To calculate curvature from the average surface, set the parameter ``curvature_on='average_surface'``
+explicitly:
 
 .. code-block:: python
 
@@ -508,11 +510,15 @@ To calculate curvature from the average surface instead:
 
     gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
-In both examples above, the per-frame arrays
-:attr:`~membrane_curvature.base.MembraneCurvature.results.mean` and
-:attr:`~membrane_curvature.base.MembraneCurvature.results.gaussian` are still
-stored. The choice of ``curvature_on`` changes how the average maps are
-obtained, not whether per-frame results are kept.
+
+.. important::
+
+  In both examples above, the per-frame arrays
+  :attr:`~membrane_curvature.base.MembraneCurvature.results.mean` and
+  :attr:`~membrane_curvature.base.MembraneCurvature.results.gaussian` are still
+  stored. The choice of ``curvature_on`` changes how the average maps are
+  obtained, not whether per-frame results are stored.
+  **The per-frame arrays are always stored in every run.**
 
 .. _membrane-protein:
 
