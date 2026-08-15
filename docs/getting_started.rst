@@ -5,6 +5,7 @@ Getting Started
 molecular dynamics simulations. This tool enables the user to derive surfaces from atoms of 
 reference (contained in an ``AtomGroup``) and calculate its associated mean and Gaussian curvature.
 
+.. _install_membrane_curvature:
 
 Installation
 ------------
