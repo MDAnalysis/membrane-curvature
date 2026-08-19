@@ -3,6 +3,7 @@ Membranecurvature CHANGELOG
 
 ---
 
+* Raise ValueError when ``fft_filter`` is not None for Fourier method (PR #279)
 * Revamp Usage doc page (PR #276)
 * Update Algorithm doc page with three surface methods and optional padding/FFT filtering (PR #266)
 * Calculate analytic derivatives for curvature calculations in Fourier surface method for
