@@ -345,8 +345,8 @@ class MembraneCurvature(AnalysisBase):
         if self.surface_method == self.SurfaceMethod.FOURIER:
             if wrap is True:
                 raise ValueError("wrap=True is only valid when surface_method='binning'")
-            if isinstance(fft_filter, dict):
-                raise ValueError('fft_filter dict is only allowed for binning surface methods')
+            if fft_filter is not None:
+                raise ValueError("fft_filter is only valid for surface_method='binning' or 'binning_nearest'")
             if self.padding:
                 raise ValueError(
                     "padding=True is only valid for surface_method='binning' or surface_method='binning_nearest'"

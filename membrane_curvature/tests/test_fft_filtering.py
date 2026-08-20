@@ -236,14 +236,15 @@ def test_average_curvature_order_filter_then_curvature():
     assert not np.allclose(correct, wrong)
 
 
-def test_membrane_curvature_fourier_rejects_fft_filter_dict(universe_dummy_wrap):
-    with pytest.raises(ValueError, match='fft_filter dict is only allowed'):
+@pytest.mark.parametrize('fft_filter', ['auto', {'q': (0.0, 0.2)}])
+def test_membrane_curvature_fourier_rejects_fft_filter(universe_dummy_wrap, fft_filter):
+    with pytest.raises(ValueError, match='fft_filter is only valid'):
         MembraneCurvature(
             universe_dummy_wrap,
             surface_method='fourier',
             fourier_m=1,
             fourier_n=1,
-            fft_filter={'q': (0.0, 0.2)},
+            fft_filter=fft_filter,
         )
 
 
