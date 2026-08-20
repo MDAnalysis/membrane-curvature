@@ -23,15 +23,17 @@ on the complexity of the fix).
 
 ## Supported Versions
 
-Only the main branch (the 2.x release line) receives updates, including
-security fixes. Older release lines (e.g., 1.1.x) are not maintained. If you are
-using an older version, please upgrade to the latest 2.x release to receive
-fixes.
+**Security fixes are applied only to the latest release.** Older releases do not
+receive fixes. If you are using an older version of MembraneCurvature, please
+upgrade to the latest release to receive security updates.
+
+> [!NOTE]
+> The current supported release line is 2.x (latest: 2.0.0).
 
 When reporting a potential vulnerability, confirm that it reproduces against
-the latest 2.x version.
+the latest release.
 
 | Version       | Supported          |
 | ------------- | ------------------ |
-| 2.0.0         | ✅ |
+| Latest 2.x release | ✅ |
 | < 1.1.2       | ❌ |
