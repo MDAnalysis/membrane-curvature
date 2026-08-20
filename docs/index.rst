@@ -3,66 +3,86 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MembraneCurvature's Documentation
+MembraneCurvature's Documentation
 =========================================================
 
 **Minimum MDAnalysis version:** |MDAnalysis_version|
 
 **Last updated:** |today|
 
-The MDAnalysis **MembraneCurvature** tool module calculates the Gaussian and mean 
-curvature from Molecular Dynamics (MD) simulations. 
+The MDAnalysis **MembraneCurvature** tool calculates mean and Gaussian
+curvature from Molecular Dynamics (MD) simulations.
 
 ..  figure:: source/_static/PM_Membrane_EBO.png
     :align: center
 
-**MembraneCurvature** derives 2D curvature profiles of a surface of reference.
-To suit the needs of your system, we offer flexible atom selection that will
-enable you to use the most convenient ``AtomGroup`` to extract curvature from your
-MD simulations!
-
-This is an example on how to use MembraneCurvature:
-
-.. code-block:: python
-
-      import MDAnalysis as mda
-      from membrane_curvature.base import MembraneCurvature
-
-      u = mda.Universe(coordinates, trajectory)
-      mc = MembraneCurvature(u).run()
-
-      surface = mc.results.average_z_surface
-      mean_curvature = mc.results.average_mean
-      gaussian_curvature = mc.results.average_gaussian
-
-
-You can find more details on how to use MembraneCurvature in the `Usage`_ page.
+**MembraneCurvature** derives 2D curvature maps from a surface of reference.
+It offers flexible atom selection to use the most convenient ``AtomGroup``
+to extract curvature from your MD simulations.
 
 Features
 ----------
 
 MembraneCurvature allows you to:
 
-- Derive 2D surface profiles from MD simulations using an atom selection as reference with two
-  different methods: binning or Fourier.
-   - Optional periodic edge padding to reduce finite difference artifacts (binning method only).
-   - Optional brick-wall FFT filter on averaged surface maps (binning method only).
-- Calculate the mean and Gaussian curvatures of the derived surfaces.
-- Get per-frame or averaged results for surface, mean and Gaussian curvature.
+- Derive 2D surface profiles from MD simulations using an atom selection as reference with three
+  different methods via the ``surface_method`` parameter: ``'fourier'`` (default),
+  ``'binning_nearest'``, or ``'binning'``.
+- Calculate mean and Gaussian curvature from the derived surface.
+- Choose where curvature is evaluated with the ``curvature_on`` parameter:
+  ``'per_frame'``, to get per-frame curvature maps, or
+  ``'average_surface'``, to get curvature from the time-averaged surface.
+- Control the surface calculation for the binning methods with two optional parameters:
+   - ``padding``: periodic edge padding to reduce finite difference artifacts.
+   - ``fft_filter``: a brick-wall FFT filter to remove high-frequency noise from the averaged surface.
 
 Why MembraneCurvature?
 -------------------------
-**MembraneCurvature** is a user-friendly, actively-maintained, well-documented tool 
-in Python 3 to derive 2D maps of membrane curvature from MD Simulations, using the most recent version of `MDAnalysis`_ 
-Are you interested in calculating mean and Gaussian curvature from MD simulations? This tool is for you!
+**MembraneCurvature** is a user-friendly, actively maintained, well-documented tool
+to derive 2D curvature maps from MD simulations, using the most recent version of `MDAnalysis`_.
+Are you interested in mean and Gaussian curvature of your membranes? This tool is for you!
 
 
 Installation
 --------------
 
-MembraneCurvature is available via pip, conda, and uv. Please refer to the `Installation`_ section in the `Getting Started`_ page for
-detailed installation instructions.
+MembraneCurvature is available via pip, conda, and uv. Please refer to the
+:ref:`install_membrane_curvature` section in :doc:`getting_started` for detailed
+installation instructions.
 
+
+Quick example
+-------------
+
+.. code-block:: python
+
+      import MDAnalysis as mda
+      from membrane_curvature.base import MembraneCurvature
+      from MDAnalysis.tests.datafiles import XTC_MEMPROT, GRO_MEMPROT
+
+      universe = mda.Universe(GRO_MEMPROT, XTC_MEMPROT)
+
+      mc = MembraneCurvature(universe,
+                             select='resid 297-517 and name P'
+                             ).run()
+
+      mean_curvature = mc.results.average_mean
+      gaussian_curvature = mc.results.average_gaussian
+
+.. note::
+
+   This example uses test trajectory files from `MDAnalysisTests`_. See
+   :ref:`install_membrane_curvature` for installation instructions.
+
+You can find more details on how to use MembraneCurvature in the :ref:`usage`
+page and in :doc:`getting_started`.
+
+
+License 
+-----------
+
+Source code included in this project is available under the `GNU Public
+License v3`_ from the `MembraneCurvature repository`_.
 
 .. Contents
 .. ========
@@ -78,29 +98,11 @@ detailed installation instructions.
    ./source/pages/Visualization
    ./source/pages/Tutorials
 
-.. autosummary::
-   :toctree: autosummary
-   :recursive:
-
-
-
-License 
------------
-
-Source code included in this project is available under the `GNU Public
-License v3`_ from `github.com/MDAnalysis/membrane_curvature`_.
-
 
 .. _`GNU Public License v3`: https://www.gnu.org/licenses/gpl-3.0.en.html
 .. _MDAnalysis: https://www.mdanalysis.org
-.. _`github.com/MDAnalysis/membrane_curvature`: https://github.com/MDAnalysis/membrane-curvature
-.. _`Usage`: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
+.. _`MembraneCurvature repository`: https://github.com/MDAnalysis/membrane-curvatur
 .. _`MDAnalysisTests`: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
-.. _`MDAnalysisData`: https://www.mdanalysis.org/MDAnalysisData/
-.. _`Installation Quick Start`: https://www.mdanalysis.org/pages/installation_quick_start/#installation-quick-start
-.. _`Installation`: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
-.. _`Getting Started`: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html
-.. _`conda`: https://conda.io/en/latest/
 .. |MDAnalysis_version| replace:: 2.4.0
 
 Indices and tables
