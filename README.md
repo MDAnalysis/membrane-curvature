@@ -168,11 +168,8 @@ gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 <details>
 <summary><code>surface_method='binning_nearest'</code></summary>
 
-Set `surface_method='binning_nearest'` to run membrane curvature using a
-binning method that assigns each grid point the `z` coordinate of the nearest
-lipid in the `xy` plane. When running with this method, omit the `wrap`
-parameter, or set it to `False`. Coordinate wrapping is not valid with this
-method.
+Set `surface_method='binning_nearest'`. Wrapping is not valid with this method.
+Omit the `wrap` parameter, or set it to `False`.
 
 ```python
 import MDAnalysis as mda
@@ -198,21 +195,19 @@ gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
 ### Binning methods with padding
 
-With the parameter `padding`, MembraneCurvature adds a buffer around the
-primary grid, calculates curvature on the expanded grid, and then clips the
-results back to the initial `n_x_bins` x `n_y_bins` size.
+Padding is optional and is set to `False` by default. To apply edge periodic
+padding, run with `padding=True`.
 
 > [!WARNING]
 > Padding is only available with `surface_method='binning'` or
 > `surface_method='binning_nearest'` and **requires orthorhombic boxes**.
 
-Padding is optional and is set to `False` by default. To apply edge periodic
-padding, run with `padding=True`. The example below uses
-`surface_method='binning_nearest'`. The same option works with
-`surface_method='binning'`.
-
 <details>
 <summary><code>surface_method='binning_nearest'</code> with padding</summary>
+
+The example below uses
+`surface_method='binning_nearest'`. The same option works with
+`surface_method='binning'`.
 
 ```python
 import MDAnalysis as mda
@@ -241,8 +236,7 @@ gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 
 FFT filtering is available for the binning methods
 `surface_method='binning'` and `surface_method='binning_nearest'` via the
-parameter `fft_filter`. This option applies a brick-wall passband to the
-averaged surface array.
+parameter `fft_filter`.
 
 FFT filtering is disabled by default (`fft_filter=None`). To enable automatic
 filtering, pass `fft_filter='auto'`.
@@ -256,6 +250,10 @@ filtering, pass `fft_filter='auto'`.
 
 <details>
 <summary><code>surface_method='binning'</code> with FFT filtering</summary>
+
+The example below uses
+`surface_method='binning'`. The same option works with
+`surface_method='binning_nearest'`.
 
 ```python
 import MDAnalysis as mda
