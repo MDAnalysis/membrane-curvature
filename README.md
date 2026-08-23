@@ -85,7 +85,7 @@ or via `pip`:
 pip install --upgrade MDAnalysisTests MDAnalysisData
 ```
 
-## Usage
+## Basic usage
 
 MembraneCurvature requires at least two inputs: a universe and an atom selection. The universe is the object with coordinates and trajectory information, and the atom selection is the atoms of reference to derive the surface from.
 
@@ -110,20 +110,7 @@ mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
 gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 ```
 
-MembraneCurvature calculates curvature at every frame of the trajectory. To access the per-frame arrays, use `results.z_surface[<frame_id>]`, `results.mean[<frame_id>]`, and `results.gaussian[<frame_id>]`. For the example above, the surface, mean, and Gaussian curvature for the first frame are accessed with:
-
-```python
-# to access the surface for the first frame
-surface_first_frame = curvature_upper_leaflet.results.z_surface[0]
-
-# access the mean curvature for the last frame
-mean_last_frame = curvature_upper_leaflet.results.mean[-1]
-
-# access the Gaussian curvature for the frame 10
-gaussian_frame_10 = curvature_upper_leaflet.results.gaussian[10]
-```
-
-MembraneCurvature supports three surface methods: Fourier, binning, and binning nearest. Each method has its own set of parameters that can be used to control the surface calculation. For more examples on how to run MembraneCurvature using the different surface methods, please check the [Usage] page.
+MembraneCurvature supports three surface methods: [Fourier], [binning], and [binning-nearest]. Each method has its own set of parameters that can be used to control the surface calculation. For more examples on how to run MembraneCurvature using the different surface methods, please check the [Usage] page.
 
 To plot results from MembraneCurvature, please check the [Visualization] page.
 
@@ -199,6 +186,9 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [code_of_conduct]: https://www.mdanalysis.org/conduct/
 [Installation]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
 [Installing development dependencies with pip]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/getting_started.html#installing-development-dependencies-with-pip
+[Fourier]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/api/surface_methods/fourier_surface.html
+[binning]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/api/surface_methods/binning_surface.html
+[binning-nearest]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/api/surface_methods/binning_nearest_surface.html
 [Usage]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
 [License]: https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE
 [documentation]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/index.html#
