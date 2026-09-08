@@ -21,13 +21,16 @@ Molecular Dynamics simulations.
 
 With MembraneCurvature you can:
 
-- Derive 2D surface profiles from MD simulations using an atom selection as reference with two
-  different methods: binning or Fourier.
-  - Optional periodic edge padding to reduce finite difference artifacts (binning method only).
-  - Optional brick-wall FFT filter on averaged surface maps (binning method only).
-- Calculate the mean and Gaussian curvatures of the derived surfaces.
-- Get per-frame or averaged results for surface, mean and Gaussian curvature.
-- Live a happier life.
+- Derive 2D surface profiles from MD simulations using an atom selection as reference with three
+  different methods via the `surface_method` parameter: `'fourier'` (default),
+  `'binning'`, or `'binning_nearest'`.
+- Calculate mean and Gaussian curvature from the derived surface.
+- Choose where curvature is evaluated with the `curvature_on` parameter:
+  `'per_frame'`, to get per-frame curvature maps, or
+  `'average_surface'`, to get curvature from the time-averaged surface.
+- Control the surface calculation for the binning methods with two optional parameters:
+   - `padding`: periodic edge padding to reduce finite difference artifacts.
+   - `fft_filter`: a brick-wall FFT filter to remove high-frequency noise from the averaged surface.
 
 ## Installation
 
@@ -82,12 +85,11 @@ or via `pip`:
 pip install --upgrade MDAnalysisTests MDAnalysisData
 ```
 
-## Usage
+## Basic usage
 
-### With the Fourier method
+MembraneCurvature requires at least two inputs: a universe and an atom selection. The universe is the object with coordinates and trajectory information, and the atom selection is the atoms of reference to derive the surface from.
 
-This is a quick example on how to run MembraneCurvature with the default
-surface method (Fourier):
+The following example shows how to run MembraneCurvature with the default surface method (Fourier) using the PO4 beads in the upper leaflet as atoms of reference to derive curvature:
 
 ```python
 import MDAnalysis as mda
@@ -96,130 +98,21 @@ from MDAnalysis.tests.datafiles import Martini_membrane_gro
 
 universe = mda.Universe(Martini_membrane_gro)
 
-# run with the default surface_method - Fourier
+# run with all default values
 curvature_upper_leaflet = MembraneCurvature(universe,
-                                            select='resid 1-225 and name PO4'
+                                            select='resid 1-225 and name PO4',
                                             ).run()
 
-# extract average surface
 average_surface = curvature_upper_leaflet.results.average_z_surface
 
-# extract average mean curvature
 mean_upper_leaflet = curvature_upper_leaflet.results.average_mean
 
-# extract average Gaussian curvature
 gaussian_upper_leaflet = curvature_upper_leaflet.results.average_gaussian
 ```
 
-In this example, we use the PO4 beads in the upper leaflet as reference to
-derive a surface and calculate its respective mean and Gaussian curvature.
+MembraneCurvature supports three surface methods: [Fourier], [binning], and [binning-nearest]. Each method has its own set of parameters that can be used to control the surface calculation. For more examples on how to run MembraneCurvature using the different surface methods, please check the [Usage] page.
 
-To access the per-frame arrays for the example above, use `results.z_surface[<frame_id>]`, `results.mean[<frame_id>]`, and `results.gaussian[<frame_id>]`:
-
-```python
-# to access the surface for the first frame
-surface_first_frame = curvature_upper_leaflet.results.z_surface[0]
-
-# access the mean curvature for the last frame
-mean_last_frame = curvature_upper_leaflet.results.mean[-1]
-
-# access the Gaussian curvature for the frame 10
-gaussian_frame_10 = curvature_upper_leaflet.results.gaussian[10]
-```
-
-### With the binning method
-
-The same example run with the binning method looks like:
-
-```python
-import MDAnalysis as mda
-from membrane_curvature import MembraneCurvature
-from MDAnalysis.tests.datafiles import Martini_membrane_gro
-
-universe = mda.Universe(Martini_membrane_gro)
-
-curvature_upper_leaflet_binning = MembraneCurvature(universe,
-                                                   select='resid 1-225 and name PO4',
-                                                   surface_method='binning',
-                                                   n_x_bins=8,
-                                                   n_y_bins=8,
-                                                   wrap=True
-                                                   ).run()
-
-surface_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_z_surface
-
-mean_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_mean
-
-gaussian_upper_leaflet_binning = curvature_upper_leaflet_binning.results.average_gaussian
-```
-
-#### Binning with padding
-
-> [!WARNING]
-> Padding is only available with `surface_method='binning'` and **requires orthorhombic boxes**.
-
-To reduce finite difference edge artifacts, you can enable padding with the `padding` argument:
-
-```python
-import MDAnalysis as mda
-from membrane_curvature import MembraneCurvature
-from MDAnalysis.tests.datafiles import Martini_membrane_gro
-
-universe = mda.Universe(Martini_membrane_gro)
-
-# run with padding to reduce finite difference artifacts
-curvature_upper_leaflet_padded = MembraneCurvature(universe,
-                                                   select='resid 1-225 and name PO4',
-                                                   surface_method='binning',
-                                                   n_x_bins=8,
-                                                   n_y_bins=8,
-                                                   padding=True).run()
-
-surface_upper_leaflet_padded = curvature_upper_leaflet_padded.results.average_z_surface
-
-mean_upper_leaflet_padded = curvature_upper_leaflet_padded.results.average_mean
-
-gaussian_upper_leaflet_padded = curvature_upper_leaflet_padded.results.average_gaussian
-```
-
-#### Binning with FFT filtering
-
-FFT filtering is disabled by default with `fft_filter=None`. To enable automatic
-filtering, pass `fft_filter='auto'`:
-
-```python
-import MDAnalysis as mda
-from membrane_curvature import MembraneCurvature
-from MDAnalysis.tests.datafiles import Martini_membrane_gro
-
-universe = mda.Universe(Martini_membrane_gro)
-
-# run with the binning surface_method with automatic FFT filtering
-curvature_upper_leaflet_filtered = MembraneCurvature(universe,
-                                                     surface_method='binning',
-                                                     select='resid 1-225 and name PO4',
-                                                     n_x_bins=8,
-                                                     n_y_bins=8,
-                                                     fft_filter='auto',
-                                                     ).run()
-
-surface_upper_leaflet_filtered = curvature_upper_leaflet_filtered.results.average_z_surface
-
-mean_upper_leaflet_filtered = curvature_upper_leaflet_filtered.results.average_mean
-
-gaussian_upper_leaflet_filtered = curvature_upper_leaflet_filtered.results.average_gaussian
-```
-
-> [!NOTE]
->
-> FFT filtering is only available with `surface_method='binning'`. Per-frame
-> `results.z_surface`, `results.mean`, and `results.gaussian` are not FFT-filtered.
-> With filtering enabled, `results.average_z_surface` contains the filtered
-> average height. `results.average_mean` and `results.average_gaussian` are
-> calculated from that filtered height.
-
-You can find more examples on how to run MembraneCurvature in the [Usage] page.
-To plot results from MembraneCurvature please check the [Visualization] page.
+To plot results from MembraneCurvature, please check the [Visualization] page.
 
 ## Documentation
 
@@ -291,15 +184,18 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [GSoC]: https://summerofcode.withgoogle.com/
 [MDAnalysis]: https://www.mdanalysis.org
 [code_of_conduct]: https://www.mdanalysis.org/conduct/
-[Installation]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
-[Installing development dependencies with pip]: https://membrane-curvature.readthedocs.io/en/latest/getting_started.html#installing-development-dependencies-with-pip
-[Usage]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
+[Installation]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/getting_started.html#installation
+[Installing development dependencies with pip]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/getting_started.html#installing-development-dependencies-with-pip
+[Fourier]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/api/surface_methods/fourier_surface.html
+[binning]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/api/surface_methods/binning_surface.html
+[binning-nearest]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/api/surface_methods/binning_nearest_surface.html
+[Usage]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/source/pages/Usage.html
 [License]: https://github.com/MDAnalysis/membrane-curvature/blob/main/LICENSE
-[documentation]: https://membrane-curvature.readthedocs.io/en/latest/index.html#
-[Visualization]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Visualization.html
-[Algorithm]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Algorithm.html
-[API]: https://membrane-curvature.readthedocs.io/en/latest/api/membrane_curvature.html
-[Tutorials]: https://membrane-curvature.readthedocs.io/en/latest/source/pages/Tutorials.html
+[documentation]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/index.html#
+[Visualization]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/source/pages/Visualization.html
+[Algorithm]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/source/pages/Algorithm.html
+[API]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/api/membrane_curvature.html
+[Tutorials]: https://mdanalysismembrane-curvature.readthedocs.io/en/latest/source/pages/Tutorials.html
 [MDAnalysisTests]: https://github.com/MDAnalysis/mdanalysis/wiki/UnitTests
 [MDAnalysisData]: https://www.mdanalysis.org/MDAnalysisData/
 [pre-commit]: https://pre-commit.com
