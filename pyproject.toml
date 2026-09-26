@@ -70,6 +70,11 @@ dev = [
     {include-group = "docs"},
     ]
 
+benchmarks = [
+    # Use ASV from github to include the uv plugin
+    "asv @ git+https://github.com/airspeed-velocity/asv.git",
+]
+
 [tool.setuptools.packages.find]
 include = ["membrane_curvature*"]
 
