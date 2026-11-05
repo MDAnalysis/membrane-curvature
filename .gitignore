@@ -112,3 +112,10 @@ ENV/
 
 # Generated docs figs
 docs/savefig/
+
+# ASV benchmarks
+benchmarks/results/
+benchmarks/html/
+benchmarks/env/
+benchmarks/virtualenv/
+benchmarks/.asv/
