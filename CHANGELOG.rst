@@ -3,6 +3,9 @@ Membranecurvature CHANGELOG
 
 ---
 
+2.0.0 (24-11-2026)
+------------------
+
 * Raise ValueError when ``fft_filter`` is not None for Fourier method (PR #279)
 * Revamp Usage doc page (PR #276), refine tutorials (PR #283 #285) and update README (PR #281)
 * Update Algorithm doc page with three surface methods and optional padding/FFT filtering (PR #266)

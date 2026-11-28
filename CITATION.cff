@@ -1,11 +1,30 @@
 cff-version: 1.2.0
-message: "If you use this software in your work, please cite it as below."
+message: "If you use MembraneCurvature in your work, please cite the paper below."
 authors:
 - family-names: "Barreto-Ojeda"
   given-names: "Estefania"
   orcid: "https://orcid.org/0000-0002-1288-737X"
 title: "MembraneCurvature MDAkit"
-version: 1.1.2
-doi: 10.5281/zenodo.20644126
-date-released: 2026-04-25
+version: 2.0.0
+doi: 10.5281/zenodo.20644125
+date-released: 2026-11-24
 url: "https://github.com/MDAnalysis/membrane-curvature/"
+repository-code: "https://github.com/MDAnalysis/membrane-curvature/"
+license: GPL-3.0-or-later
+preferred-citation:
+  type: article
+  title: "MembraneCurvature: A Python tool to calculate membrane curvature from molecular dynamics simulations"
+  authors:
+  - family-names: "Barreto-Ojeda"
+    given-names: "Estefania"
+    orcid: "https://orcid.org/0000-0002-1288-737X"
+  - family-names: "Corradi"
+    given-names: "Valentina"
+    orcid: "https://orcid.org/0000-0001-6546-9780"
+  - family-names: "Tieleman"
+    given-names: "D. Peter"
+    orcid: "https://orcid.org/0000-0001-5507-0688"
+  journal: "bioRxiv"
+  year: 2026
+  doi: 10.64898/2026.11.25.769279
+  url: "https://doi.org/10.64898/2026.11.25.769279"
