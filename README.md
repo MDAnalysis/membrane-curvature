@@ -125,6 +125,33 @@ available where you can find:
 - Examples on how to plot the results obtained from MembraneCurvature in the [Visualization] page.
 - Detailed [Tutorials] to run MembraneCurvature in membrane-only and membrane-protein systems.
 
+## Citing MembraneCurvature
+
+If you use MembraneCurvature in your work, please cite the [MembraneCurvature paper][paper]:
+
+> E. Barreto-Ojeda, V. Corradi, and D. P. Tieleman. MembraneCurvature: A Python tool to calculate membrane curvature from molecular dynamics simulations. *bioRxiv* (2026). doi: [10.64898/2026.11.25.769279][paper]
+
+```bibtex
+@article{barretoojeda2026membranecurvature,
+  title   = {MembraneCurvature: A Python tool to calculate membrane curvature from molecular dynamics simulations},
+  author  = {Barreto-Ojeda, Estefania and Corradi, Valentina and Tieleman, D. Peter},
+  journal = {bioRxiv},
+  year    = {2026},
+  doi     = {10.64898/2026.11.25.769279}
+}
+```
+
+To cite a specific release of MembraneCurvature, use the DOI of that release on [Zenodo]. The Zenodo concept DOI `10.5281/zenodo.20644125` always resolves to the latest release.
+
+MembraneCurvature is built on [MDAnalysis]. Please also cite the [MDAnalysis references][MDAnalysis_citing]:
+
+> R. J. Gowers, M. Linke, J. Barnoud, T. J. E. Reddy, M. N. Melo, S. L. Seyler, J. Domański, D. L. Dotson, S. Buchoux, I. M. Kenney, and O. Beckstein. MDAnalysis: A Python package for the rapid analysis of molecular dynamics simulations. In S. Benthall and S. Rostrup, editors, *Proceedings of the 15th Python in Science Conference*, pages 98-105, Austin, TX, 2016. SciPy. doi: [10.25080/Majora-629e541a-00e][Gowers2016]
+
+> N. Michaud-Agrawal, E. J. Denning, T. B. Woolf, and O. Beckstein. MDAnalysis: A Toolkit for the Analysis of Molecular Dynamics Simulations. *J. Comput. Chem.* 32 (2011), 2319-2327. doi: [10.1002/jcc.21787][Michaud-Agrawal2011]
+
+> [!NOTE]
+> MembraneCurvature includes a `CITATION.cff` file. On GitHub, use **Cite this repository** to export the citation in APA or BibTeX format.
+
 ## Contributing
 
 Contributions are very welcome!
@@ -203,3 +230,8 @@ project with [MDAnalysis] and it is linked to a [Code of Conduct][code_of_conduc
 [uv]: https://docs.astral.sh/uv/
 [Contributing]: https://github.com/MDAnalysis/membrane-curvature/blob/main/.github/CONTRIBUTING.md
 [AI_policy]: https://github.com/MDAnalysis/mdanalysis/blob/develop/AI_POLICY.md
+[paper]: https://doi.org/10.64898/2026.11.25.769279
+[Zenodo]: https://doi.org/10.5281/zenodo.20644125
+[MDAnalysis_citing]: https://www.mdanalysis.org/pages/citations/
+[Gowers2016]: https://doi.org/10.25080/Majora-629e541a-00e
+[Michaud-Agrawal2011]: https://doi.org/10.1002/jcc.21787
